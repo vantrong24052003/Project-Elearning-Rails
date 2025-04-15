@@ -54,3 +54,7 @@ vendor/*
 .vscode/
 
 /tmp*
+.windsurfrules
+
+/app/assets/builds/*
+!/app/assets/builds/.keep

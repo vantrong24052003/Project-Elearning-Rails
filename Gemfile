@@ -58,3 +58,7 @@ gem "cancancan", "3.5"
 gem "sidekiq", "7.2"
 gem "redis", "5.0.6"
 gem 'html2slim', '0.2.0'
+
+gem "tailwindcss-ruby", "~> 4.1"
+
+gem "tailwindcss-rails", "~> 4.2"
