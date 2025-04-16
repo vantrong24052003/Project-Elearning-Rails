@@ -15,25 +15,6 @@ Rails.application.configure do
   # Enable server timing.
   config.server_timing = true
 
-  # Use Sidekiq for background jobs
-  config.active_job.queue_adapter = :sidekiq
-
-  # Config for the development environment.
-  config.action_mailer.delivery_method = :smtp
-  config.action_mailer.perform_deliveries = true
-  config.action_mailer.raise_delivery_errors = true
-  config.action_mailer.smtp_settings = {
-    address:              "smtp.gmail.com",
-    port:                 587,
-    domain:               "gmail.com",
-    user_name:            Rails.application.credentials.dig(:smtp, :user_name),
-    password:             Rails.application.credentials.dig(:smtp, :password),
-    authentication:       "plain",
-    enable_starttls_auto: true,
-    open_timeout:         5,
-    read_timeout:         5
-}
-
   # Enable/disable Action Controller caching. By default Action Controller caching is disabled.
   # Run rails dev:cache to toggle Action Controller caching.
   if Rails.root.join("tmp/caching-dev.txt").exist?

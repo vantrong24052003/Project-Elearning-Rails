@@ -1,16 +1,20 @@
 {
-  "name": "Project-Elearning-Rails",
+  "name": "Elearning",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "https://github.com/vantrong24052003/Project-Elearning-Rails.git",
-  "author": "Doan vo van trong <trong.doan@tomosia.com>",
+  "author": "tms-nguyenvu <vu.nguyen1@tomosia.com>",
   "license": "MIT",
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.4",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
     "rollup": "^4.40.0",
-    "tailwindcss": "^4.1.4",
-    "vite": "^5.4.18",
+    "tailwindcss": "3.4.17",
+    "vite": "^5.0.0",
     "vite-plugin-rails": "^0.5.0",
-    "vite-plugin-ruby": "^5.1.1"
+    "vite-plugin-ruby": "^5.1.0"
+  },
+  "dependencies": {
+    "@hotwired/stimulus": "^3.2.2",
+    "@hotwired/turbo-rails": "^8.0.13"
   }
 }

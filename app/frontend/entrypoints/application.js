@@ -1,4 +1,4 @@
-import "../javascript/application.js";
+import "../javascript/application";
 
 // To see this message, add the following to the `<head>` section in your
 // views/layouts/application.html.erb
