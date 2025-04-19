@@ -1,13 +1,222 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= yield(:title) || "ELearn - Your Learning Journey" %></title>
+
     <style>
       /* Email styles need to be inline */
+      body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f4f8;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+      .email-header {
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        color: white;
+        padding: 28px;
+        text-align: center;
+      }
+      .email-logo {
+        max-width: 200px;
+        margin-bottom: 16px;
+      }
+      .email-header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .email-header p {
+        margin: 8px 0 0;
+        opacity: 0.9;
+        font-size: 16px;
+      }
+      .email-content {
+        padding: 32px;
+        color: #374151;
+      }
+      .email-footer {
+        background-color: #f8fafc;
+        color: #64748b;
+        padding: 24px;
+        text-align: center;
+        font-size: 14px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .button {
+        display: inline-block;
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        color: white;
+        text-decoration: none;
+        padding: 14px 28px;
+        border-radius: 8px;
+        font-weight: 600;
+        margin: 20px 0;
+        transition: all 0.2s;
+        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
+      }
+      .button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 8px rgba(37, 99, 235, 0.3);
+      }
+      .divider {
+        border-top: 1px solid #e2e8f0;
+        margin: 28px 0;
+      }
+      .social-icons {
+        margin-top: 16px;
+      }
+      .social-icons a {
+        display: inline-block;
+        margin: 0 10px;
+      }
+      h1, h2, h3 {
+        color: #1e293b;
+      }
+      h2 {
+        font-size: 22px;
+        margin-top: 28px;
+        margin-bottom: 16px;
+        color: #1e40af;
+      }
+      h3 {
+        font-size: 18px;
+        margin-top: 24px;
+        margin-bottom: 12px;
+        color: #334155;
+      }
+      p {
+        margin-bottom: 18px;
+        line-height: 1.7;
+      }
+      a {
+        color: #3b82f6;
+        text-decoration: none;
+      }
+      .text-muted {
+        color: #64748b;
+      }
+      .text-center {
+        text-align: center;
+      }
+      .highlight-box {
+        background-color: #f0f9ff;
+        border-left: 4px solid #3b82f6;
+        padding: 16px;
+        margin: 24px 0;
+        border-radius: 6px;
+      }
+      .course-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+        background-color: #f8fafc;
+      }
+      .course-card h4 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #1e40af;
+      }
+      .badge {
+        display: inline-block;
+        background-color: #dbeafe;
+        color: #2563eb;
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-right: 8px;
+      }
+      .progress-bar {
+        background-color: #e2e8f0;
+        height: 8px;
+        border-radius: 4px;
+        margin: 12px 0;
+      }
+      .progress-bar-fill {
+        background: linear-gradient(90deg, #3b82f6, #2563eb);
+        height: 100%;
+        border-radius: 4px;
+      }
+      .avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .avatar-sm {
+        width: 32px;
+        height: 32px;
+      }
+      .tip-box {
+        background-color: #ecfdf5;
+        border-left: 4px solid #10b981;
+        padding: 16px;
+        margin: 24px 0;
+        border-radius: 6px;
+      }
+      .tip-box h4 {
+        color: #10b981;
+        margin-top: 0;
+        margin-bottom: 8px;
+      }
+      @media only screen and (max-width: 600px) {
+        .email-container {
+          width: 100%;
+          border-radius: 0;
+        }
+        .email-content, .email-header, .email-footer {
+          padding: 20px;
+        }
+      }
     </style>
   </head>
 
   <body>
-    <%= yield %>
+    <div class="email-container">
+      <div class="email-header">
+        <h1>ELearn</h1>
+        <p>Your Journey to Knowledge and Skills</p>
+      </div>
+
+      <div class="email-content">
+        <%= yield %>
+      </div>
+
+      <div class="email-footer">
+        <p>
+          &copy; <%= Date.today.year %> ELearn. All rights reserved.
+          <br>
+          <span class="text-muted">Follow your learning path, achieve your goals.</span>
+        </p>
+
+        <div class="social-icons">
+          <a href="#"><img src="https://cdn-icons-png.flaticon.com/128/145/145802.png" alt="Facebook" width="24"></a>
+          <a href="#"><img src="https://cdn-icons-png.flaticon.com/128/3256/3256013.png" alt="Twitter" width="24"></a>
+          <a href="#"><img src="https://cdn-icons-png.flaticon.com/128/3536/3536505.png" alt="LinkedIn" width="24"></a>
+          <a href="#"><img src="https://cdn-icons-png.flaticon.com/128/3670/3670147.png" alt="YouTube" width="24"></a>
+        </div>
+
+        <p class="text-muted" style="margin-top: 16px; font-size: 12px;">
+          If you have any questions about your courses or account, please contact our support team at
+          <a href="mailto:support@elearn.com">support@elearn.com</a>
+        </p>
+      </div>
+    </div>
   </body>
 </html>

@@ -1,0 +1,45 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+  <!-- Background Animation -->
+  <div class="absolute inset-0 pointer-events-none z-0">
+    <% 25.times do %>
+      <div class="absolute h-2 w-2 rounded-full bg-pink-500 opacity-50 animate-pulse"
+           style="top: <%= rand(0..100) %>%; left: <%= rand(0..100) %>%; animation-duration: <%= rand(5..10) %>s;"></div>
+    <% end %>
+  </div>
+
+  <!-- Background Pattern -->
+  <div class="fixed inset-0 dark:bg-[url('/dark:bg-pattern.svg')] opacity-5 z-0"></div>
+
+  <!-- Email Verification Success Card -->
+  <div class="w-full max-w-md z-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg">
+    <div class="space-y-1 p-6">
+      <div class="flex items-center justify-center mb-4">
+        <svg class="h-12 w-12 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-center bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text">
+        Email Verified Successfully!
+      </h2>
+      <p class="text-gray-600 dark:text-gray-400 text-center">
+        Thank you for verifying your email address. Your account is now fully activated.
+      </p>
+    </div>
+
+    <div class="space-y-4 p-6">
+      <div class="flex items-center justify-center">
+        <svg class="h-16 w-16 text-green-500 animate-bounce" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m-6 4v6m0-6H5m14 0h-4m0 0v6m0-6l2-2m-2 2l-2 2" />
+        </svg>
+      </div>
+      <p class="text-center text-gray-500 dark:text-gray-300">
+        You can now access all features of ELearn. Start exploring courses and begin your learning journey!
+      </p>
+    </div>
+
+    <div class="flex flex-col space-y-4 p-6">
+      <%= link_to "Log In to Your Account", new_user_session_path, class: "w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-2 px-4 rounded-md text-center" %>
+      <%= link_to "Return to Homepage", root_path, class: "w-full text-purple-400 border border-purple-400 hover:bg-purple-400/10 py-2 px-4 rounded-md text-center" %>
+    </div>
+  </div>
+</div>

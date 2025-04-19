@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Xóa dữ liệu
 Upload.destroy_all
 Video.destroy_all
@@ -22,131 +24,132 @@ User.destroy_all
 end
 
 # Tạo người dùng
-admin = User.create!(
-  email: "admin@gmail.com", password: "Admin123@",
-  name: "Admin User", phone: "1234567890", address: "Admin Address",
-  bio: "This is an admin user", date_of_birth: "1985-05-10"
+admin = User.create_with_confirmation(
+  email: 'admin@gmail.com', password: 'Admin123@',
+  name: 'Admin User', phone: '1234567890', address: 'Admin Address',
+  bio: 'This is an admin user', date_of_birth: '1985-05-10'
 )
 
-instructor = User.create!(
-  email: "instructor@gmail.com", password: "Admin123@",
-  name: "Instructor User", phone: "0987654321", address: "Instructor Address",
-  bio: "This is an instructor user", date_of_birth: "1990-07-15"
+instructor = User.create_with_confirmation(
+  email: 'instructor@gmail.com', password: 'Admin123@',
+  name: 'Instructor User', phone: '0987654321', address: 'Instructor Address',
+  bio: 'This is an instructor user', date_of_birth: '1990-07-15'
 )
 
-student = User.create!(
-  email: "student@gmail.com", password: "Admin123@",
-  name: "Student User", phone: "1122334455", address: "Student Address",
-  bio: "This is a student user", date_of_birth: "2000-02-20"
+student = User.create_with_confirmation(
+  email: 'student@gmail.com', password: 'Admin123@',
+  name: 'Student User', phone: '1122334455', address: 'Student Address',
+  bio: 'This is a student user', date_of_birth: '2000-02-20'
 )
 
-puts "✅ Created users."
+puts '✅ Created users.'
 
 # Tạo role
-admin_role = Role.create!(name: "admin")
-instructor_role = Role.create!(name: "instructor")
-student_role = Role.create!(name: "student")
+admin_role = Role.create!(name: 'admin')
+instructor_role = Role.create!(name: 'instructor')
+student_role = Role.create!(name: 'student')
 
 admin.roles << admin_role
 instructor.roles << instructor_role
 student.roles << student_role
-puts "✅ Assigned roles."
+puts '✅ Assigned roles.'
 
 # Tạo danh mục
-category1 = Category.create!(name: "Programming", description: "All about programming languages.")
-category2 = Category.create!(name: "Design", description: "Design and creative skills.")
-puts "✅ Created categories."
+category1 = Category.create!(name: 'Programming', description: 'All about programming languages.')
+category2 = Category.create!(name: 'Design', description: 'Design and creative skills.')
+puts '✅ Created categories.'
 
 # Tạo khóa học
 course1 = Course.create!(
-  title: "Ruby on Rails for Beginners",
-  description: "Learn Ruby on Rails from scratch.",
-  price: 50.0, language: "English", status: "published", user_id: admin.id,
-  thumbnail_path: "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"
+  title: 'Ruby on Rails for Beginners',
+  description: 'Learn Ruby on Rails from scratch.',
+  price: 50.0, language: 'English', status: 'published', user_id: admin.id,
+  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
 )
 
 course2 = Course.create!(
-  title: "Design Principles",
-  description: "Understand design principles for web and mobile.",
-  price: 30.0, language: "English", status: "published", user_id: instructor.id,
-   thumbnail_path: "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"
+  title: 'Design Principles',
+  description: 'Understand design principles for web and mobile.',
+  price: 30.0, language: 'English', status: 'published', user_id: instructor.id,
+  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
 )
 
 # Gắn vào category
 CourseCategory.create!(course: course1, category: category1)
 CourseCategory.create!(course: course2, category: category2)
-puts "✅ Created courses and assigned categories."
+puts '✅ Created courses and assigned categories.'
 
 # Chương & bài học
-chapter1 = Chapter.create!(title: "Introduction to Ruby", position: 1, course: course1)
-chapter2 = Chapter.create!(title: "Basic Design Concepts", position: 1, course: course2)
+chapter1 = Chapter.create!(title: 'Introduction to Ruby', position: 1, course: course1)
+chapter2 = Chapter.create!(title: 'Basic Design Concepts', position: 1, course: course2)
 
-lesson1 = Lesson.create!(title: "Getting Started with Ruby", description: "Intro to Ruby", position: 1, chapter: chapter1)
-lesson2 = Lesson.create!(title: "Understanding UI", description: "UI Basics", position: 1, chapter: chapter2)
-puts "✅ Created chapters and lessons."
+lesson1 = Lesson.create!(title: 'Getting Started with Ruby', description: 'Intro to Ruby', position: 1,
+                         chapter: chapter1)
+lesson2 = Lesson.create!(title: 'Understanding UI', description: 'UI Basics', position: 1, chapter: chapter2)
+puts '✅ Created chapters and lessons.'
 
 # Tạo uploads từ video local
-video_path = Rails.root.join("app/assets/videos/video.mp4")
+video_path = Rails.root.join('app/assets/videos/video.mp4')
 
 upload1 = Upload.create!(
-  file_type: "video",
+  file_type: 'video',
   cdn_url: video_path.to_s,
-  thumbnail_path: "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg",
+  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg',
   duration: 300,
-  resolution: "1080p",
+  resolution: '1080p',
   user_id: admin.id,
-  status: "active"
+  status: 'active'
 )
 
 upload2 = Upload.create!(
-  file_type: "video",
+  file_type: 'video',
   cdn_url: video_path.to_s,
-  thumbnail_path: "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg",
+  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg',
   duration: 250,
-  resolution: "720p",
+  resolution: '720p',
   user_id: instructor.id,
-  status: "active"
+  status: 'active'
 )
-puts "✅ Created uploads from local video files."
+puts '✅ Created uploads from local video files.'
 
 # Gắn video vào bài học
-Video.create!(title: "Ruby Basics", lesson: lesson1, upload: upload1 , is_locked: "1985-05-10")
-Video.create!(title: "UI Design Basics", lesson: lesson2, upload: upload2 )
-puts "✅ Created videos."
+Video.create!(title: 'Ruby Basics', lesson: lesson1, upload: upload1, is_locked: '1985-05-10')
+Video.create!(title: 'UI Design Basics', lesson: lesson2, upload: upload2)
+puts '✅ Created videos.'
 
 # Tạo câu hỏi trắc nghiệm
 question1 = Question.create!(
-  content: "What is Ruby?",
-  options: { "A" => "A language", "B" => "A framework" },
+  content: 'What is Ruby?',
+  options: { 'A' => 'A language', 'B' => 'A framework' },
   correct_option: 1,
-  explanation: "Ruby is a programming language.",
-  difficulty: "easy",
+  explanation: 'Ruby is a programming language.',
+  difficulty: 'easy',
   course: course1,
   user: admin
 )
 
 question2 = Question.create!(
-  content: "What is UX?",
-  options: { "A" => "User Experience", "B" => "User Experience Design" },
+  content: 'What is UX?',
+  options: { 'A' => 'User Experience', 'B' => 'User Experience Design' },
   correct_option: 1,
-  explanation: "UX stands for User Experience.",
-  difficulty: "easy",
+  explanation: 'UX stands for User Experience.',
+  difficulty: 'easy',
   course: course2,
   user: instructor
 )
-puts "✅ Created questions."
+puts '✅ Created questions.'
 
 # Tạo quiz
-quiz1 = Quiz.create!(title: "Ruby Basics Quiz", is_exam: false, time_limit: 20, course: course1)
-quiz2 = Quiz.create!(title: "UI Design Principles", is_exam: true, time_limit: 30, course: course2)
+quiz1 = Quiz.create!(title: 'Ruby Basics Quiz', is_exam: false, time_limit: 20, course: course1)
+quiz2 = Quiz.create!(title: 'UI Design Principles', is_exam: true, time_limit: 30, course: course2)
 
 QuizQuestion.create!(quiz: quiz1, question: question1)
 QuizQuestion.create!(quiz: quiz2, question: question2)
 
-puts "✅ Created quizzes and linked questions."
+puts '✅ Created quizzes and linked questions.'
 
 # Tạo tiến trình học cho student
-Progress.create!(user: student, course: course1, lesson: lesson1, status: "in_progress")
-puts "✅ Created progress."
+Progress.create!(user: student, course: course1, lesson: lesson1, status: 'in_progress')
+puts '✅ Created progress.'
 
 puts "\n🎉 Seed data completed successfully!"

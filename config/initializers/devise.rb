@@ -14,7 +14,7 @@ Devise.setup do |config|
   # confirmation, reset password and unlock tokens in the database.
   # Devise will use the `secret_key_base` as its `secret_key`
   # by default. You can change it below and use your own secret key.
-  # config.secret_key = '72f76b893c82924ba977ce86324b1bb26a277f8216c0097e144fd40fbe9b1db510febf91525046d2a451012bd513dd17af5c67f588b4da6bccd3f8dd8e36c131'
+  # config.secret_key = 'dfda185c9e0ed3c7c569f78006d87d747f03567d6dbf6cbcc280f4e8e92403c1df21971859c3e86e050536b0145bf6a736c50e66eb7a2f0fb569ee6885e0e6f0'
 
   # ==> Controller configuration
   # Configure the parent class to the devise controllers.
@@ -27,7 +27,7 @@ Devise.setup do |config|
   config.mailer_sender = 'please-change-me-at-config-initializers-devise@example.com'
 
   # Configure the class responsible to send e-mails.
-  # config.mailer = 'Devise::Mailer'
+  config.mailer = 'Devise::Mailer'
 
   # Configure the parent class responsible to send e-mails.
   # config.parent_mailer = 'ActionMailer::Base'
@@ -126,7 +126,7 @@ Devise.setup do |config|
   config.stretches = Rails.env.test? ? 1 : 12
 
   # Set up a pepper to generate the hashed password.
-  # config.pepper = '45bbf374c370df2745042ce7aa9c592c4b4a64547a28661da1032e5428c21695c1c286cddef619226f952e81e4335701eb8bea4de983a1275620765ead010949'
+  # config.pepper = 'a61096aace7dbce302b65c8fbf7dca989e036896b40298114e1df18844fd8891f16ad30cbf2612b7f62795a83b4a708310fc8493db7d0eddc142f54b348dae7b'
 
   # Send a notification to the original email when the user's email is changed.
   # config.send_email_changed_notification = false
@@ -244,7 +244,7 @@ Devise.setup do |config|
   # Turn scoped views on. Before rendering "sessions/new", it will first check for
   # "users/sessions/new". It's turned off by default because it's slower if you
   # are using only default views.
-  config.scoped_views = true
+  # config.scoped_views = false
 
   # Configure the default scope given to Warden. By default it's the first
   # devise role declared in your routes (usually :user).

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateQuizAttempts < ActiveRecord::Migration[8.0]
   def change
     create_table :quiz_attempts do |t|

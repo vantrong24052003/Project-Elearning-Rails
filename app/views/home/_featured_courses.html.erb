@@ -1,0 +1,40 @@
+<%# app/views/home/_featured_courses.html.erb %>
+
+<div class="dark:bg-gray-900 py-24">
+  <div class="container mx-auto px-4">
+    <h2 class="text-3xl md:text-4xl font-bold mb-6 text-center animate-fade-in-up">Featured Course Bundles</h2>
+    <p class="dark:text-gray-400 mb-12 text-center max-w-2xl mx-auto text-lg animate-fade-in-up animation-delay-150">
+      Accelerate your career with our carefully curated course bundles. Save time and money while mastering
+      in-demand skills.
+    </p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <% @featured_courses = Course.where(status: 'published').limit(4) %>
+      <% @featured_courses.each_with_index do |course, index| %>
+      <div class="animate-fade-in-up" style="animation-delay: <%= index * 100 %>ms">
+        <div class="dark:bg-gray-800 dark:border-gray-700 overflow-hidden transform hover:scale-105 transition-transform duration-300 flex flex-col h-full rounded-lg shadow-md">
+          <div class="p-0">
+            <div class="relative">
+              <% if course.thumbnail_path.present? %>
+              <%= image_tag course.thumbnail_path, alt: course.title, class: "w-full h-48 object-cover" %>
+              <% else %>
+              <%= image_tag "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg", alt: course.title, class: "w-full h-48 object-cover" %>
+              <% end %>
+            </div>
+          </div>
+          <div class="p-6 flex-1 flex flex-col">
+            <h3 class="text-xl font-bold mb-3 truncate"><%= course.title %></h3>
+            <p class="text-gray-400 text-sm mb-4 flex-grow"><%= truncate(course.description, length: 100) %></p>
+          </div>
+          <div class="dark:bg-gray-800 border-t dark:border-gray-700 p-4 mt-auto">
+            <%= link_to course_path(course), class: "w-full" do %>
+            <button class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-2 px-4 rounded-lg">
+              Learn More
+            </button>
+            <% end %>
+          </div>
+        </div>
+      </div>
+      <% end %>
+    </div>
+  </div>
+</div>

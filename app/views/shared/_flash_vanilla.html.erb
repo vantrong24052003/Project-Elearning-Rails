@@ -1,0 +1,38 @@
+<div id="flash-messages" class="fixed top-4 right-4 z-50 space-y-2">
+  <% flash.each do |type, message| %>
+    <% if message.is_a?(String) %>
+      <%
+        bg_color = case type
+          when "notice" then "bg-green-500"
+          when "alert" then "bg-red-500"
+          when "info" then "bg-blue-500"
+          when "warning" then "bg-yellow-500"
+          else "bg-gray-500"
+        end
+      %>
+
+      <div class="flash-message <%= bg_color %> text-white px-4 py-3 rounded shadow-md flex items-center justify-between" role="alert">
+        <div><%= message %></div>
+        <button type="button" class="close-button ml-4" onclick="this.parentElement.remove()">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          // Auto-hide flash messages after 5 seconds
+          setTimeout(function() {
+            const flashMessage = document.querySelector('.flash-message');
+            if (flashMessage) {
+              flashMessage.style.transition = 'opacity 1s';
+              flashMessage.style.opacity = '0';
+              setTimeout(() => flashMessage.remove(), 1000);
+            }
+          }, 5000);
+        });
+      </script>
+    <% end %>
+  <% end %>
+</div>

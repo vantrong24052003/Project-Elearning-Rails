@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'boot'
 
 require 'rails/all'
@@ -18,6 +20,10 @@ module Elearning
     config.generators do |g|
       g.orm :active_record, primary_key_type: :uuid
     end
+
+    # Use Sidekiq for Active Job
+    config.active_job.queue_adapter = :sidekiq
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

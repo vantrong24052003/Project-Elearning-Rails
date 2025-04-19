@@ -1,0 +1,33 @@
+<%# app/views/home/index.html.erb %>
+
+<div class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+  <div class="fixed inset-0 bg-[url('/bg-pattern.svg')] opacity-5 z-0"></div>
+  <div class="relative z-10">
+    <%= render 'shared/header' %>
+    <main>
+      <section id="home">
+        <%= render 'home/hero' %>
+      </section>
+      <section id="features">
+        <%= render 'home/features' %>
+      </section>
+      <section id="courses">
+        <%= render 'home/featured_courses' %>
+      </section>
+      <section id="testimonials">
+        <%= render 'home/testimonials' %>
+      </section>
+      <section id="pricing">
+        <%= render 'home/pricing' %>
+      </section>
+      <section id="faq">
+        <%= render 'home/faq' %>
+      </section>
+      <%= render 'home/newsletter' %>
+      <%= render 'home/contributors' %>
+    </main>
+    <%= render 'shared/footer' %>
+  </div>
+</div>
+
+<%# Removed inline JavaScript for scroll behavior as it is handled by Stimulus %>

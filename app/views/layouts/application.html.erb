@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title><%= content_for(:title) || "Elearning" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
 
-    <%= yield :head %>
+<head>
+  <title><%= content_for(:title) || "Elearning" %></title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+  <%= yield :head %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+  <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+  <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app %>
-    <%= vite_stylesheet_tag "application.css" %>
-    <%= vite_client_tag %>
-    <%= vite_javascript_tag 'application' %>
-    <!--
+  <link rel="icon" href="/icon.png" type="image/png">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+
+  <%# Includes all stylesheet files in app/assets/stylesheets %>
+  <%= stylesheet_link_tag :app %>
+  <%= vite_stylesheet_tag "application.css" %>
+  <%= vite_client_tag %>
+  <%= vite_javascript_tag 'application' %>
+  <!--
       If using a TypeScript entrypoint file:
         vite_typescript_tag 'application'
 
@@ -32,9 +33,28 @@
       Visit the guide for more information: https://vite-ruby.netlify.app/guide/rails
     -->
 
-  </head>
+</head>
 
-  <body>
-    <%= yield %>
-  </body>
+<body class="min-h-screen bg-gray-50 dark:bg-gray-900 dark:text-white">
+  <% auth_pages = controller_name.start_with?('sessions', 'registrations', 'passwords', 'confirmations', 'unlocks') %>
+  <% render_layout_elements = !auth_pages %>
+
+  <% if render_layout_elements %>
+    <%= render "shared/header" %>
+    <main class="pt-24 md:pt-28 px-4">
+      <%= yield %>
+    </main>
+  <% else %>
+    <main>
+      <%= yield %>
+    </main>
+  <% end %>
+
+  <%= render "shared/flash" %>
+
+  <% if render_layout_elements %>
+    <%= render "shared/footer" %>
+  <% end %>
+</body>
+
 </html>

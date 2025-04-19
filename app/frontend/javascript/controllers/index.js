@@ -3,6 +3,8 @@
 // ./bin/rails generate stimulus controllerName
 
 import { application } from "./application"
+import faq_controller from "./home/faq_controller";
+import shared_header_controller from "./shared/header_controller";
 
-import HelloController from "./hello_controller"
-application.register("hello", HelloController)
+application.register("home--faq", faq_controller);
+application.register("shared--header", shared_header_controller);

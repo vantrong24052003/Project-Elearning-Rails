@@ -1,0 +1,41 @@
+<%# app/views/home/_hero.html.erb %>
+
+<div class="relative container mx-auto px-4 py-16 md:py-24 lg:py-32 xl:py-40 overflow-hidden" id="home" data-controller="home--hero">
+  <%# Floating dots effect %>
+  <div class="absolute inset-0 pointer-events-none" id="floating-dots">
+    <% 20.times do |i| %>
+    <div class="absolute h-2 w-2 rounded-full bg-pink-500 opacity-50 dot" style="left: <%= rand(100) %>%; top: <%= rand(100) %>%" data-home--hero-target="dot"></div>
+    <% end %>
+  </div>
+
+  <div class="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20 relative z-10">
+    <div class="lg:w-1/2">
+      <h1 class="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold mb-6 leading-tight">
+        <span class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 text-transparent bg-clip-text block" data-home--hero-target="heading">
+          Unlock Your Potential
+        </span>
+        <span class="text-gray-900 dark:text-white block" data-home--hero-target="heading">Learn Anything, Anytime</span>
+      </h1>
+      <p class="text-gray-700 dark:text-gray-300 mb-8 text-lg md:text-xl leading-relaxed max-w-2xl" data-home--hero-target="paragraph">
+        Discover a world of knowledge with our cutting-edge online learning platform. Enhance your skills and
+        achieve your goals with expert-led courses tailored to your needs.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4">
+        <%= link_to new_user_session_path, class: "inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 font-semibold px-8 py-4 rounded-lg text-center transition-colors duration-300 text-lg text-white w-full sm:w-auto", data: { home__hero_target: "button" } do %>
+        Get Started
+        <% end %>
+        <%= link_to courses_path, class: "inline-block bg-white hover:bg-gray-100 text-purple-600 font-semibold px-8 py-4 rounded-lg text-center border-2 border-purple-600 transition-colors duration-300 text-lg w-full sm:w-auto", data: { home__hero_target: "button" } do %>
+        Explore Courses
+        <% end %>
+      </div>
+    </div>
+    <div class="lg:w-1/2 relative" data-home--hero-target="image">
+      <div class="relative w-full max-w-lg mx-auto">
+        <div class="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-2xl filter blur-3xl opacity-30 animate-pulse"></div>
+        <%= image_tag "https://cdn.pixabay.com/photo/2020/09/25/10/10/education-5600987_640.png",
+            alt: "Online Learning",
+            class: "rounded-2xl shadow-2xl relative z-10 w-full h-auto transform hover:scale-105 transition-transform duration-300" %>
+      </div>
+    </div>
+  </div>
+</div>

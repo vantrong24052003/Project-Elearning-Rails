@@ -1,15 +1,27 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
-  devise_for :users
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  # Devise routes with Omniauth
+  devise_for :users, controllers: {
+    omniauth_callbacks: 'users/omniauth_callbacks',
+    registrations: 'users/registrations',
+    sessions: 'users/sessions'
+  }
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
+  # Define root path
+  root to: 'home#index'
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  # Define courses resource
+  resources :courses, only: %i[index show]
 
-  # Defines the root path route ("/")
-  root "posts#index"
+  # Debugging route for OAuth
+  get 'oauth_debug/check_callback', to: 'oauth_debug#check_callback'
+
+  namespace :dashboard do
+    resources :courses
+  end
+
+  namespace :manage do
+    resources :courses
+  end
 end

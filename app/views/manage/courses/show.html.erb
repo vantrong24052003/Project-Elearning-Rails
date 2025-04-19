@@ -1,0 +1,8 @@
+<h1><%= @course.title %></h1>
+<p><strong>Description:</strong> <%= @course.description %></p>
+<p><strong>Price:</strong> $<%= @course.price %></p>
+<p><strong>Language:</strong> <%= @course.language %></p>
+<p><strong>Status:</strong> <%= @course.status %></p>
+<p><strong>Instructor:</strong> <%= @course.user.name %></p>
+<%= link_to 'Edit', edit_manage_course_path(@course), class: 'button' %> |
+<%= link_to 'Back to Courses', manage_courses_path, class: 'button' %>
