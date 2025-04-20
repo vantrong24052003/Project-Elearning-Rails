@@ -3,7 +3,9 @@
 module Users
   class SessionsController < Devise::SessionsController
     def create
+      Rails.logger.debug "Trying to log in with: #{params[:user][:email]}"
       self.resource = warden.authenticate(auth_options)
+      Rails.logger.debug "Authentication result: #{resource.inspect}"
 
       if resource
         set_flash_message!(:notice, :signed_in)
@@ -16,16 +18,14 @@ module Users
       end
     end
 
-    private
-
-    # Example: Customize the redirect path after login
     def after_sign_in_path_for(resource)
-      stored_location_for(resource) || root_path
-    end
-
-    # Example: Customize the redirect path after logout
-    def after_sign_out_path_for(_resource_or_scope)
-      new_user_session_path
+      if resource.has_role?(:admin)
+        dashboard_admin_path || root_path
+      elsif resource.has_role?(:instructor)
+        dashboard_instructor_path || root_path
+      else
+        stored_location_for(resource) || root_path
+      end
     end
   end
 end

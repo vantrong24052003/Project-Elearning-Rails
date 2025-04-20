@@ -1,0 +1,16 @@
+<div data-controller="audio-player">
+  <audio
+    data-audio-player-target="audio"
+    src="<%= asset_path('music.mp3') %>"
+    loop
+    muted
+  ></audio>
+
+  <button
+    data-action="audio-player#toggleMusic"
+    class="fixed bottom-4 right-4 z-50 bg-gray-800/40 hover:bg-gray-800/60 backdrop-blur-md text-white p-3 rounded-full shadow-lg transition-all duration-300"
+    aria-label="Toggle Background Music"
+    data-audio-player-target="toggleButton"
+  >
+  </button>
+</div>

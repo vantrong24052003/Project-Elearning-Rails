@@ -1,0 +1,55 @@
+<%= turbo_stream.update "course-results" do %>
+  <% if @courses.any? %>
+    <section class="space-y-6">
+      <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
+        <%= current_user.has_role?(:instructor) ? "Your Created Courses" : "All Courses" %>
+        <span class="text-gray-500 text-lg">(<%= @courses.total_count %>)</span>
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <% @courses.each do |course| %>
+          <div class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <!-- Course card content (same as in index.html.erb) -->
+            <div class="p-0">
+              <div class="relative w-full h-48">
+                <%= image_tag course.thumbnail_path.present? ? course.thumbnail_path : "placeholder-course.jpg", alt: course.title, class: "object-cover w-full h-full" %>
+                <% if current_user.has_role?(:instructor) %>
+                  <span class="absolute top-2 left-2 px-2 py-1 text-xs font-semibold rounded-full <%= course.status == 'published' ? 'bg-green-500' : 'bg-yellow-500' %> text-white">
+                    <%= course.status.capitalize %>
+                  </span>
+                <% else %>
+                  <% if course.course_categories.first %>
+                    <span class="absolute top-2 left-2 px-2 py-1 text-xs font-semibold rounded-full bg-purple-500 text-white">
+                      <%= course.course_categories.first.category.name %>
+                    </span>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+
+          </div>
+        <% end %>
+      </div>
+
+      <% if @courses.total_pages > 1 %>
+        <div class="mt-8">
+          <div class="flex items-center justify-between">
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700 dark:text-gray-400">
+                  Showing <span class="font-medium"><%= @courses.offset_value + 1 %></span> to <span class="font-medium"><%= @courses.offset_value + @courses.count %></span> of <span class="font-medium"><%= @courses.total_count %></span> results
+                </p>
+              </div>
+              <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <%= paginate @courses, window: 2, data: { turbo_frame: "course-results" } %>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </section>
+  <% else %>
+  <% end %>
+<% end %>

@@ -1,0 +1,2 @@
+class AddLockableToUser < ApplicationRecord
+end

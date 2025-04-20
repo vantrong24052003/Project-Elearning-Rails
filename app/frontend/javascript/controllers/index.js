@@ -5,6 +5,18 @@
 import { application } from "./application"
 import faq_controller from "./home/faq_controller";
 import shared_header_controller from "./shared/header_controller";
+import HomeHeroController from "./home/hero_controller";
+import CourseFilterController from "./courses/course_filter_controller";
+import PriceSliderController from "./shared/price_slider_controller";
+import LazyLoadingController from "./shared/lazy_loading_controller"
+import AudioPlayerController from "./shared/audio_player_controller"
+import dropdown_controller from "./shared/dropdown_controller";
 
 application.register("home--faq", faq_controller);
 application.register("shared--header", shared_header_controller);
+application.register("home--hero", HomeHeroController);
+application.register("course-filter", CourseFilterController);
+application.register("price-slider", PriceSliderController);
+application.register("lazy-loading", LazyLoadingController);
+application.register("audio-player", AudioPlayerController);
+application.register("dropdown", dropdown_controller);

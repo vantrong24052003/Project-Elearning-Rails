@@ -9,10 +9,8 @@ export default class extends Controller {
     const icon = this.iconTargets[index];
     const button = this.buttonTargets[index];
 
-    // Toggle the content visibility
     content.classList.toggle("hidden");
 
-    // Toggle the icon rotation
     if (content.classList.contains("hidden")) {
       icon.classList.remove("rotate-180");
       button.setAttribute("aria-expanded", "false");
