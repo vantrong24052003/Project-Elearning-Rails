@@ -58,7 +58,7 @@ Rails.application.routes.draw do
       resources :categories
       resources :settings
 
-      resources :instructor_requests, only: [:index, :show] do
+      resources :instructor_requests, only: %i[index show] do
         member do
           post :approve
           post :reject

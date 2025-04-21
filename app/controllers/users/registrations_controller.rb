@@ -9,7 +9,7 @@ module Users
     def create
       build_resource(sign_up_params)
 
-      instructor_requested = params[:role_type] == "instructor"
+      instructor_requested = params[:role_type] == 'instructor'
 
       resource.save
 
@@ -18,7 +18,7 @@ module Users
 
         if instructor_requested
           resource.update_columns(
-            instructor_request_status: "pending",
+            instructor_request_status: 'pending',
             instructor_requested_at: Time.current
           )
         end
@@ -46,14 +46,14 @@ module Users
     end
 
     def configure_account_update_params
-      devise_parameter_sanitizer.permit(:account_update, keys: [:name, :bio, :avatar, :phone, :address, :date_of_birth])
+      devise_parameter_sanitizer.permit(:account_update, keys: %i[name bio avatar phone address date_of_birth])
     end
 
     def after_sign_up_path_for(resource)
       stored_location_for(resource) || root_path
     end
 
-    def after_inactive_sign_up_path_for(resource)
+    def after_inactive_sign_up_path_for(_resource)
       new_user_session_path
     end
   end

@@ -70,7 +70,7 @@ class Ability
 
     can :read, :certificate, user_id: user.id
 
-    can :create, :review do |review, course|
+    can :create, :review do |_review, course|
       Progress.exists?(user_id: user.id, course_id: course.id)
     end
     can %i[update destroy], :review, user_id: user.id

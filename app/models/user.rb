@@ -45,7 +45,7 @@ class User < ApplicationRecord
     instructor_request_status.nil? || instructor_request_status == 'rejected'
   end
 
-  def approve_instructor_request!(admin_user = nil)
+  def approve_instructor_request!(_admin_user = nil)
     transaction do
       update!(
         instructor_request_status: 'approved',
@@ -55,7 +55,7 @@ class User < ApplicationRecord
     end
   end
 
-  def reject_instructor_request!(reason = nil, admin_user = nil)
+  def reject_instructor_request!(_reason = nil, _admin_user = nil)
     update!(
       instructor_request_status: 'rejected',
       instructor_reviewed_at: Time.current

@@ -17,29 +17,33 @@ module Dashboard
                 end
 
       # Search
-      courses = courses.where("title ILIKE ?", "%#{params[:search]}%") if params[:search].present?
+      courses = courses.where('title ILIKE ?', "%#{params[:search]}%") if params[:search].present?
 
       # Category filter
-      courses = courses.joins(:course_categories).where(course_categories: { category_id: params[:category_id] }) if params[:category_id].present?
+      if params[:category_id].present?
+        courses = courses.joins(:course_categories).where(course_categories: { category_id: params[:category_id] })
+      end
 
       # Price range filter
-      courses = courses.where("price >= ?", params[:min_price]) if params[:min_price].present?
-      courses = courses.where("price <= ?", params[:max_price]) if params[:max_price].present?
+      courses = courses.where('price >= ?', params[:min_price]) if params[:min_price].present?
+      courses = courses.where('price <= ?', params[:max_price]) if params[:max_price].present?
 
       # Status filter - only show published courses to students
-      courses = courses.where(status: 'published') unless current_user.has_role?(:instructor) || current_user.has_role?(:admin)
+      unless current_user.has_role?(:instructor) || current_user.has_role?(:admin)
+        courses = courses.where(status: 'published')
+      end
 
       # Sort
-      case params[:sort_by]
-      when "newest"
-        courses = courses.order(created_at: :desc)
-      when "price_low"
-        courses = courses.order(price: :asc)
-      when "price_high"
-        courses = courses.order(price: :desc)
-      else
-        courses = courses.order(created_at: :desc)
-      end
+      courses = case params[:sort_by]
+                when 'newest'
+                  courses.order(created_at: :desc)
+                when 'price_low'
+                  courses.order(price: :asc)
+                when 'price_high'
+                  courses.order(price: :desc)
+                else
+                  courses.order(created_at: :desc)
+                end
 
       @courses = courses.page(params[:page]).per(12) # Increased to 12 for 4 columns x 3 rows
 
