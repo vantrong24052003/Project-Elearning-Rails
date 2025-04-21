@@ -1,5 +1,5 @@
-<div data-controller="lazy-loading" id="loading-screen"
-     data-lazy-loading-target="screen"
+<div data-controller="shared--lazy-loading" id="loading-screen"
+     data-shared--lazy-loading-target="screen"
      class="fixed inset-0 bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center z-50 p-4">
   <!-- Loader Container -->
   <div class="relative w-64 h-64 md:w-80 md:h-80">
@@ -20,7 +20,7 @@
             fill="transparent"
           ></circle>
           <circle
-            data-lazy-loading-target="progressCircle"
+            data-shared--lazy-loading-target="progressCircle"
             class="text-blue-500 stroke-current transition-all duration-300 ease-in-out"
             stroke-width="4"
             stroke-linecap="round"
@@ -34,7 +34,7 @@
         </svg>
         <!-- Progress Number -->
         <div class="absolute inset-0 flex items-center justify-center">
-          <div data-lazy-loading-target="progressText" class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+          <div data-shared--lazy-loading-target="progressText" class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
             0%
           </div>
         </div>

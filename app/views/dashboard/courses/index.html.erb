@@ -1,6 +1,6 @@
 <div class="container mx-auto space-y-8 bg-white dark:bg-gray-800">
   <section class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-    <div class="p-5" data-controller="course-filter">
+    <div class="p-5" data-controller="dashboard--dashboard--dashboard--dashboard--dashboard--dashboard--dashboard--dashboard--dashboard--dashboard--dashboard--dashboard--dashboard--dashboard--dashboard--dashboard--dashboard--dashboard--course-filter">
       <div class="flex flex-wrap gap-4">
         <div class="w-full md:flex-1">
           <div class="relative">
@@ -21,7 +21,7 @@
                   class: "w-full pl-12 pr-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 focus:border-purple-500 focus:ring focus:ring-purple-200 text-gray-800 dark:text-white",
                   data: {
                     course_filter_target: "searchInput",
-                    action: "input->course-filter#searchWithDebounce"
+                    action: "input->dashboard--course-filter#searchWithDebounce"
                   }
               %>
             <% end %>
@@ -31,8 +31,8 @@
         <div class="flex flex-wrap gap-2">
           <div class="relative">
             <select id="category" class="appearance-none w-full md:w-44 pl-4 pr-10 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-white cursor-pointer"
-                    data-course-filter-target="categorySelect"
-                    data-action="change->course-filter#updateCategoryFilter">
+                    data-dashboard--dashboard--course-filter-target="categorySelect"
+                    data-action="change->dashboard--course-filter#updateCategoryFilter">
               <option value="">All Categories</option>
               <% @categories.each do |category| %>
               <option value="<%= category.id %>" <%= params[:category_id].to_i == category.id ? 'selected' : '' %>>
@@ -47,10 +47,10 @@
             </div>
           </div>
 
-          <!-- Sort Dropdown -->
+          <!-- Sort shared--dropdown -->
           <div class="relative">
             <select id="sort" class="appearance-none w-full md:w-44 pl-4 pr-10 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-white cursor-pointer"
-                    data-course-filter-target="sortSelect"
+                    data-dashboard--course-filter-target="sortSelect"
                     data-action="change->course-filter#applySortFilter">
               <option value="newest" <%= params[:sort_by] == 'newest' ? 'selected' : '' %>>Newest First</option>
               <option value="rating" <%= params[:sort_by] == 'rating' ? 'selected' : '' %>>Highest Rated</option>
@@ -65,7 +65,7 @@
           </div>
 
           <!-- Advanced Filters Button -->
-          <button type="button" class="flex items-center justify-center px-4 py-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors" data-action="click->course-filter#toggleFilterModal">
+          <button type="button" class="flex items-center justify-center px-4 py-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors" data-action="click->dashboard--course-filter#toggleFilterModal">
             <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
             </svg>

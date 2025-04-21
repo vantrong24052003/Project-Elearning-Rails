@@ -44,8 +44,8 @@
 
           <div class="hidden md:flex sm:items-center">
             <% if user_signed_in? %>
-              <div class="relative" data-controller="dropdown">
-                <button data-action="click->dropdown#toggle click@window->dropdown#hide" class="flex items-center space-x-2 focus:outline-none">
+              <div class="relative" data-controller="shared--dropdown">
+                <button data-action="click->shared--dropdown#toggle click@window->shared--dropdown#hide" class="flex items-center space-x-2 focus:outline-none">
                   <div class="relative w-8 h-8 flex-shrink-0">
                     <% if current_user.avatar.present? %>
                       <%= image_tag current_user.avatar, class: "rounded-full h-8 w-8 object-cover" %>
@@ -61,7 +61,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                   </svg>
                 </button>
-                <div data-dropdown-target="menu" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 hidden">
+                <div data-shared--dropdown-target="menu" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 hidden">
                   <%= link_to dashboard_path, class: "block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm" do %>
                     <div class="flex items-center space-x-2">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -1,0 +1,199 @@
+<div class="min-h-screen bg-gradient-to-br from-[#0D0A25] to-[#1A1744] text-white p-6">
+  <div class="max-w-9xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-purple-300">Quản lý người dùng</h1>
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
+        <%= link_to dashboard_admin_users_path(format: :xlsx), class: "inline-flex items-center justify-center bg-gray-800 border-gray-700 hover:bg-gray-700 text-white rounded-md px-4 py-2 text-xs sm:text-sm" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="sm:h-4 sm:w-4 mr-1 sm:mr-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          <span>Xuất Excel</span>
+        <% end %>
+
+        <%= link_to new_dashboard_admin_user_path, class: "inline-flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white rounded-md px-4 py-2 text-xs sm:text-sm" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="sm:h-4 sm:w-4 mr-1 sm:mr-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          <span>Thêm người dùng</span>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="bg-gray-900 border border-gray-700 shadow-xl mb-6 rounded-lg">
+      <div class="p-6 border-b border-gray-700">
+        <h2 class="text-xl text-purple-400">Bộ lọc</h2>
+        <p class="text-gray-400">Lọc danh sách người dùng theo các tiêu chí</p>
+      </div>
+      <div class="p-6">
+        <%= form_with url: dashboard_admin_users_path, method: :get, data: { controller: "filter", action: "input->filter#submit change->filter#submit" } do |f| %>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label for="search" class="text-white mb-2 block">Tìm kiếm</label>
+              <div class="relative">
+                <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <%= f.text_field :search, placeholder: "Tìm theo tên, email...", class: "pl-8 bg-gray-800 border-gray-700 text-white w-full rounded-md" %>
+              </div>
+            </div>
+            <div>
+              <label for="role" class="text-white mb-2 block">Vai trò</label>
+              <%= f.select :role,
+                  [["Tất cả vai trò", ""]] + Role.all.map { |r| [r.name.humanize, r.name] },
+                  { selected: params[:role] },
+                  { class: "bg-gray-800 border-gray-700 text-white w-full rounded-md" } %>
+            </div>
+            <div>
+              <label for="status" class="text-white mb-2 block">Trạng thái</label>
+              <%= f.select :status,
+                  [["Tất cả trạng thái", ""], ["Đã xác nhận", "confirmed"], ["Chờ xác nhận", "unconfirmed"]],
+                  { selected: params[:status] },
+                  { class: "bg-gray-800 border-gray-700 text-white w-full rounded-md" } %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="bg-gray-900 border border-gray-700 shadow-xl rounded-lg">
+      <div class="p-6 border-b border-gray-700">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-xl text-purple-400">Danh sách người dùng</h2>
+            <p class="text-gray-400"><%= @users.count %> người dùng được tìm thấy</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" id="bulkActions" class="inline-flex items-center justify-center bg-gray-800 border-gray-700 hover:bg-gray-700 text-white rounded-md px-3 py-2 text-sm hidden">
+              <span class="mr-1" id="selectedCount">0</span>
+              <span>đã chọn</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="p-6">
+        <div class="overflow-x-auto" data-controller="user-selection">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-gray-800">
+                <th class="text-left py-3 px-4">
+                  <input type="checkbox" data-action="change->user-selection#toggleAll" class="rounded border-gray-600 bg-gray-800 text-purple-600">
+                </th>
+                <th class="text-left py-3 px-4 text-gray-400 font-medium">Tên người dùng</th>
+                <th class="text-left py-3 px-4 text-gray-400 font-medium">Email</th>
+                <th class="text-left py-3 px-4 text-gray-400 font-medium">Vai trò</th>
+                <th class="text-left py-3 px-4 text-gray-400 font-medium">Trạng thái</th>
+                <th class="text-left py-3 px-4 text-gray-400 font-medium">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @users.each do |user| %>
+                <tr class="border-b border-gray-800 hover:bg-gray-800/50">
+                  <td class="py-3 px-4">
+                    <input type="checkbox" value="<%= user.id %>" data-user-selection-target="checkbox" data-action="change->user-selection#toggle" class="rounded border-gray-600 bg-gray-800 text-purple-600">
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="flex items-center">
+                      <div class="w-8 h-8 rounded-full mr-3 bg-purple-600 flex items-center justify-center">
+                        <% if user.avatar.present? %>
+                          <img src="<%= user.avatar %>" alt="<%= user.name %>" class="w-full h-full object-cover rounded-full">
+                        <% else %>
+                          <span class="text-white text-sm"><%= user.name.first.upcase %></span>
+                        <% end %>
+                      </div>
+                      <div>
+                        <div class="font-medium"><%= user.name %></div>
+                        <div class="text-xs text-gray-400">Tham gia: <%= user.created_at.strftime("%d/%m/%Y") %></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3 px-4 text-gray-300"><%= user.email %></td>
+                  <td class="py-3 px-4">
+                    <% user.roles.each do |role| %>
+                      <span class="bg-purple-900/30 text-purple-400 px-2 py-1 rounded-full text-xs mr-1"><%= role.name.humanize %></span>
+                    <% end %>
+                  </td>
+                  <td class="py-3 px-4">
+                    <% if user.confirmed_at? %>
+                      <span class="bg-green-900/30 text-green-400 px-2 py-1 rounded-full text-xs">Đã xác nhận</span>
+                    <% else %>
+                      <span class="bg-yellow-900/30 text-yellow-400 px-2 py-1 rounded-full text-xs">Chờ xác nhận</span>
+                    <% end %>
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="relative" data-controller="dropdown">
+                      <button data-action="dropdown#toggle click@window->dropdown#hide" class="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-800 rounded-md flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                      </button>
+                      <div data-dropdown-target="menu" class="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-md shadow-lg z-10 hidden">
+                        <div class="py-1 px-3 text-sm text-gray-300 border-b border-gray-700">Hành động</div>
+                        <div class="py-1">
+                          <%= link_to edit_dashboard_admin_user_path(user), class: "block px-4 py-2 text-sm text-white hover:bg-gray-700" do %>
+                            <div class="flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                              Chỉnh sửa
+                            </div>
+                          <% end %>
+                          <%= link_to dashboard_admin_user_path(user), class: "block px-4 py-2 text-sm text-white hover:bg-gray-700" do %>
+                            <div class="flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                              Xem chi tiết
+                            </div>
+                          <% end %>
+                          <div class="border-t border-gray-700 my-1"></div>
+                          <%= button_to dashboard_admin_user_path(user), method: :delete, data: { turbo_confirm: "Bạn có chắc chắn muốn xóa người dùng này?" }, class: "block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-700" do %>
+                            <div class="flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                              Xóa
+                            </div>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+              
+              <% if @users.empty? %>
+                <tr>
+                  <td colspan="6" class="py-10 text-center text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-600 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <p>Không tìm thấy người dùng nào</p>
+                    <p class="mt-2 text-sm">Thử thay đổi bộ lọc hoặc thêm người dùng mới</p>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <% if @users.respond_to?(:total_pages) && @users.total_pages > 1 %>
+          <!-- Pagination -->
+          <div class="flex items-center justify-between mt-6">
+            <div class="text-sm text-gray-400">
+              Hiển thị <%= @users.offset_value + 1 %>-<%= [@users.offset_value + @users.limit_value, @users.total_count].min %> trong số <%= @users.total_count %> người dùng
+            </div>
+            <div class="flex items-center space-x-2">
+              <%= paginate @users, theme: 'tailwind' %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% content_for :javascript do %>
+  <script>
+    document.addEventListener('user-selection:change', (event) => {
+      const count = event.detail.count;
+      const bulkActions = document.getElementById('bulkActions');
+      const selectedCount = document.getElementById('selectedCount');
+      
+      if (count > 0) {
+        bulkActions.classList.remove('hidden');
+        selectedCount.textContent = count;
+      } else {
+        bulkActions.classList.add('hidden');
+      }
+    });
+  </script>
+<% end %>

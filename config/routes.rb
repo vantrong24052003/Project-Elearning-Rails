@@ -70,6 +70,20 @@ Rails.application.routes.draw do
   get 'dashboard', to: 'dashboard#index'
 
   namespace :manage do
-    resources :courses
+    root to: 'dashboard#index'
+    resources :courses do
+      collection do
+        post :bulk_publish
+        post :bulk_draft
+        delete :bulk_delete
+      end
+    end
+    resources :users
+    resources :enrollments
+    resources :lessons
+    resources :videos
+    resources :reviews
+    resources :payments
+    resources :faqs
   end
 end

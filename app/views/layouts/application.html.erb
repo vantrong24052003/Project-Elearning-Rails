@@ -27,7 +27,7 @@
   <% auth_pages = controller_name.start_with?('sessions', 'registrations', 'passwords', 'confirmations', 'unlocks') %>
   <% render_layout_elements = !auth_pages %>
   <% if render_layout_elements %>
-  <main class="pt-24 pb-12 md:pt-28 px-4">
+  <main class="pt-24 pb-12 md:pt-28">
     <%= render 'shared/lazy_loading' %>
     <%= yield %>
   </main>

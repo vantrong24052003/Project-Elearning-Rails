@@ -20,11 +20,11 @@ module Users
 
     def after_sign_in_path_for(resource)
       if resource.has_role?(:admin)
-        dashboard_admin_path || root_path
+        manage_users_path || dashboard_root_path
       elsif resource.has_role?(:instructor)
-        dashboard_instructor_path || root_path
+        dashboard_instructor_courses_path || dashboard_root_path
       else
-        stored_location_for(resource) || root_path
+        root_path
       end
     end
   end

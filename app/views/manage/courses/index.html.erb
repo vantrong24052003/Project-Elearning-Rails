@@ -1,26 +1,83 @@
-<h1>Manage Courses</h1>
-<table>
-  <thead>
-    <tr>
-      <th>Title</th>
-      <th>Description</th>
-      <th>Price</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @courses.each do |course| %>
-      <tr>
-        <td><%= course.title %></td>
-        <td><%= truncate(course.description, length: 50) %></td>
-        <td>$<%= course.price %></td>
-        <td>
-          <%= link_to 'Show', manage_course_path(course) %> |
-          <%= link_to 'Edit', edit_manage_course_path(course) %> |
-          <%= link_to 'Delete', manage_course_path(course), method: :delete, data: { confirm: 'Are you sure?' } %>
-        </td>
-      </tr>
+<div class="min-h-screen bg-gradient-to-br from-[#0D0A25] to-[#1A1744] text-white p-6">
+  <div class="max-w-9xl mx-auto">
+    <div id="flash-container"></div>
+
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-purple-300">Quản lý khóa học</h1>
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
+        <%= link_to '#', class: "inline-flex items-center justify-center bg-gray-800 border border-gray-700 hover:bg-gray-700 text-white rounded-md px-4 py-2.5 text-xs sm:text-sm transition-colors", data: { turbo: false } do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          <span>Xuất Excel</span>
+        <% end %>
+
+        <%= link_to new_manage_course_path, class: "inline-flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white rounded-md px-4 py-2.5 text-xs sm:text-sm transition-colors", data: { turbo_frame: "content_frame" } do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          <span>Thêm Khóa Học</span>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Turbo frame to wrap content that will be replaced -->
+    <%= turbo_frame_tag "content_frame" do %>
+      <!-- Filter section -->
+      <div class="bg-gray-900 border border-gray-700 shadow-xl mb-6 rounded-lg">
+        <div class="p-4 md:p-6 border-b border-gray-700">
+          <h2 class="text-lg md:text-xl text-purple-400 font-medium">Bộ lọc</h2>
+          <p class="text-sm md:text-base text-gray-400">Lọc danh sách khóa học theo các tiêu chí</p>
+        </div>
+        <div class="p-4 md:p-6">
+          <%= form_with url: manage_courses_path, method: :get,
+                      data: {
+                        controller: "dashboard--course-filter",
+                        turbo_frame: "courses_list",
+                        action: "input->dashboard--course-filter#submit change->dashboard--course-filter#submit"
+                      } do |f| %>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              <div>
+                <label for="search" class="text-white text-sm font-medium mb-2 block">Tìm kiếm</label>
+                <div class="relative">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-3 h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <%= f.text_field :search, placeholder: "Tìm theo tên khóa học", class: "pl-10 py-2.5 bg-gray-800 border border-gray-700 focus:border-purple-500 focus:ring focus:ring-purple-500/20 text-white w-full rounded-md transition-colors" %>
+                </div>
+              </div>
+              <div>
+                <label for="category" class="text-white text-sm font-medium mb-2 block">Danh mục</label>
+                <%= f.select :category_id,
+                      [["Tất cả danh mục", ""]] + Category.all.map { |c| [c.name, c.id] },
+                      { selected: params[:category_id] },
+                      { class: "py-2.5 px-3 bg-gray-800 border border-gray-700 focus:border-purple-500 focus:ring focus:ring-purple-500/20 text-white w-full rounded-md transition-colors" } %>
+              </div>
+              <div>
+                <label for="status" class="text-white text-sm font-medium mb-2 block">Trạng thái</label>
+                <%= f.select :status,
+                      [["Tất cả trạng thái", ""], ["Đã xuất bản", "published"], ["Bản nháp", "draft"]],
+                      { selected: params[:status] },
+                      { class: "py-2.5 px-3 bg-gray-800 border border-gray-700 focus:border-purple-500 focus:ring focus:ring-purple-500/20 text-white w-full rounded-md transition-colors" } %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Courses list section -->
+      <%= render partial: "manage/courses/courses_list", locals: { courses: @courses } %>
     <% end %>
-  </tbody>
-</table>
-<%= link_to 'New Course', new_manage_course_path, class: 'button' %>
+  </div>
+</div>
+
+<%= content_for :javascript do %>
+<script>
+  document.addEventListener('dashboard--course-selection:change', (event) => {
+    const count = event.detail.count;
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCount = document.getElementById('selectedCount');
+
+    if (count > 0) {
+      bulkActions.classList.remove('hidden');
+      selectedCount.textContent = count;
+    } else {
+      bulkActions.classList.add('hidden');
+    }
+  });
+</script>
+<% end %>
