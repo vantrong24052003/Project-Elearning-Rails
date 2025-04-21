@@ -2,11 +2,11 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = [
-    "searchForm", "searchInput", "categoryInput",
-    "minPriceInput", "maxPriceInput", "filterModal",
-    "searchFilter", "categoryFilter", "priceFilter",
-    "categorySelect", "searchTerm", "categoryName",
-    "priceMin", "priceMax"
+    "searchForm", "searchInput", "categoryInput", "categorySelect", "modalCategorySelect",
+    "minPriceInput", "maxPriceInput", "filterModal", "sortSelect",
+    "searchFilter", "categoryFilter", "priceFilter", "sortFilter",
+    "searchTerm", "categoryName", "priceFilterText", "sortText",
+    "priceMin", "priceMax", "modalPriceMin", "modalPriceMax", "activeFilters"
   ]
 
   connect() {
@@ -20,43 +20,184 @@ export default class extends Controller {
   searchWithDebounce() {
     clearTimeout(this.searchTimeout)
     this.searchTimeout = setTimeout(() => {
-      this.searchFormTarget.requestSubmit()
+      const currentSortBy = this.sortSelectTarget.value
+      const formData = new FormData(this.searchFormTarget)
+      formData.set('sort_by', currentSortBy)
+
+      const url = new URL(this.searchFormTarget.action)
+      const params = new URLSearchParams([...formData.entries()])
+      url.search = params.toString()
+
+      Turbo.visit(url.toString(), {
+        frame: "course-results",
+        action: "replace"
+      })
     }, 400)
   }
 
   updateCategoryFilter() {
     const categoryId = this.categorySelectTarget.value
     this.categoryInputTarget.value = categoryId
-    this.searchFormTarget.requestSubmit()
+
+    const currentSortBy = this.sortSelectTarget.value
+    const formData = new FormData(this.searchFormTarget)
+    formData.set('sort_by', currentSortBy)
+
+    const url = new URL(this.searchFormTarget.action)
+    const params = new URLSearchParams([...formData.entries()])
+    url.search = params.toString()
+
+    Turbo.visit(url.toString(), {
+      frame: "course-results",
+      action: "replace"
+    })
+  }
+
+  applySortFilter() {
+    const sortValue = this.sortSelectTarget.value
+    const formData = new FormData(this.searchFormTarget)
+    formData.set('sort_by', sortValue)
+
+    const url = new URL(this.searchFormTarget.action)
+    const params = new URLSearchParams([...formData.entries()])
+    url.search = params.toString()
+
+    Turbo.visit(url.toString(), {
+      frame: "course-results",
+      action: "replace"
+    })
+  }
+
+  clearSortFilter() {
+    const formData = new FormData(this.searchFormTarget)
+    formData.delete('sort_by')
+
+    this.sortSelectTarget.value = "newest"
+
+    const url = new URL(this.searchFormTarget.action)
+    const params = new URLSearchParams([...formData.entries()])
+    url.search = params.toString()
+
+    Turbo.visit(url.toString(), {
+      frame: "course-results",
+      action: "replace"
+    })
   }
 
   updatePriceRange(event) {
     this.minPriceInputTarget.value = event.detail.min
     this.maxPriceInputTarget.value = event.detail.max
-    this.priceMinTarget.textContent = event.detail.min
-    this.priceMaxTarget.textContent = event.detail.max
-    this.searchFormTarget.requestSubmit()
+    this.priceMinTarget.textContent = this.formatPrice(event.detail.min)
+    this.priceMaxTarget.textContent = this.formatPrice(event.detail.max)
+  }
+
+  updateModalPriceRange(event) {
+    this.modalPriceMinTarget.textContent = this.formatPrice(event.detail.min)
+    this.modalPriceMaxTarget.textContent = this.formatPrice(event.detail.max)
+  }
+
+  formatPrice(price) {
+    return new Intl.NumberFormat('vi-VN').format(price)
   }
 
   clearSearch() {
     this.searchInputTarget.value = ""
-    this.searchFormTarget.requestSubmit()
+
+    const currentSortBy = this.sortSelectTarget.value
+    const formData = new FormData(this.searchFormTarget)
+    formData.delete('search')
+    formData.set('sort_by', currentSortBy)
+
+    const url = new URL(this.searchFormTarget.action)
+    const params = new URLSearchParams([...formData.entries()])
+    url.search = params.toString()
+
+    Turbo.visit(url.toString(), {
+      frame: "course-results",
+      action: "replace"
+    })
   }
 
   clearCategoryFilter() {
     this.categoryInputTarget.value = ""
     this.categorySelectTarget.value = ""
-    this.searchFormTarget.requestSubmit()
+    if (this.hasModalCategorySelectTarget) {
+      this.modalCategorySelectTarget.value = ""
+    }
+
+    const currentSortBy = this.sortSelectTarget.value
+    const formData = new FormData(this.searchFormTarget)
+    formData.delete('category_id')
+    formData.set('sort_by', currentSortBy)
+
+    const url = new URL(this.searchFormTarget.action)
+    const params = new URLSearchParams([...formData.entries()])
+    url.search = params.toString()
+
+    Turbo.visit(url.toString(), {
+      frame: "course-results",
+      action: "replace"
+    })
   }
 
   clearPriceFilter() {
     this.minPriceInputTarget.value = ""
     this.maxPriceInputTarget.value = ""
-    this.searchFormTarget.requestSubmit()
+
+    const currentSortBy = this.sortSelectTarget.value
+    const formData = new FormData(this.searchFormTarget)
+    formData.delete('min_price')
+    formData.delete('max_price')
+    formData.set('sort_by', currentSortBy)
+
+    const url = new URL(this.searchFormTarget.action)
+    const params = new URLSearchParams([...formData.entries()])
+    url.search = params.toString()
+
+    Turbo.visit(url.toString(), {
+      frame: "course-results",
+      action: "replace"
+    })
   }
 
   applyFilters() {
-    this.searchFormTarget.requestSubmit()
+    const formData = new FormData(this.searchFormTarget)
+    const url = new URL(this.searchFormTarget.action)
+    const params = new URLSearchParams([...formData.entries()])
+    url.search = params.toString()
+
+    Turbo.visit(url.toString(), {
+      frame: "course-results",
+      action: "replace"
+    })
+    this.toggleFilterModal()
+  }
+
+  applyModalFilters() {
+    if (this.hasModalCategorySelectTarget) {
+      this.categoryInputTarget.value = this.modalCategorySelectTarget.value
+    }
+
+    if (this.hasModalPriceMinTarget && this.hasModalPriceMaxTarget) {
+      const minPrice = this.modalPriceMinTarget.textContent.replace(/[^\d]/g, '')
+      const maxPrice = this.modalPriceMaxTarget.textContent.replace(/[^\d]/g, '')
+
+      this.minPriceInputTarget.value = minPrice
+      this.maxPriceInputTarget.value = maxPrice
+    }
+
+    const currentSortBy = this.sortSelectTarget.value
+    const formData = new FormData(this.searchFormTarget)
+    formData.set('sort_by', currentSortBy)
+
+    const url = new URL(this.searchFormTarget.action)
+    const params = new URLSearchParams([...formData.entries()])
+    url.search = params.toString()
+
+    Turbo.visit(url.toString(), {
+      frame: "course-results",
+      action: "replace"
+    })
     this.toggleFilterModal()
   }
 
@@ -66,7 +207,24 @@ export default class extends Controller {
     this.minPriceInputTarget.value = ""
     this.maxPriceInputTarget.value = ""
     this.categorySelectTarget.value = ""
-    this.searchFormTarget.requestSubmit()
-    this.toggleFilterModal()
+
+    if (this.hasSortSelectTarget) {
+      this.sortSelectTarget.value = "newest"
+    }
+
+    if (this.hasModalCategorySelectTarget) {
+      this.modalCategorySelectTarget.value = ""
+    }
+
+    const url = new URL(this.searchFormTarget.action)
+
+    Turbo.visit(url.toString(), {
+      frame: "course-results",
+      action: "replace"
+    })
+
+    if (!this.filterModalTarget.classList.contains("hidden")) {
+      this.toggleFilterModal()
+    }
   }
 }
