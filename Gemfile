@@ -58,6 +58,9 @@ group :test do
   gem 'selenium-webdriver'
 end
 
+gem 'cancancan'
+gem 'devise'
+gem 'rolify'
 gem 'stimulus-rails'
 gem 'turbo-rails'
 gem 'vite_rails'
