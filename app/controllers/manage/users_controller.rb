@@ -10,11 +10,9 @@ module Manage
       @users = User.all
     end
 
-    def show
-    end
+    def show; end
 
-    def edit
-    end
+    def edit; end
 
     def update
       if @user.update(user_params)

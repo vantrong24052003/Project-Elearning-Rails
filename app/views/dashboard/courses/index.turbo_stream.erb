@@ -16,7 +16,7 @@
                 <% if current_user.has_role?(:instructor) %>
                   <span class="absolute top-2 left-2 px-2 py-1 text-xs font-semibold rounded-full <%= course.status == 'published' ? 'bg-green-500' : 'bg-yellow-500' %> text-white">
                     <%= course.status.capitalize %>
-                  </span>
+                  </span> 
                 <% else %>
                   <% if course.course_categories.first %>
                     <span class="absolute top-2 left-2 px-2 py-1 text-xs font-semibold rounded-full bg-purple-500 text-white">

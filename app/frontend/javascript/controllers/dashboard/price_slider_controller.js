@@ -12,7 +12,6 @@ export default class extends Controller {
   connect() {
     this.updateSliderDisplay()
 
-    // Add touch and mouse events for better slider thumbs
     this.minSliderTarget.addEventListener('mousedown', this.setupDragEvents.bind(this))
     this.maxSliderTarget.addEventListener('mousedown', this.setupDragEvents.bind(this))
 
@@ -41,11 +40,9 @@ export default class extends Controller {
   }
 
   updateValues() {
-    // Get values
     let minValue = parseInt(this.minSliderTarget.value)
     let maxValue = parseInt(this.maxSliderTarget.value)
 
-    // Make sure min doesn't exceed max
     if (minValue >= maxValue) {
       minValue = maxValue - this.stepValue
       this.minSliderTarget.value = minValue
@@ -53,7 +50,6 @@ export default class extends Controller {
 
     this.updateSliderDisplay()
 
-    // Dispatch event for parent controller
     this.dispatch("change", {
       detail: {
         min: minValue,
@@ -63,7 +59,6 @@ export default class extends Controller {
   }
 
   updateSliderDisplay() {
-    // Update range display
     const percent = (value) => (value / this.maxValue) * 100
     const minPercent = percent(this.minSliderTarget.value)
     const maxPercent = 100 - percent(this.maxSliderTarget.value)
@@ -71,10 +66,8 @@ export default class extends Controller {
     this.rangeTarget.style.left = `${minPercent}%`
     this.rangeTarget.style.right = `${100 - percent(this.maxSliderTarget.value)}%`
 
-    // Format numbers for display
     const formatter = new Intl.NumberFormat('vi-VN')
 
-    // Find and update price displays if they exist
     const minDisplay = document.querySelector('[data-price-filter-target="priceMinDisplay"]')
     const maxDisplay = document.querySelector('[data-price-filter-target="priceMaxDisplay"]')
 

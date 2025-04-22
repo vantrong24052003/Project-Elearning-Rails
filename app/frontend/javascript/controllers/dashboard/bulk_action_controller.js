@@ -21,14 +21,13 @@ export default class extends Controller {
     event.preventDefault()
     const url = this.element.dataset.url || this.element.getAttribute("href")
     const confirmMsg = this.element.dataset.confirm || "Bạn có chắc chắn muốn xóa các khóa học đã chọn không?"
-    
+
     if (confirm(confirmMsg)) {
       this._submitBulkAction(url, 'delete')
     }
   }
 
   _submitBulkAction(url, method) {
-    // Find the course selection controller
     const courseSelectionController = this.application.getControllerForElementAndIdentifier(
       document.querySelector('[data-controller="dashboard--course-selection"]'),
       'dashboard--course-selection'
@@ -39,21 +38,18 @@ export default class extends Controller {
       return
     }
 
-    // Get selected course IDs
     const selectedIds = courseSelectionController.getSelectedIds()
     if (selectedIds.length === 0) {
       alert('Vui lòng chọn ít nhất một khóa học')
       return
     }
 
-    // Create and submit a form with Turbo
     const form = document.createElement('form')
     form.method = 'post'
     form.action = url
     form.style.display = 'none'
     form.dataset.turbo = true
 
-    // Add method override for DELETE
     if (method === 'delete') {
       const methodInput = document.createElement('input')
       methodInput.type = 'hidden'

@@ -40,7 +40,6 @@ export default class extends Controller {
   toggleMobileMenu(event) {
     this.mobileMenuTarget.classList.toggle('hidden')
 
-    // Update aria-expanded attribute
     const expanded = !this.mobileMenuTarget.classList.contains('hidden')
     event.currentTarget.setAttribute('aria-expanded', expanded)
   }
@@ -57,7 +56,6 @@ export default class extends Controller {
     this.scrollToSection(event)
     this.mobileMenuTarget.classList.add('hidden')
 
-    // Find the mobile menu button and update its aria-expanded attribute
     const mobileMenuButton = document.querySelector('[aria-controls="mobile-menu"]')
     if (mobileMenuButton) {
       mobileMenuButton.setAttribute('aria-expanded', 'false')
