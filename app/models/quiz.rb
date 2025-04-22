@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Quiz < ApplicationRecord
   # Associations
   belongs_to :course

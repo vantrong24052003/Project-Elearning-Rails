@@ -5,7 +5,7 @@
 ### Description
 <!-- Mô tả ngắn gọn về thay đổi, mục đích của PR này -->
 ---
-### Screenshot (nếu có)
+### Screenshot (nếu có) 
 <!-- Chèn hình ảnh mô tả UI hoặc kết quả thực tế -->
 ---
 ### Checklist :white_check_mark:
