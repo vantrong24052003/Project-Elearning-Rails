@@ -112,12 +112,10 @@ upload2 = Upload.create!(
 )
 puts '✅ Created uploads from local video files.'
 
-# Gắn video vào bài học
 Video.create!(title: 'Ruby Basics', lesson: lesson1, upload: upload1, is_locked: '1985-05-10')
 Video.create!(title: 'UI Design Basics', lesson: lesson2, upload: upload2)
 puts '✅ Created videos.'
 
-# Tạo câu hỏi trắc nghiệm
 question1 = Question.create!(
   content: 'What is Ruby?',
   options: { 'A' => 'A language', 'B' => 'A framework' },
@@ -139,7 +137,6 @@ question2 = Question.create!(
 )
 puts '✅ Created questions.'
 
-# Tạo quiz
 quiz1 = Quiz.create!(title: 'Ruby Basics Quiz', is_exam: false, time_limit: 20, course: course1)
 quiz2 = Quiz.create!(title: 'UI Design Principles', is_exam: true, time_limit: 30, course: course2)
 
@@ -148,7 +145,6 @@ QuizQuestion.create!(quiz: quiz2, question: question2)
 
 puts '✅ Created quizzes and linked questions.'
 
-# Tạo tiến trình học cho student
 Progress.create!(user: student, course: course1, lesson: lesson1, status: 'in_progress')
 puts '✅ Created progress.'
 

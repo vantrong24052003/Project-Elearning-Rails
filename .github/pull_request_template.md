@@ -1,11 +1,11 @@
 ### Ticket
 <!-- Link to the related issue or ticket -->
-[Issue #](https://github.com/tms-nguyenvu/sale-it/issues/)
+[Issue #](https://github.com/vantrong24052003/Project-Elearning-Rails/issues/)
 ---
 ### Description
 <!-- Mô tả ngắn gọn về thay đổi, mục đích của PR này -->
 ---
-### Screenshot (nếu có) 
+### Screenshot (nếu có)
 <!-- Chèn hình ảnh mô tả UI hoặc kết quả thực tế -->
 ---
 ### Checklist :white_check_mark:
