@@ -16,7 +16,7 @@
 
   test:
     <<: *default
-    database: elearning_test
+    database: elearning_test_new
 
 
   production:
