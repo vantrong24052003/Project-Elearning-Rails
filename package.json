@@ -2,7 +2,7 @@
   "name": "Elearning",
   "version": "1.0.0",
   "main": "index.js",
-  "author": "tms-nguyenvu <vu.nguyen1@tomosia.com>",
+  "author": "tms-vantrong <trong.doan@tomosia.com>",
   "license": "MIT",
   "devDependencies": {
     "autoprefixer": "^10.4.21",
