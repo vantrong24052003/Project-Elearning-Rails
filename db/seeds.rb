@@ -24,19 +24,19 @@ User.destroy_all
 end
 
 # Tạo người dùng
-admin = User.create!(
+admin = User.create_with_confirmation(
   email: 'admin@gmail.com', password: 'Admin123@',
   name: 'Admin User', phone: '1234567890', address: 'Admin Address',
   bio: 'This is an admin user', date_of_birth: '1985-05-10'
 )
 
-instructor = User.create!(
+instructor = User.create_with_confirmation(
   email: 'instructor@gmail.com', password: 'Admin123@',
   name: 'Instructor User', phone: '0987654321', address: 'Instructor Address',
   bio: 'This is an instructor user', date_of_birth: '1990-07-15'
 )
 
-student = User.create!(
+student = User.create_with_confirmation(
   email: 'student@gmail.com', password: 'Admin123@',
   name: 'Student User', phone: '1122334455', address: 'Student Address',
   bio: 'This is a student user', date_of_birth: '2000-02-20'
