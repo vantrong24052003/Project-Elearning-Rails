@@ -63,3 +63,9 @@ gem "turbo-rails"
 gem "stimulus-rails"
 # Vite.js integration in Ruby web apps [https://vite-ruby.netlify.app/]
 gem "vite_rails"
+
+
+gem "devise"
+gem "rolify"
+gem "cancancan"
+
