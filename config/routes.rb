@@ -7,4 +7,24 @@ Rails.application.routes.draw do
     confirmations: 'users/confirmations',
     passwords: 'users/passwords'
   }
+
+  namespace :dashboard do
+    resources :courses do
+      member do
+        patch :publish
+        patch :unpublish
+      end
+    end
+  end
+
+  namespace :manage do
+    resources :courses do
+      member do
+        post :publish
+        post :draft
+      end
+    end
+  end
+
+  root to: 'home#index'
 end
