@@ -11,7 +11,7 @@
 
   development:
     <<: *default
-    database: elearning_development
+    database: elearning_development_new
 
 
   test:
