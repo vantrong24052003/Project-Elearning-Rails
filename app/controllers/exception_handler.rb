@@ -46,7 +46,7 @@ module ExceptionHandler
     redirect_back fallback_location: root_path
   end
 
-  def handle_foreign_key_violation(e)
+  def handle_foreign_key_violation(_e)
     respond_to do |format|
       format.html do
         flash[:error] = 'This item cannot be deleted because it is in use elsewhere.'
