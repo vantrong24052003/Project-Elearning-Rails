@@ -36,6 +36,20 @@ gem 'thruster', require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
+# OmniAuth for authentication
+gem 'omniauth'
+gem 'omniauth-google-oauth2'
+
+gem 'redis'
+gem 'sidekiq'
+
+# Pagination
+gem 'pagy'
+
+# Excel support
+gem 'caxlsx'
+gem 'caxlsx_rails'
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: %i[mri windows], require: 'debug/prelude'
@@ -58,13 +72,12 @@ group :test do
   gem 'selenium-webdriver'
 end
 
-# Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
-gem 'turbo-rails'
-# Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
 gem 'stimulus-rails'
-# Vite.js integration in Ruby web apps [https://vite-ruby.netlify.app/]
+gem 'turbo-rails'
 gem 'vite_rails'
 
 gem 'cancancan'
 gem 'devise'
 gem 'rolify'
+
+gem 'kaminari'
