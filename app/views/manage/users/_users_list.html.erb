@@ -1,0 +1,23 @@
+<%= turbo_frame_tag "users_list" do %>
+  <%= render "shared/data_table", {
+    title: "Danh sách người dùng",
+    subtitle: "#{users.total_count} người dùng được tìm thấy",
+    collection: users,
+    columns: [
+      { label: "Người dùng", align: "left" },
+      { label: "Email", align: "left" },
+      { label: "Vai trò", align: "left" },
+      { label: "Ngày đăng ký", align: "left" },
+      { label: "Trạng thái", align: "left" },
+      { label: "Hành động", align: "right" }
+    ],
+    selectable: true,
+    selection_controller: "dashboard--user-selection",
+    empty_message: "Không tìm thấy người dùng nào",
+    empty_guidance: "Thử thay đổi bộ lọc hoặc tạo người dùng mới",
+    pagination_label: "người dùng",
+    pagination_data: { turbo_frame: "users_list" },
+    header_actions: render("manage/users/bulk_actions"),
+    content: render(partial: "manage/users/user", collection: users, as: :user)
+  } %>
+<% end %>

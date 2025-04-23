@@ -72,6 +72,11 @@ Rails.application.routes.draw do
   namespace :manage do
     root to: 'dashboard#index'
     resources :courses do
+      member do
+        post :publish
+        post :draft
+      end
+
       collection do
         post :bulk_publish
         post :bulk_draft

@@ -8,6 +8,7 @@ module ExceptionHandler
     rescue_from ActiveRecord::RecordNotUnique, with: :handle_not_unique
     rescue_from CanCan::AccessDenied, with: :handle_unauthorized
     rescue_from ActiveRecord::RecordInvalid, with: :handle_record_invalid
+    rescue_from ActiveRecord::InvalidForeignKey, with: :handle_foreign_key_violation
   end
 
   private
@@ -43,5 +44,18 @@ module ExceptionHandler
   def handle_record_invalid(e)
     flash[:alert] = "Dữ liệu không hợp lệ: #{e.record.errors.full_messages.join(', ')}"
     redirect_back fallback_location: root_path
+  end
+
+  def handle_foreign_key_violation(e)
+    respond_to do |format|
+      format.html do
+        flash[:error] = message
+        redirect_back fallback_location: root_path
+      end
+      format.json do
+        render json: { error: 'Không thể xóa mục này vì nó đang được sử dụng ở nơi khác' },
+               status: :unprocessable_entity
+      end
+    end
   end
 end

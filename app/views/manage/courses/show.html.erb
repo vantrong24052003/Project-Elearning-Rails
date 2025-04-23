@@ -1,8 +1,222 @@
-<h1><%= @course.title %></h1>
-<p><strong>Description:</strong> <%= @course.description %></p>
-<p><strong>Price:</strong> $<%= @course.price %></p>
-<p><strong>Language:</strong> <%= @course.language %></p>
-<p><strong>Status:</strong> <%= @course.status %></p>
-<p><strong>Instructor:</strong> <%= @course.user.name %></p>
-<%= link_to 'Edit', edit_manage_course_path(@course), class: 'button' %> |
-<%= link_to 'Back to Courses', manage_courses_path, class: 'button' %>
+<div class="container mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-2">
+      <%= link_to manage_courses_path, class: "text-gray-400 hover:text-white" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+      <% end %>
+      <h1 class="text-2xl font-bold text-white">Chi tiết khóa học</h1>
+    </div>
+
+    <div class="flex space-x-3">
+      <%= button_to edit_manage_course_path(@course), data: { turbo_frame: "modal" }, class: "inline-flex items-center px-4 py-2 border border-gray-700 rounded-md bg-gray-800 text-white hover:bg-gray-700 transition-colors" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+        <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" />
+      </svg>
+      Chỉnh sửa
+      <% end %>
+
+      <% if @course.status == 'published' %>
+      <%= button_to draft_manage_course_path(@course), method: :post, class: "inline-flex items-center px-4 py-2 border border-yellow-600 rounded-md bg-yellow-600/10 text-yellow-500 hover:bg-yellow-600/20 transition-colors" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+        <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" />
+      </svg>
+      Chuyển bản nháp
+      <% end %>
+      <% else %>
+      <%= button_to publish_manage_course_path(@course), method: :post, class: "inline-flex items-center px-4 py-2 border border-green-600 rounded-md bg-green-600/10 text-green-500 hover:bg-green-600/20 transition-colors" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 6 9 17l-5-5" />
+      </svg>
+      Xuất bản
+      <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Course Header -->
+      <div class="bg-gray-900 border border-gray-700 rounded-lg shadow-md overflow-hidden">
+        <% if @course.thumbnail_path.present? %>
+        <div class="h-64 w-full overflow-hidden">
+          <img src="<%= @course.thumbnail_path %>" alt="<%= @course.title %>" class="w-full h-full object-cover">
+        </div>
+        <% else %>
+        <div class="h-64 w-full bg-gradient-to-br from-purple-900/40 to-indigo-900/40 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-purple-300/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+          </svg>
+        </div>
+        <% end %>
+
+        <div class="p-6">
+          <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-white"><%= @course.title %></h1>
+            <span class="<%= @course.status == 'published' ? 'bg-green-900/30 text-green-400' : 'bg-yellow-900/30 text-yellow-400' %> px-3 py-1 rounded-full text-sm inline-flex items-center">
+              <% if @course.status == 'published' %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              Đã xuất bản
+              <% else %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v10M12 16h.01" />
+              </svg>
+              Bản nháp
+              <% end %>
+            </span>
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            <% @course.categories.each do |category| %>
+            <span class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs">
+              <%= category.name %>
+            </span>
+            <% end %>
+          </div>
+
+          <div class="mt-6 text-gray-300">
+            <%= simple_format(@course.description) %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Course Content Section -->
+      <div class="bg-gray-900 border border-gray-700 rounded-lg shadow-md overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-700">
+          <h2 class="text-lg font-medium text-white">Chương trình học</h2>
+        </div>
+
+        <div class="p-6">
+          <% if @course.respond_to?(:chapters) && @course.chapters.any? %>
+          <div class="space-y-4">
+            <% @course.chapters.each_with_index do |chapter, index| %>
+            <div class="border border-gray-700 rounded-md overflow-hidden">
+              <div class="bg-gray-800 px-4 py-3 flex items-center justify-between">
+                <h3 class="text-white font-medium">Chương <%= index + 1 %>: <%= chapter.title %></h3>
+                <span class="text-sm text-gray-400"><%= pluralize(chapter.lessons&.count || 0, 'bài học') %></span>
+              </div>
+
+              <% if chapter.respond_to?(:lessons) && chapter.lessons.any? %>
+              <div class="divide-y divide-gray-700">
+                <% chapter.lessons.each do |lesson| %>
+                <div class="px-4 py-3 flex items-center gap-3 text-gray-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  <%= lesson.title %>
+                </div>
+                <% end %>
+              </div>
+              <% else %>
+              <div class="px-4 py-3 text-gray-400 italic">Chưa có bài học nào</div>
+              <% end %>
+            </div>
+            <% end %>
+          </div>
+          <% else %>
+          <div class="flex flex-col items-center justify-center py-10 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-600 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <h3 class="text-lg font-medium text-gray-300 mb-2">Chưa có chương trình học</h3>
+            <p class="text-gray-500 mb-6">Thêm các chương và bài học để xây dựng chương trình học của bạn.</p>
+            <%= link_to "#", class: "inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md text-white transition-colors" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Thêm chương mới
+            <% end %>
+          </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+      <!-- Course Info Card -->
+      <div class="bg-gray-900 border border-gray-700 rounded-lg shadow-md overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-700">
+          <h2 class="text-lg font-medium text-white">Thông tin khóa học</h2>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">Giá</span>
+            <span class="text-lg font-medium text-purple-400">
+              <%= number_to_currency(@course.price, unit: "₫", precision: 0, delimiter: ".") %>
+            </span>
+          </div>
+
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">Ngôn ngữ</span>
+            <span class="text-white">
+              <%= @course.language == "vi" ? "Tiếng Việt" : "Tiếng Anh" %>
+            </span>
+          </div>
+
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">Giảng viên</span>
+            <div class="flex items-center">
+              <div class="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center mr-2 text-xs text-white font-medium">
+                <%= @course.user.name.first.upcase %>
+              </div>
+              <span class="text-white"><%= @course.user.name %></span>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">Ngày tạo</span>
+            <span class="text-white"><%= @course.created_at.strftime("%d/%m/%Y") %></span>
+          </div>
+
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">Cập nhật cuối</span>
+            <span class="text-white"><%= @course.updated_at.strftime("%d/%m/%Y") %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions Card -->
+      <div class="bg-gray-900 border border-gray-700 rounded-lg shadow-md overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-700">
+          <h2 class="text-lg font-medium text-white">Hành động</h2>
+        </div>
+        <div class="p-6 space-y-3">
+          <%= link_to "#", class: "w-full flex items-center justify-center px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md text-white transition-colors" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Thêm chương mới
+          <% end %>
+
+          <% if @course.status == 'published' %>
+          <%= link_to "/courses/#{@course.id}", target: "_blank", class: "w-full flex items-center justify-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-md text-white transition-colors" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          Xem trang công khai
+          <% end %>
+          <% end %>
+
+          <%= button_to manage_course_path(@course), method: :delete, data: { turbo_confirm: "Bạn có chắc chắn muốn xóa khóa học này không?" }, class: "w-full flex items-center justify-center px-4 py-2 bg-red-600/10 hover:bg-red-600/20 border border-red-700 rounded-md text-red-500 transition-colors" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18" />
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+          </svg>
+          Xóa khóa học
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

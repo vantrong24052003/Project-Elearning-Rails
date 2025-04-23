@@ -1,51 +1,120 @@
-<%= form_with(model: course, url: course.persisted? ? manage_course_path(course) : manage_courses_path, method: course.persisted? ? :patch : :post) do |f| %>
-  <% if course.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(course.errors.count, "error") %> prohibited this course from being saved:</h2>
-      <ul>
-        <% course.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
+<%= turbo_frame_tag "modal" do %>
+<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-controller="modal">
+  <div class="bg-gray-900 border border-gray-700 rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden" data-modal-target="container">
+    <!-- Header -->
+    <div class="p-4 sm:p-6 border-b border-gray-700 flex items-center justify-between">
+      <h3 class="text-xl font-semibold text-white">
+        <%= course.new_record? ? "Tạo khóa học mới" : "Chỉnh sửa khóa học" %>
+      </h3>
+      <button type="button" data-action="modal#close" class="text-gray-400 hover:text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
-  <% end %>
 
-  <div class="field">
-    <%= f.label :title %>
-    <%= f.text_field :title %>
-  </div>
+    <!-- Body -->
+    <div class="p-4 sm:p-6 overflow-y-auto" style="max-height: calc(90vh - 130px);">
+      <%= form_with model: [:manage, course], class: "space-y-6", data: { turbo: true } do |f| %>
+      <% if course.errors.any? %>
+      <div class="bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded-md mb-4">
+        <h4 class="font-medium mb-1">Không thể lưu khóa học vì các lỗi sau:</h4>
+        <ul class="list-disc pl-5 text-sm">
+          <% course.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+      <% end %>
 
-  <div class="field">
-    <%= f.label :description %>
-    <%= f.text_area :description %>
-  </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <div class="mb-4">
+            <%= f.label :title, "Tên khóa học", class: "block text-sm font-medium text-white mb-1" %>
+            <%= f.text_field :title, class: "w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" %>
+          </div>
 
-  <div class="field">
-    <%= f.label :price %>
-    <%= f.number_field :price, step: 0.01 %>
-  </div>
+          <div class="mb-4">
+            <%= f.label :price, "Giá", class: "block text-sm font-medium text-white mb-1" %>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span class="text-gray-400">₫</span>
+              </div>
+              <%= f.number_field :price, step: 1000, min: 0, class: "w-full pl-8 px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" %>
+            </div>
+          </div>
 
-  <div class="field">
-    <%= f.label :thumbnail_path %>
-    <%= f.text_field :thumbnail_path %>
-  </div>
+          <div class="mb-4">
+            <%= f.label :language, "Ngôn ngữ", class: "block text-sm font-medium text-white mb-1" %>
+            <%= f.select :language, [["Tiếng Việt", "vi"], ["Tiếng Anh", "en"]], {}, class: "w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" %>
+          </div>
 
-  <div class="field">
-    <%= f.label :language %>
-    <%= f.text_field :language %>
-  </div>
+          <div class="mb-4">
+            <%= f.label :status, "Trạng thái", class: "block text-sm font-medium text-white mb-1" %>
+            <%= f.select :status, [["Bản nháp", "draft"], ["Xuất bản", "published"]], {}, class: "w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" %>
+          </div>
+        </div>
 
-  <div class="field">
-    <%= f.label :status %>
-    <%= f.select :status, [['Published', 'published'], ['Draft', 'draft']] %>
-  </div>
 
-  <div class="field">
-    <%= f.label :user_id, "Instructor" %>
-    <%= f.collection_select :user_id, User.all, :id, :name %>
-  </div>
 
-  <div class="actions">
-    <%= f.submit %>
+
+
+
+
+
+
+
+        <div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-white mb-1">Danh mục <span class="text-xs text-gray-400">(Chọn nhiều)</span></label>
+            <div class="h-24 max-h-36 overflow-y-auto bg-gray-800 border border-gray-700 rounded-md p-3">
+              <% if defined?(categories) && categories.present? %>
+              <div class="grid grid-cols-2 gap-x-4 gap-y-2">
+                <% categories.each do |category| %>
+                <div class="flex items-center">
+                  <%= check_box_tag 'course[category_ids][]', category.id, course.categories.include?(category), id: "category_#{category.id}", class: "rounded bg-gray-900 border-gray-700 text-purple-600 focus:ring-purple-600" %>
+                  <%= label_tag "category_#{category.id}", category.name, class: "ml-2 text-sm text-white truncate" %>
+                </div>
+                <% end %>
+              </div>
+              <!-- Hidden empty checkbox to ensure empty array when nothing is checked -->
+              <%= hidden_field_tag 'course[category_ids][]', nil %>
+              <% if categories.size > 6 %>
+              <p class="mt-2 pt-2 text-xs text-gray-400 border-t border-gray-700">Kéo để xem thêm danh mục</p>
+              <% end %>
+              <% else %>
+              <p class="text-gray-400 text-sm py-2">Không có danh mục nào được tìm thấy.</p>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <%= f.label :thumbnail_path, "Thumbnail (URL)", class: "block text-sm font-medium text-white mb-1" %>
+            <%= f.text_field :thumbnail_path, class: "w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" %>
+            <p class="mt-1 text-sm text-gray-400">Nhập URL hình ảnh hoặc tải lên file ảnh</p>
+          </div>
+
+          <div class="mb-4">
+            <%= f.label :thumbnail, "Tải lên ảnh", class: "block text-sm font-medium text-white mb-1" %>
+            <%= f.file_field :thumbnail, accept: 'image/*', class: "block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" %>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <%= f.label :description, "Mô tả khóa học", class: "block text-sm font-medium text-white mb-1" %>
+        <%= f.text_area :description, rows: 4, class: "w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" %>
+      </div>
+
+      <!-- Form footer -->
+      <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-700">
+        <button type="button" data-action="modal#close" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-md transition-colors">
+          Hủy
+        </button>
+        <%= f.submit course.new_record? ? "Tạo khóa học" : "Lưu thay đổi", class: "px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors cursor-pointer" %>
+      </div>
+      <% end %>
+    </div>
   </div>
+</div>
 <% end %>

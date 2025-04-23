@@ -3,9 +3,7 @@
 module Users
   class SessionsController < Devise::SessionsController
     def create
-      Rails.logger.debug "Trying to log in with: #{params[:user][:email]}"
       self.resource = warden.authenticate(auth_options)
-      Rails.logger.debug "Authentication result: #{resource.inspect}"
 
       if resource
         set_flash_message!(:notice, :signed_in)
@@ -20,9 +18,9 @@ module Users
 
     def after_sign_in_path_for(resource)
       if resource.has_role?(:admin)
-        manage_users_path || dashboard_root_path
+        manage_users_path
       elsif resource.has_role?(:instructor)
-        dashboard_instructor_courses_path || dashboard_root_path
+        dashboard_instructor_courses_path
       else
         root_path
       end

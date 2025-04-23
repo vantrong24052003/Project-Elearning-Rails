@@ -210,8 +210,9 @@
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-[#0D0A25] to-[#1A1744] text-white" data-controller="manage--sidebar">
-  <!-- Sidebar -->
   <div data-manage--sidebar-target="sidebar" id="sidebar" class="sidebar bg-gray-900 shadow-lg">
+    <%= render 'shared/lazy_loading' %>
+
     <div class="flex items-center justify-between p-4 border-b border-gray-800 sidebar-header">
       <h2 class="text-xl font-bold text-purple-400" data-manage--sidebar-target="menuLabel">EduAdmin</h2>
       <button type="button" data-action="manage--sidebar#toggle" class="text-gray-300 hover:text-white p-2 rounded-md hover:bg-gray-800 transition-colors duration-200">

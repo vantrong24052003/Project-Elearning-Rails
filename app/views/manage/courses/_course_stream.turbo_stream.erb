@@ -1,0 +1,23 @@
+<% if defined?(course) && course.present? %>
+  <%= turbo_stream.replace dom_id(course) do %>
+    <%= render "course_item", course: course %>
+  <% end %>
+<% end %>
+
+<% if defined?(courses) && courses.present? %>
+  <% courses.each do |c| %>
+    <% if defined?(action) && action == 'delete' %>
+      <%= turbo_stream.remove dom_id(c) %>
+    <% else %>
+      <%= turbo_stream.replace dom_id(c) do %>
+        <%= render "course_item", course: c %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if defined?(message) && message.present? %>
+  <%= turbo_stream.update "flash" do %>
+    <div class="flash flash-<%= flash_type || 'notice' %>"><%= message %></div>
+  <% end %>
+<% end %>

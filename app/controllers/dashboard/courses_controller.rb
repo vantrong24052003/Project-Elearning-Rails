@@ -9,10 +9,8 @@ module Dashboard
 
       # Apply filters
       courses = if current_user.has_role?(:instructor)
-                  # For instructors, show only their created courses
                   current_user.courses
                 else
-                  # For regular users, show all available courses
                   Course.all
                 end
 
@@ -28,7 +26,6 @@ module Dashboard
       courses = courses.where('price >= ?', params[:min_price]) if params[:min_price].present?
       courses = courses.where('price <= ?', params[:max_price]) if params[:max_price].present?
 
-      # Status filter - only show published courses to students
       unless current_user.has_role?(:instructor) || current_user.has_role?(:admin)
         courses = courses.where(status: 'published')
       end
@@ -45,11 +42,19 @@ module Dashboard
                   courses.order(created_at: :desc)
                 end
 
-      @courses = courses.page(params[:page]).per(12) # Increased to 12 for 4 columns x 3 rows
+      @courses = courses.page(params[:page]).per(12)
 
       respond_to do |format|
         format.html
         format.turbo_stream
+        format.xlsx do
+          response.headers['Content-Disposition'] = "attachment; filename=courses-#{Date.today}.xlsx"
+        end
+        format.csv do
+          filename = "courses-#{Date.today}.csv"
+          response.headers['Content-Disposition'] = "attachment; filename=#{filename}"
+          response.headers['Content-Type'] = 'text/csv'
+        end
       end
     end
 

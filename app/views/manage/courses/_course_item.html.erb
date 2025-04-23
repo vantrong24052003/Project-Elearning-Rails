@@ -1,0 +1,122 @@
+<tr id="<%= dom_id(course) %>" class="course-row hover:bg-gray-50 transition-colors" data-course-id="<%= course.id %>">
+  <td class="px-6 py-4 whitespace-nowrap text-sm">
+    <div class="flex items-center">
+      <input type="checkbox" data-dashboard--course-selection-target="checkbox" data-id="<%= course.id %>" class="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 mr-3">
+      <div class="flex items-center">
+        <% if course.respond_to?(:thumbnail_path) && course.thumbnail_path.present? %>
+          <%= image_tag course.thumbnail_path, class: "h-12 w-12 rounded-lg mr-3 object-cover shadow-sm" %>
+        <% else %>
+          <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 mr-3 flex items-center justify-center shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+        <% end %>
+        <div>
+          <div class="font-medium text-gray-900">
+            <%= link_to course.title, manage_course_path(course), class: "hover:text-purple-600 transition-colors" %>
+          </div>
+          <div class="text-gray-500 text-xs flex items-center mt-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>Đã tạo: <%= l(course.created_at, format: :short) %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </td>
+
+  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+    <% if course.respond_to?(:user) && course.user.present? %>
+      <!-- User info -->
+      <div class="flex items-center">
+        <div class="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 mr-2 flex items-center justify-center text-white font-medium shadow-sm">
+          <%= course.user.name.first.upcase %>
+        </div>
+        <div>
+          <div class="font-medium text-gray-800"><%= course.user.name %></div>
+          <% if course.user.respond_to?(:email) %>
+            <div class="text-xs text-gray-500 truncate max-w-[150px]"><%= course.user.email %></div>
+          <% end %>
+        </div>
+      </div>
+    <% else %>
+      <div class="flex items-center text-gray-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+        Chưa gán
+      </div>
+    <% end %>
+  </td>
+
+  <td class="px-6 py-4 whitespace-nowrap text-sm">
+    <% if course.respond_to?(:price) %>
+      <% if course.price.nil? || course.price <= 0 %>
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          Miễn phí
+        </span>
+      <% else %>
+        <span class="font-medium text-gray-900"><%= number_to_currency(course.price, unit: "₫", precision: 0, delimiter: ".") %></span>
+      <% end %>
+    <% else %>
+      <span class="text-gray-400">Chưa đặt giá</span>
+    <% end %>
+  </td>
+
+  <td class="px-6 py-4 whitespace-nowrap text-sm">
+    <% if course.respond_to?(:status) %>
+      <% case course.status %>
+      <% when "published" %>
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span class="w-2 h-2 bg-green-600 rounded-full mr-1.5"></span>
+          Đã xuất bản
+        </span>
+      <% when "draft" %>
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          <span class="w-2 h-2 bg-gray-500 rounded-full mr-1.5"></span>
+          Bản nháp
+        </span>
+      <% else %>
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          <span class="w-2 h-2 bg-yellow-500 rounded-full mr-1.5"></span>
+          Chưa xác định
+        </span>
+      <% end %>
+    <% else %>
+      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+        <span class="w-2 h-2 bg-yellow-500 rounded-full mr-1.5"></span>
+        Chưa xác định
+      </span>
+    <% end %>
+  </td>
+
+  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+    <div class="flex justify-end space-x-2">
+      <% if course.respond_to?(:status) && course.status == "published" %>
+        <%= link_to course_path(course), target: "_blank", class: "p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors", title: "Xem khóa học" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+          </svg>
+        <% end %>
+      <% end %>
+
+      <%= link_to edit_manage_course_path(course), class: "p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-colors", title: "Chỉnh sửa" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+        </svg>
+      <% end %>
+
+      <%= link_to manage_course_path(course), data: { turbo_method: :delete, turbo_confirm: "Bạn có chắc chắn muốn xóa khóa học này không?" }, class: "p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors", title: "Xóa" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+      <% end %>
+    </div>
+  </td>
+</tr>
