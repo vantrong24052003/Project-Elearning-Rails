@@ -1,0 +1,173 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+  <!-- Registration Card -->
+  <div class="w-full max-w-md z-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg">
+    <div class="space-y-1 p-6">
+      <div class="flex items-center justify-center mb-4">
+        <svg class="h-12 w-12 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M12 14l9-5-9-5-9 5 9 5z" />
+          <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5-9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665-6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-center bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text">
+        Create your ELearn account
+      </h2>
+      <p class="text-gray-600 dark:text-gray-400 text-center">Join our community of learners today</p>
+    </div>
+
+    <%= form_with model: resource, url: registration_path(resource_name), method: :post, class: "space-y-4 p-6 pt-0" do |f| %>
+    <div class="space-y-2">
+      <%= f.label :name, "Full Name", class: "block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <%= f.text_field :name, placeholder: "Enter your full name", class: "w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500" %>
+      </div>
+      <% if resource.errors[:name].any? %>
+      <p class="text-red-500 text-sm"><%= resource.errors[:name].first %></p>
+      <% end %>
+    </div>
+
+    <div class="space-y-2">
+      <%= f.label :email, "Email", class: "block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+          </svg>
+        </div>
+        <%= f.email_field :email, placeholder: "Enter your email", class: "w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500" %>
+      </div>
+      <% if resource.errors[:email].any? %>
+      <p class="text-red-500 text-sm"><%= resource.errors[:email].first %></p>
+      <% end %>
+    </div>
+
+    <div class="space-y-2">
+      <%= f.label :password, "Password", class: "block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <%= f.password_field :password, placeholder: "Create a password", class: "w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500" %>
+      </div>
+      <% if resource.errors[:password].any? %>
+      <p class="text-red-500 text-sm"><%= resource.errors[:password].first %></p>
+      <% end %>
+    </div>
+
+    <div class="space-y-2">
+      <%= f.label :password_confirmation, "Confirm Password", class: "block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password",
+                  class: "w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500",
+                  placeholder: "Confirm your password" %>
+      </div>
+      <% if resource.errors[:password_confirmation].any? %>
+      <p class="text-red-500 text-sm"><%= resource.errors[:password_confirmation].first %></p>
+      <% end %>
+    </div>
+
+    <!-- Role Selection Cards -->
+    <div class="space-y-3">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Choose account type</label>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+        <!-- Student/User Card -->
+        <div class="relative">
+          <input type="radio" name="role_type" id="role_student" value="student" class="peer sr-only" checked>
+          <label for="role_student" class="block p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 dark:hover:border-purple-500 peer-checked:border-purple-500 peer-checked:ring-2 peer-checked:ring-purple-500">
+            <div class="flex items-center">
+              <svg class="h-8 w-8 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l9-5-9-5-9 5 9 5z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l6.16-3.422a12.083 12.083 12.083 0 01.665 6.479A11.952 11.952 11.952 0 0012 20.055a11.952 11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+              </svg>
+              <div class="ml-3">
+                <h3 class="font-medium text-gray-900 dark:text-white">Student</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Take courses and learn</p>
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <!-- Instructor Card -->
+        <div class="relative">
+          <input type="radio" name="role_type" id="role_instructor" value="instructor" class="peer sr-only">
+          <label for="role_instructor" class="block p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 dark:hover:border-purple-500 peer-checked:border-purple-500 peer-checked:ring-2 peer-checked:ring-purple-500">
+            <div class="flex items-center">
+              <svg class="h-8 w-8 text-purple-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z" />
+                <path d="M3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+              </svg>
+              <div class="ml-3">
+                <h3 class="font-medium text-gray-900 dark:text-white">Instructor</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Create and teach courses</p>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Instructor info notification -->
+      <div id="instructor_info" class="hidden mt-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-md">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-purple-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-purple-700 dark:text-purple-300">Your instructor request will be reviewed by our team. You'll have student access in the meantime.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col space-y-4 mt-6">
+      <%= f.submit "Create Account", class: "w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-2 px-4 rounded-md" %>
+      <div class="text-sm text-center text-gray-600 dark:text-gray-400">
+        Already have an account?
+        <%= link_to "Sign in", new_session_path(resource_name), class: "text-purple-500 hover:text-purple-400" %>
+      </div>
+    </div>
+    <% end %>
+  </div>
+
+  <!-- Decorative elements -->
+  <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-300 dark:bg-purple-800 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+  <div class="absolute top-0 -right-4 w-72 h-72 bg-pink-300 dark:bg-pink-800 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+  <div class="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-300 dark:bg-indigo-800 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const studentRadio = document.getElementById('role_student');
+    const instructorRadio = document.getElementById('role_instructor');
+    const instructorInfo = document.getElementById('instructor_info');
+
+    function updateVisibility() {
+      if (instructorRadio.checked) {
+        instructorInfo.classList.remove('hidden');
+      } else {
+        instructorInfo.classList.add('hidden');
+      }
+    }
+
+    studentRadio.addEventListener('change', updateVisibility);
+    instructorRadio.addEventListener('change', updateVisibility);
+
+    // Initialize visibility
+    updateVisibility();
+  });
+</script>

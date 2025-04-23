@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm Your E-Learning Account</title>
+</head>
+
+<body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f5f5; color: #333333;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; margin-top: 20px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+    <!-- Header with Logo Text Instead of Image -->
+    <tr>
+      <td style="padding: 30px 0; text-align: center; background-color: #4361ee;">
+        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 1px;">ELearn</h1>
+        <p style="margin: 5px 0 0; color: #ffffff; font-size: 14px; opacity: 0.9;">Your Learning Journey Starts Here</p>
+      </td>
+    </tr>
+
+    <!-- Welcome Message -->
+    <tr>
+      <td style="padding: 40px 30px 20px 30px;">
+        <h1 style="margin: 0; color: #333333; font-size: 24px; font-weight: 600; text-align: center;">Welcome to Your Learning Journey!</h1>
+        <p style="margin-top: 20px; font-size: 16px; line-height: 1.5; color: #555555;">
+          Hello <strong><%= @email %></strong>,
+        </p>
+        <p style="font-size: 16px; line-height: 1.5; color: #555555;">
+          Thank you for joining our e-learning platform. We're excited to have you on board! Just one more step to unlock a world of knowledge and skills.
+        </p>
+      </td>
+    </tr>
+
+    <!-- Confirmation Button -->
+    <tr>
+      <td style="padding: 10px 30px 30px 30px; text-align: center;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: auto;">
+          <tr>
+            <td style="border-radius: 4px; background-color: #4361ee; text-align: center; padding: 0;">
+              <%= link_to 'Confirm My Account', confirmation_url(@resource, confirmation_token: @token), style: 'background-color: #4361ee; border: none; color: #ffffff; padding: 12px 30px; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 4px; display: inline-block;' %>
+            </td>
+          </tr>
+        </table>
+        <p style="margin-top: 20px; font-size: 14px; color: #777777;">
+          If the button doesn't work, copy and paste this link into your browser:
+        </p>
+        <p style="font-size: 12px; word-break: break-all; color: #4361ee;">
+          <%= confirmation_url(@resource, confirmation_token: @token) %>
+        </p>
+      </td>
+    </tr>
+
+    <!-- Learning Benefits Section with Text Icons -->
+    <tr>
+      <td style="padding: 0 30px 30px 30px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+          <tr>
+            <td style="padding: 20px 0; border-top: 1px solid #eeeeee; border-bottom: 1px solid #eeeeee;">
+              <h2 style="margin: 0 0 20px 0; color: #333333; font-size: 18px; font-weight: 600; text-align: center;">What's Waiting For You</h2>
+
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td width="33%" valign="top" style="padding: 10px; text-align: center;">
+                    <div style="background-color: #e6effd; color: #4361ee; width: 40px; height: 40px; line-height: 40px; border-radius: 50%; margin: 0 auto; font-size: 16px; font-weight: bold;">📚</div>
+                    <h3 style="margin: 10px 0; font-size: 16px; color: #333333;">Expert Courses</h3>
+                    <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #777777;">Access hundreds of courses taught by industry experts</p>
+                  </td>
+                  <td width="33%" valign="top" style="padding: 10px; text-align: center;">
+                    <div style="background-color: #e6effd; color: #4361ee; width: 40px; height: 40px; line-height: 40px; border-radius: 50%; margin: 0 auto; font-size: 16px; font-weight: bold;">👥</div>
+                    <h3 style="margin: 10px 0; font-size: 16px; color: #333333;">Community</h3>
+                    <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #777777;">Join discussions with fellow learners worldwide</p>
+                  </td>
+                  <td width="33%" valign="top" style="padding: 10px; text-align: center;">
+                    <div style="background-color: #e6effd; color: #4361ee; width: 40px; height: 40px; line-height: 40px; border-radius: 50%; margin: 0 auto; font-size: 16px; font-weight: bold;">🏆</div>
+                    <h3 style="margin: 10px 0; font-size: 16px; color: #333333;">Certificates</h3>
+                    <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #777777;">Earn recognized certificates to boost your career</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- Footer with Contact Info -->
+    <tr>
+      <td style="padding: 30px; background-color: #f8f9fa; text-align: center;">
+        <p style="margin: 0 0 15px 0; font-size: 14px; line-height: 1.5; color: #666666;">
+          If you have any questions, please contact our support team:
+        </p>
+        <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.5;">
+          <a href="mailto:support@elearning.com" style="color: #4361ee; text-decoration: none;">support@elearning.com</a> |
+          <a href="tel:+11234567890" style="color: #4361ee; text-decoration: none;">+1 (123) 456-7890</a>
+        </p>
+
+        <!-- Social Media Links as Text -->
+        <p style="margin: 0 0 15px 0; font-size: 14px;">
+          <a href="#" style="color: #4361ee; text-decoration: none; margin: 0 10px;">Facebook</a>
+          <a href="#" style="color: #4361ee; text-decoration: none; margin: 0 10px;">Twitter</a>
+          <a href="#" style="color: #4361ee; text-decoration: none; margin: 0 10px;">Instagram</a>
+          <a href="#" style="color: #4361ee; text-decoration: none; margin: 0 10px;">LinkedIn</a>
+        </p>
+
+        <p style="margin: 20px 0 0 0; font-size: 12px; line-height: 1.5; color: #999999;">
+          &copy; <%= Date.today.year %> E-Learning Platform. All rights reserved.<br>
+          123 Learning Street, Education City, EC 12345
+        </p>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Mobile Responsiveness -->
+  <style type="text/css">
+    @media screen and (max-width: 600px) {
+      table[class="responsive-table"] {
+        width: 100% !important;
+      }
+
+      td[class="padding"] {
+        padding: 20px 5% !important;
+      }
+
+      td[class="mobile-block"] {
+        display: block !important;
+        width: 100% !important;
+        padding: 10px 0 !important;
+      }
+    }
+  </style>
+</body>
+
+</html>
