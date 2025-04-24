@@ -10,15 +10,13 @@ module Manage
       @courses = find_courses
     end
 
-    def show
-    end
+    def show; end
 
     def new
       @course = Course.new
     end
 
-    def edit
-    end
+    def edit; end
 
     def create
       @course = current_user.courses.build(course_params)

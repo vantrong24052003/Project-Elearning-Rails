@@ -1,24 +1,24 @@
 <%= turbo_frame_tag turbo_frame_id do %>
   <div class="p-4 md:p-6" data-controller="icons-loader">
-    <div class="overflow-y-auto h-[320px] scrollbar-hide hover:scrollbar-default transition-opacity">
+    <div class="overflow-y-auto h-[320px] scrollbar-hide hover:scrollbar-default transition-opacity text-gray-800 bg-white dark:text-white dark:bg-gray-800/60 backdrop-blur-sm rounded-xl shadow-xl border border-gray-200 dark:border-purple-900/30">
       <table class="w-full">
-        <thead class="sticky top-0 bg-gray-900 z-10">
-          <tr class="border-b border-gray-800">
+        <thead class="sticky top-0 bg-gray-100 dark:bg-gray-900 z-10">
+          <tr class="border-b border-gray-300 dark:border-gray-800">
             <% if defined?(selectable) && selectable == true %>
               <th class="text-center py-3 px-2 w-10">
-                <input type="checkbox" data-data-table-target="mainCheckbox" data-action="change->data-table#toggleAll" class="rounded border-gray-600 bg-gray-800 text-purple-600 focus:ring-purple-500">
+                <input type="checkbox" data-data-table-target="mainCheckbox" data-action="change->data-table#toggleAll" class="rounded border-gray-400 dark:border-gray-600 bg-white dark:bg-gray-800 text-purple-600 focus:ring-purple-500">
               </th>
             <% end %>
 
             <% columns.each do |column| %>
               <% next if column[:key] == "actions" %> <%# Bỏ qua cột actions trong columns %>
-              <th class="py-3 px-4 text-gray-400 font-medium <%= column[:align] == 'right' ? 'text-right' : 'text-left' %>">
+              <th class="py-3 px-4 text-gray-700 dark:text-gray-400 font-medium <%= column[:align] == 'right' ? 'text-right' : 'text-left' %>">
                 <%= column[:label] %>
               </th>
             <% end %>
 
             <%# Luôn render header cho cột actions %>
-            <th class="text-right py-3 px-4 text-gray-400 font-medium">Actions</th>
+            <th class="text-right py-3 px-4 text-gray-700 dark:text-gray-400 font-medium">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -33,8 +33,8 @@
             <% end %>
           <% else %>
             <tr>
-              <td colspan="<%= columns.size + (defined?(selectable) && selectable ? 1 : 0) %>" class="py-10 text-center text-gray-400">
-                <i data-lucide="book-open" class="mx-auto h-12 w-12 text-gray-600 mb-4"></i>
+              <td colspan="<%= columns.size + (defined?(selectable) && selectable ? 1 : 0) %>" class="py-10 text-center text-gray-500 dark:text-gray-400">
+                <i data-lucide="book-open" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-4"></i>
                 <p><%= empty_message || 'Không tìm thấy dữ liệu' %></p>
                 <% if defined?(empty_guidance) && empty_guidance.present? %>
                   <p class="mt-2 text-sm"><%= empty_guidance %></p>
@@ -46,8 +46,8 @@
       </table>
     </div>
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-4 mb-2 border-t border-gray-700 pt-4">
-      <div class="text-sm text-white flex items-center">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-4 mb-2 border-t border-gray-300 dark:border-gray-700 pt-4">
+      <div class="text-sm text-gray-800 dark:text-white flex items-center">
         <span class="mr-2">Hiển thị:</span>
         <%= form_with url: url_for(request.query_parameters), method: :get, data: { turbo_frame: turbo_frame_id } do |f| %>
           <%= f.hidden_field :page, value: 1 %>
@@ -58,7 +58,7 @@
               options_for_select([10, 25, 50, 100], params[:per_page].to_i > 0 ? params[:per_page].to_i : 10),
               {},
               {
-                class: "bg-gray-800 border border-gray-700 rounded text-white px-2 py-1",
+                class: "bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-gray-800 dark:text-white px-2 py-1",
                 onchange: "this.form.requestSubmit()"
               }
           %>
@@ -68,18 +68,18 @@
       <% if defined?(selectable) && selectable == true %>
         <div data-data-table-target="bulkActionsPanel" class="hidden">
           <div class="flex items-center gap-2">
-            <span class="text-white text-sm">
+            <span class="text-gray-800 dark:text-white text-sm">
               <span data-data-table-target="selectedCount">0</span> mục đã chọn
             </span>
-            <button type="button" data-action="data-table#bulkDelete" class="flex items-center px-3 py-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition-colors">
+            <button type="button" data-action="data-table#bulkDelete" class="flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-600/20 dark:hover:bg-red-600/30 text-red-600 dark:text-red-400 rounded transition-colors">
               <i data-lucide="trash-2" class="h-4 w-4 mr-1"></i>
               Xóa
             </button>
-            <button type="button" data-action="data-table#bulkPublish" class="flex items-center px-3 py-1.5 bg-green-600/20 hover:bg-green-600/30 text-green-400 rounded transition-colors">
+            <button type="button" data-action="data-table#bulkPublish" class="flex items-center px-3 py-1.5 bg-green-100 hover:bg-green-200 dark:bg-green-600/20 dark:hover:bg-green-600/30 text-green-600 dark:text-green-400 rounded transition-colors">
               <i data-lucide="check" class="h-4 w-4 mr-1"></i>
               Xuất bản
             </button>
-            <button type="button" data-action="data-table#bulkDraft" class="flex items-center px-3 py-1.5 bg-yellow-600/20 hover:bg-yellow-600/30 text-yellow-400 rounded transition-colors">
+            <button type="button" data-action="data-table#bulkDraft" class="flex items-center px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-600/20 dark:hover:bg-yellow-600/30 text-yellow-600 dark:text-yellow-400 rounded transition-colors">
               <i data-lucide="edit" class="h-4 w-4 mr-1"></i>
               Bản nháp
             </button>
@@ -89,7 +89,7 @@
     </div>
 
     <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-2 gap-4">
-      <div class="text-sm text-gray-400">
+      <div class="text-sm text-gray-600 dark:text-gray-400">
         <% if collection.respond_to?(:total_count) && collection.total_count > 0 %>
           Hiển thị <%= collection.offset_value + 1 %>-<%= [collection.offset_value + collection.limit_value, collection.total_count].min %> trong số <%= collection.total_count %> <%= pagination_label || 'bản ghi' %>
         <% else %>
@@ -99,14 +99,14 @@
       <div class="flex items-center space-x-1">
         <div class="flex items-center gap-1">
           <% if collection.respond_to?(:current_page) && collection.current_page > 2 %>
-            <%= link_to url_for(request.params.merge(page: 1)), class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors", data: { turbo_frame: turbo_frame_id } do %>
+            <%= link_to url_for(request.params.merge(page: 1)), class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition-colors", data: { turbo_frame: turbo_frame_id } do %>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m11 17-5-5 5-5"/>
                 <path d="m18 17-5-5 5-5"/>
               </svg>
             <% end %>
           <% else %>
-            <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-900 text-gray-600 cursor-not-allowed">
+            <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m11 17-5-5 5-5"/>
                 <path d="m18 17-5-5 5-5"/>
@@ -115,13 +115,13 @@
           <% end %>
 
           <% if collection.respond_to?(:prev_page) && collection.prev_page %>
-            <%= link_to url_for(request.params.merge(page: collection.prev_page)), class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors", data: { turbo_frame: turbo_frame_id } do %>
+            <%= link_to url_for(request.params.merge(page: collection.prev_page)), class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition-colors", data: { turbo_frame: turbo_frame_id } do %>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m15 18-6-6 6-6"/>
               </svg>
             <% end %>
           <% else %>
-            <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-900 text-gray-600 cursor-not-allowed">
+            <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m15 18-6-6 6-6"/>
               </svg>
@@ -134,29 +134,29 @@
 
             <% (start_page..end_page).each do |page| %>
               <% if page == collection.current_page %>
-                <span class="flex items-center justify-center w-9 h-9 rounded-md border border-purple-700 bg-purple-700/30 text-white font-medium">
+                <span class="flex items-center justify-center w-9 h-9 rounded-md border border-purple-500 dark:border-purple-700 bg-purple-100 dark:bg-purple-700/30 text-purple-700 dark:text-white font-medium">
                   <%= page %>
                 </span>
               <% else %>
                 <%= link_to page, url_for(request.params.merge(page: page)),
-                    class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors",
+                    class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition-colors",
                     data: { turbo_frame: turbo_frame_id } %>
               <% end %>
             <% end %>
           <% else %>
-            <span class="flex items-center justify-center w-9 h-9 rounded-md border border-purple-700 bg-purple-700/30 text-white font-medium">
+            <span class="flex items-center justify-center w-9 h-9 rounded-md border border-purple-500 dark:border-purple-700 bg-purple-100 dark:bg-purple-700/30 text-purple-700 dark:text-white font-medium">
               1
             </span>
           <% end %>
 
           <% if collection.respond_to?(:next_page) && collection.next_page %>
-            <%= link_to url_for(request.params.merge(page: collection.next_page)), class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors", data: { turbo_frame: turbo_frame_id } do %>
+            <%= link_to url_for(request.params.merge(page: collection.next_page)), class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition-colors", data: { turbo_frame: turbo_frame_id } do %>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m9 18 6-6-6-6"/>
               </svg>
             <% end %>
           <% else %>
-            <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-900 text-gray-600 cursor-not-allowed">
+            <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m9 18 6-6-6-6"/>
               </svg>
@@ -164,14 +164,14 @@
           <% end %>
 
           <% if collection.respond_to?(:total_pages) && collection.respond_to?(:current_page) && collection.current_page < collection.total_pages - 1 %>
-            <%= link_to url_for(request.params.merge(page: collection.total_pages)), class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors", data: { turbo_frame: turbo_frame_id } do %>
+            <%= link_to url_for(request.params.merge(page: collection.total_pages)), class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition-colors", data: { turbo_frame: turbo_frame_id } do %>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m13 17 5-5-5-5"/>
                 <path d="m6 17 5-5-5-5"/>
               </svg>
             <% end %>
           <% else %>
-            <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-900 text-gray-600 cursor-not-allowed">
+            <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m13 17 5-5-5-5"/>
                 <path d="m6 17 5-5-5-5"/>

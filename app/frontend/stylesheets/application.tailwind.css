@@ -30,3 +30,9 @@
 .hover\:scrollbar-default:hover::-webkit-scrollbar-thumb:hover {
   background: #6b7280;
 }
+
+@layer base {
+  body {
+    @apply bg-white text-black;
+  }
+}
