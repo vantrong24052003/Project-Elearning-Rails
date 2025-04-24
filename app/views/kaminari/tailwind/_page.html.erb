@@ -1,0 +1,7 @@
+<% if page.current? %>
+  <span class="relative inline-flex items-center px-4 py-2 mx-1 border border-purple-500 text-sm font-medium rounded-md text-white bg-purple-600 cursor-default">
+    <%= page %>
+  </span>
+<% else %>
+  <%= link_to page, url, {remote: remote, rel: page.rel, class: 'relative inline-flex items-center px-4 py-2 mx-1 border border-gray-700 text-sm font-medium rounded-md text-gray-300 bg-gray-800 hover:bg-gray-700 transition-colors'} %>
+<% end %>

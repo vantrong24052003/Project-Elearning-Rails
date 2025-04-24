@@ -17,11 +17,30 @@ Rails.application.routes.draw do
     end
   end
 
+  # Phần quản lý cho admin
   namespace :manage do
+    root to: 'dashboard#index'
+
+    # Thêm resources :users
+    resources :users
+    resources :enrollments
+    resources :lessons
+    resources :videos
+    resources :reviews
+    resources :payments
+    resources :faqs
+
+    # Chỉ định nghĩa route cho courses
     resources :courses do
+      collection do
+        post :bulk_publish
+        post :bulk_draft
+        post :bulk_delete
+      end
+
       member do
-        post :publish
-        post :draft
+        put :publish
+        put :draft
       end
     end
   end

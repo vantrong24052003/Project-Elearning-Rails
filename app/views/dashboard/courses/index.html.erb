@@ -157,8 +157,28 @@
               <span class="text-gray-500 text-base md:text-lg ml-1">(<%= @courses.total_count %>)</span>
             </h2>
 
-            <div class="text-sm text-gray-500 dark:text-gray-400">
-              Showing <%= @courses.offset_value + 1 %>-<%= @courses.offset_value + @courses.count %> of <%= @courses.total_count %>
+            <div class="flex items-center space-x-2">
+              <%# Previous button %>
+              <% if @courses.current_page > 1 %>
+                <%= link_to dashboard_courses_path(request.params.merge(page: @courses.current_page - 1)),
+                    class: "flex items-center justify-center w-8 h-8 rounded border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors",
+                    data: { turbo_frame: "course-results" } do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6"/>
+                  </svg>
+                <% end %>
+              <% end %>
+
+              <%# Next button %>
+              <% if @courses.current_page < @courses.total_pages %>
+                <%= link_to dashboard_courses_path(request.params.merge(page: @courses.current_page + 1)),
+                    class: "flex items-center justify-center w-8 h-8 rounded border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors",
+                    data: { turbo_frame: "course-results" } do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
+                <% end %>
+              <% end %>
             </div>
           </div>
 
@@ -167,7 +187,12 @@
             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <div class="relative">
                 <div class="aspect-video w-full">
-                  <%= image_tag course.thumbnail_path.present? ? course.thumbnail_path : "placeholder-course.jpg", alt: course.title, class: "object-cover w-full h-full" %>
+                  <% if course.thumbnail_path.present? %>
+                    <img src="<%= course.thumbnail_path %>" alt="<%= course.title %>" class="object-cover w-full h-full"
+                         onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'; this.onerror='';">
+                  <% else %>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" alt="<%= course.title %>" class="object-cover w-full h-full">
+                  <% end %>
                 </div>
 
                 <% if current_user.has_role?(:instructor) %>
@@ -194,7 +219,7 @@
                   </div>
 
                   <div class="flex items-center gap-1 text-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-500 fill-current" viewBox="0 0 24 24">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-500 fill-current" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M12 2l2.2 6.6h7.1l-5.7 4.1 2.2 6.6-5.7-4.1-5.7 4.1 2.2-6.6-5.7-4.1h7.1z"/>
                     </svg>
                     <span class="text-yellow-500 font-medium">N/A</span>
@@ -254,13 +279,13 @@
             <% end %>
           </div>
 
-          <% if @courses.total_pages > 1 %>
-          <div class="mt-8">
-            <nav class="flex justify-center" aria-label="Pagination">
-              <%= paginate @courses, window: 2, data: { turbo_frame: "course-results" }, class: "pagination" %>
-            </nav>
-          </div>
-          <% end %>
+          <%= render partial: 'shared/pagination',
+                     locals: {
+                       collection: @courses,
+                       pagination_label: 'khóa học',
+                       turbo_frame_id: 'course-results'
+                     } %>
+
         </section>
         <% else %>
         <section class="mt-8 p-8 text-center bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -375,7 +400,7 @@
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Average Rating</h3>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 01-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
             </svg>
           </div>
           <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">

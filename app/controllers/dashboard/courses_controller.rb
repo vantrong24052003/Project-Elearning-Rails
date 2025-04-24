@@ -37,7 +37,7 @@ module Dashboard
                   courses.order(created_at: :desc)
                 end
 
-      @courses = courses.page(params[:page]).per(12)
+      @courses = courses.page(params[:page]).per(10)
 
       respond_to do |format|
         format.html

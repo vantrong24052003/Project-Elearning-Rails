@@ -1,0 +1,171 @@
+<div class="min-h-screen bg-gradient-to-br from-[#0D0A25] to-[#1A1744] text-white p-4 md:p-8">
+  <div class="max-w-7xl mx-auto py-6">
+    <div class="mb-8">
+      <div class="flex justify-between items-center">
+        <h1 class="text-2xl md:text-3xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-300">
+          <%= @course.title %>
+        </h1>
+        <%= link_to manage_courses_path,
+            turbo: false,
+            class: "text-gray-300 hover:text-white flex items-center transition-all duration-300 hover:translate-x-[-4px]" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 19-7-7 7-7"/>
+            <path d="M5 12h14"/>
+          </svg>
+          <span class="hidden sm:inline">Back to Courses</span>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2">
+        <div class="bg-gray-800/60 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden border border-purple-900/30 transition-transform hover:shadow-purple-900/20 hover:shadow-2xl">
+          <div class="h-72 overflow-hidden relative group">
+            <img
+              src="<%= @course.thumbnail_path.presence || 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg' %>"
+              alt="<%= @course.title %>"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg';"
+            >
+            <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          </div>
+
+          <div class="p-6 md:p-8">
+            <div class="flex flex-wrap items-center gap-3 mb-6">
+              <span class="<%= @course.status == 'published' ? 'bg-green-900/40 text-green-400 border-green-500/30' : 'bg-yellow-900/40 text-yellow-400 border-yellow-500/30' %> px-3 py-1.5 rounded-full text-xs font-medium inline-flex items-center border backdrop-blur-sm">
+                <% if @course.status == 'published' %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  Published
+                <% else %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v10M12 16h.01" />
+                  </svg>
+                  Draft
+                <% end %>
+              </span>
+
+              <span class="bg-gray-700/60 text-gray-300 border border-gray-600/30 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm">
+                <%= @course.language&.capitalize %>
+              </span>
+            </div>
+
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+              <span class="inline-block w-1 h-6 bg-purple-500 mr-3 rounded"></span>
+              Description
+            </h2>
+            <p class="text-gray-300 mb-8 leading-relaxed"><%= @course.description %></p>
+
+            <% if @course.categories.any? %>
+              <h3 class="text-md font-bold text-white mb-3 flex items-center">
+                <span class="inline-block w-1 h-5 bg-purple-500 mr-3 rounded"></span>
+                Categories
+              </h3>
+              <div class="flex flex-wrap gap-2 mb-6">
+                <% @course.categories.each do |category| %>
+                  <span class="bg-purple-900/40 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 hover:bg-purple-800/50 cursor-default">
+                    <%= category.name %>
+                  </span>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="bg-gray-800/60 backdrop-blur-sm rounded-xl shadow-xl p-6 md:p-8 border border-purple-900/30 transition-all duration-300 hover:shadow-purple-900/20 hover:shadow-2xl">
+          <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+            <span class="inline-block w-1 h-6 bg-purple-500 mr-3 rounded"></span>
+            Course Details
+          </h2>
+
+          <div class="space-y-4">
+            <div class="flex justify-between items-center pb-3 border-b border-gray-700/50">
+              <span class="text-gray-400 font-medium">Price:</span>
+              <span class="text-purple-300 font-bold text-lg"><%= number_to_currency(@course.price, unit: "₫", precision: 0, delimiter: ".") %></span>
+            </div>
+
+            <div class="flex justify-between items-center pb-3 border-b border-gray-700/50">
+              <span class="text-gray-400 font-medium">Status:</span>
+              <span class="<%= @course.status == 'published' ? 'text-green-400' : 'text-yellow-400' %> font-medium">
+                <%= @course.status.capitalize %>
+              </span>
+            </div>
+
+            <div class="flex justify-between items-center pb-3 border-b border-gray-700/50">
+              <span class="text-gray-400 font-medium">Language:</span>
+              <span class="text-white"><%= @course.language&.capitalize %></span>
+            </div>
+
+            <div class="flex justify-between items-center pb-3 border-b border-gray-700/50">
+              <span class="text-gray-400 font-medium">Instructor:</span>
+              <span class="text-white"><%= @course.user&.name || "Unknown" %></span>
+            </div>
+
+            <div class="flex justify-between items-center pb-3 border-b border-gray-700/50">
+              <span class="text-gray-400 font-medium">Created:</span>
+              <span class="text-white"><%= @course.created_at.strftime("%d/%m/%Y") %></span>
+            </div>
+
+            <div class="flex justify-between items-center pb-3 border-b border-gray-700/50">
+              <span class="text-gray-400 font-medium">Last updated:</span>
+              <span class="text-white"><%= @course.updated_at.strftime("%d/%m/%Y") %></span>
+            </div>
+          </div>
+
+          <div class="mt-8 grid grid-cols-2 gap-3">
+            <%= link_to edit_manage_course_path(@course),
+                data: { turbo: false },
+                class: "bg-blue-600 hover:bg-blue-700 text-white text-center font-medium py-2.5 px-4 rounded-lg transition-colors shadow-lg shadow-blue-900/30 hover:shadow-blue-900/50 flex items-center justify-center" do %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                <path d="m15 5 4 4" />
+              </svg>
+              Edit Course
+            <% end %>
+
+            <% if @course.status == 'draft' %>
+              <%= button_to publish_manage_course_path(@course),
+                  method: :put,
+                  form: { data: { turbo: false } },
+                  class: "w-full bg-green-600 hover:bg-green-700 text-white text-center font-medium py-2.5 px-4 rounded-lg transition-colors shadow-lg shadow-blue-900/30 hover:shadow-blue-900/50 flex items-center justify-center" do %>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 12l2 2 4-4" />
+                  <path d="M12 3a9 9 0 1 0 9 9" />
+                </svg>
+                Publish
+              <% end %>
+            <% else %>
+              <%= button_to draft_manage_course_path(@course),
+                  method: :put,
+                  form: { data: { turbo: false } },
+                  class: "w-full bg-yellow-600 hover:bg-yellow-700 text-white text-center font-medium py-2.5 px-4 rounded-lg transition-colors shadow-lg shadow-blue-900/30 hover:shadow-blue-900/50 flex items-center justify-center" do %>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2v10M12 16h.01" />
+                </svg>
+                Set to Draft
+              <% end %>
+            <% end %>
+
+            <%= button_to manage_course_path(@course),
+                method: :delete,
+                form: { data: { turbo: false } },
+                data: { turbo_confirm: "Bạn có chắc chắn muốn xóa khóa học này?" },
+                class: " col-span-2 w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors shadow-lg shadow-red-900/30 hover:shadow-red-900/50 mt-2 flex items-center justify-center" do %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18" />
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                <line x1="10" x2="10" y1="11" y2="17" />
+                <line x1="14" x2="14" y1="11" y2="17" />
+              </svg>
+              Delete Course
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -81,3 +81,4 @@ gem 'devise'
 gem 'rolify'
 
 gem 'kaminari'
+gem 'pry'

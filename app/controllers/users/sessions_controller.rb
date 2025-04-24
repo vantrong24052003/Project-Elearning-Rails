@@ -18,7 +18,7 @@ module Users
 
     def after_sign_in_path_for(resource)
       if resource.has_role?(:admin)
-        manage_users_path
+        manage_courses_path
       elsif resource.has_role?(:instructor)
         dashboard_instructor_courses_path
       else

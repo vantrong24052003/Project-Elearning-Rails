@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.hover\:scrollbar-default:hover {
+  scrollbar-width: auto;
+  -ms-overflow-style: auto;
+}
+.hover\:scrollbar-default:hover::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+  height: 6px;
+}
+.hover\:scrollbar-default:hover::-webkit-scrollbar-track {
+  background: #1f2937;
+  border-radius: 10px;
+}
+.hover\:scrollbar-default:hover::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 10px;
+}
+.hover\:scrollbar-default:hover::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}

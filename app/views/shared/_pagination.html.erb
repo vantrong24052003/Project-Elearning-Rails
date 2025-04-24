@@ -1,0 +1,105 @@
+<%# Pagination info and buttons %>
+<div class="flex flex-col items-center space-y-4 mt-8">
+  <%# Pagination info %>
+  <div class="text-sm text-gray-400">
+    <% if collection.total_count > 0 %>
+      Hiển thị <%= collection.offset_value + 1 %>-<%= [collection.offset_value + collection.limit_value, collection.total_count].min %>
+      trong số <%= collection.total_count %> <%= pagination_label || 'bản ghi' %>
+    <% else %>
+      0 <%= pagination_label || 'bản ghi' %>
+    <% end %>
+  </div>
+
+  <%# Pagination buttons %>
+  <div class="flex items-center gap-1">
+    <%# First page button %>
+    <% if collection.current_page > 2 %>
+      <%= link_to url_for(request.params.merge(page: 1)),
+          class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors",
+          data: { turbo_frame: turbo_frame_id } do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m11 17-5-5 5-5"/>
+          <path d="m18 17-5-5 5-5"/>
+        </svg>
+      <% end %>
+    <% else %>
+      <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-900 text-gray-600 cursor-not-allowed">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m11 17-5-5 5-5"/>
+          <path d="m18 17-5-5 5-5"/>
+        </svg>
+      </span>
+    <% end %>
+
+    <%# Previous page button %>
+    <% if collection.prev_page %>
+      <%= link_to url_for(request.params.merge(page: collection.prev_page)),
+          class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors",
+          data: { turbo_frame: turbo_frame_id } do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+      <% end %>
+    <% else %>
+      <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-900 text-gray-600 cursor-not-allowed">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+      </span>
+    <% end %>
+
+    <%# Page numbers %>
+    <% if collection.total_pages > 0 %>
+      <% start_page = [1, collection.current_page - 2].max %>
+      <% end_page = [collection.total_pages, collection.current_page + 2].min %>
+
+      <% (start_page..end_page).each do |page| %>
+        <% if page == collection.current_page %>
+          <span class="flex items-center justify-center w-9 h-9 rounded-md border border-purple-700 bg-purple-700/30 text-white font-medium">
+            <%= page %>
+          </span>
+        <% else %>
+          <%= link_to page, url_for(request.params.merge(page: page)),
+              class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors",
+              data: { turbo_frame: turbo_frame_id } %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%# Next page button %>
+    <% if collection.next_page %>
+      <%= link_to url_for(request.params.merge(page: collection.next_page)),
+          class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors",
+          data: { turbo_frame: turbo_frame_id } do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      <% end %>
+    <% else %>
+      <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-900 text-gray-600 cursor-not-allowed">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </span>
+    <% end %>
+
+    <%# Last page button %>
+    <% if collection.current_page < collection.total_pages - 1 %>
+      <%= link_to url_for(request.params.merge(page: collection.total_pages)),
+          class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors",
+          data: { turbo_frame: turbo_frame_id } do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m13 17 5-5-5-5"/>
+          <path d="m6 17 5-5-5-5"/>
+        </svg>
+      <% end %>
+    <% else %>
+      <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-900 text-gray-600 cursor-not-allowed">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m13 17 5-5-5-5"/>
+          <path d="m6 17 5-5-5-5"/>
+        </svg>
+      </span>
+    <% end %>
+  </div>
+</div>
