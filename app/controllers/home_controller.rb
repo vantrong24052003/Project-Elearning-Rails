@@ -2,7 +2,7 @@
 
 class HomeController < ApplicationController
   def index
-    @featured_courses = Course.where(status: 'published')
+    @featured_courses = Course.where(status: :published)
                               .includes(:user)
                               .order(created_at: :desc)
                               .limit(4)

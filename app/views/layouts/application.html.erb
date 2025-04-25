@@ -15,20 +15,30 @@
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icon.png">
 
+  <script>
+    (function() {
+      var themeMode = localStorage.getItem('theme-mode');
+      if (themeMode === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
   <%= stylesheet_link_tag :app %>
   <%= vite_stylesheet_tag "application.css" %>
   <%= vite_client_tag %>
   <%= vite_javascript_tag 'application' %>
 </head>
 
-<body class="min-h-screen bg-gray-50 dark:bg-gray-900 dark:text-white">
+<body class="min-h-screen text-gray-200 dark:bg-gray-900 dark:text-white">
   <%= render 'shared/header' %>
   <%= render 'shared/audio_player' %>
   <% auth_pages = controller_name.start_with?('sessions', 'registrations', 'passwords', 'confirmations', 'unlocks') %>
   <% render_layout_elements = !auth_pages %>
   <% if render_layout_elements %>
   <main class="pt-24 pb-12 md:pt-28">
-    <%= render 'shared/lazy_loading' %>
     <%= yield %>
   </main>
   <% else %>

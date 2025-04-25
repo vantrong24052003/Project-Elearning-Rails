@@ -1,10 +1,9 @@
-# frozen_string_literal: true
-
 module ApplicationHelper
   def asset_exists?(path)
-    # For Propshaft
-    Rails.application.assets.load_path.find(path).present?
-  rescue StandardError
-    false
+    begin
+      Rails.application.assets_manifest.assets[path].present?
+    rescue
+      false
+    end
   end
 end

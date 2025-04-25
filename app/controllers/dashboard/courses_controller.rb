@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-module Dashboard
-  class CoursesController < Dashboard::DashboardController
+  class Dashboard::CoursesController < Dashboard::DashboardController
     before_action :set_course, only: %i[show edit update destroy publish unpublish]
 
     def index
@@ -22,7 +21,7 @@ module Dashboard
       courses = courses.where('price >= ?', params[:min_price]) if params[:min_price].present?
       courses = courses.where('price <= ?', params[:max_price]) if params[:max_price].present?
 
-      unless current_user.has_role?(:instructor) || current_user.has_role?(:admin)
+      if !(current_user.has_role?(:instructor) || current_user.has_role?(:admin))
         courses = courses.where(status: 'published')
       end
 
@@ -109,4 +108,3 @@ module Dashboard
       )
     end
   end
-end

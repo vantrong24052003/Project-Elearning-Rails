@@ -12,9 +12,8 @@
             <div class="dark:bg-gray-800 dark:border-gray-700 overflow-hidden transform hover:scale-105 transition-transform duration-300 flex flex-col h-full rounded-lg shadow-md">
               <div class="p-0">
                 <div class="relative">
-                  <% if course.thumbnail_path.present? %>
-                    <img src="<%= course.thumbnail_path %>" alt="<%= course.title %>" class="w-full h-48 object-cover"
-                         onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'; this.onerror='';">
+                  <% if course.thumbnail_path.present? && (course.thumbnail_path.start_with?('http://') || course.thumbnail_path.start_with?('https://')) %>
+                    <%= image_tag course.thumbnail_path, alt: course.title, class: "w-full h-48 object-cover" %>
                   <% else %>
                     <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" alt="<%= course.title %>" class="w-full h-48 object-cover">
                   <% end %>
