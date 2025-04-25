@@ -13,12 +13,6 @@
     <<: *default
     database: elearning_development_new
 
-
-  test:
-    <<: *default
-    database: elearning_test_new
-
-
   production:
     primary: &primary_production
       <<: *default
