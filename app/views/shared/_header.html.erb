@@ -1,0 +1,220 @@
+<div class="fixed top-0 left-0 right-0 z-50 dark:shadow-xl" data-controller="shared--header">
+  <header class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md ease-in-out" id="main-header">
+    <div class="container mx-auto px-4 py-2 sm:py-4">
+      <div class="flex items-center justify-between">
+        <%= link_to root_path, class: "flex items-center space-x-2" do %>
+        <svg class="h-6 w-6 sm:h-8 sm:w-8 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M12 14l9-5-9-5-9 5 9 5z" />
+          <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665-6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+        </svg>
+        <span class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 text-transparent bg-clip-text">ELearn</span>
+        <% end %>
+
+        <% if current_page?(root_path) %>
+        <nav class="hidden lg:flex space-x-2 xl:space-x-6">
+          <% nav_items = [
+                { name: 'Home', href: '#home' },
+                { name: 'Features', href: '#features' },
+                { name: 'Courses', href: '#courses' },
+                { name: 'Testimonials', href: '#testimonials' },
+                { name: 'Pricing', href: '#pricing' },
+                { name: 'FAQ', href: '#faq' }
+              ] %>
+
+          <% nav_items.each do |item| %>
+          <button class="text-sm xl:text-base text-gray-900 dark:text-white hover:text-purple-400 transition-colors px-2 sm:px-4 py-1 sm:py-2 rounded-md" data-action="shared--header#scrollToSection" data-shared--header-section-param="<%= item[:name].downcase %>">
+            <%= item[:name] %>
+          </button>
+          <% end %>
+        </nav>
+        <% end %>
+
+        <div class="flex items-center">
+          <button type="button" id="theme-toggle" class="hidden md:block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-1.5 sm:p-2.5 mr-1 sm:mr-2" data-action="shared--header#toggleTheme" aria-label="Toggle dark mode">
+            <!-- Sun icon -->
+            <svg id="theme-toggle-light-icon" class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+            </svg>
+            <!-- Moon icon -->
+            <svg id="theme-toggle-dark-icon" class="hidden w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+            </svg>
+          </button>
+
+          <div class="hidden md:flex sm:items-center">
+            <% if user_signed_in? %>
+              <div class="relative" data-controller="shared--dropdown">
+                <button data-action="click->shared--dropdown#toggle click@window->shared--dropdown#hide" class="flex items-center space-x-2 focus:outline-none">
+                  <div class="relative w-8 h-8 flex-shrink-0">
+                    <% if current_user.avatar.present? %>
+                      <%= image_tag current_user.avatar, class: "rounded-full h-8 w-8 object-cover" %>
+                    <% else %>
+                      <div class="rounded-full h-8 w-8 bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                        <span class="text-sm font-medium text-purple-700 dark:text-purple-300">
+                          <%= current_user.name&.first&.upcase || current_user.email.first.upcase %>
+                        </span>
+                      </div>
+                    <% end %>
+                  </div>
+                  <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                <div data-shared--dropdown-target="menu" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 hidden">
+                  <%= link_to dashboard_path, class: "block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm" do %>
+                    <div class="flex items-center space-x-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span>Profile</span>
+                    </div>
+                  <% end %>
+                  <%= link_to dashboard_path, class: "block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm" do %>
+                    <div class="flex items-center space-x-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span>Settings</span>
+                    </div>
+                  <% end %>
+                  <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                  <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm" do %>
+                    <div class="flex items-center space-x-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      <span>Logout</span>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% else %>
+              <%= link_to new_user_session_path, class: "text-sm md:text-base text-gray-900 dark:text-white hover:text-purple-400 transition-colors px-3 sm:px-4 py-1 sm:py-2 rounded-md ml-1" do %>
+              Login
+              <% end %>
+              <%= link_to new_user_registration_path, class: "text-sm md:text-base bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-md ml-1" do %>
+              Sign Up
+              <% end %>
+            <% end %>
+          </div>
+
+          <button class="text-gray-900 dark:text-white md:hidden hover:text-purple-400 transition-colors p-1.5 sm:p-2 rounded-md ml-1" data-action="shared--header#toggleMobileMenu" aria-label="Toggle mobile menu" aria-expanded="false" aria-controls="mobile-menu">
+            <svg class="h-5 w-5 sm:h-6 sm:w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-4 ease-in-out hidden" id="mobile-menu" data-shared--header-target="mobileMenu">
+        <% if current_page?(root_path) %>
+          <div class="py-2 border-b border-gray-200 dark:border-gray-700">
+            <% nav_items.each do |item| %>
+              <button class="w-full text-left text-gray-900 dark:text-white hover:text-purple-400 transition-colors py-2 px-4 rounded-md text-sm sm:text-base" data-action="shared--header#scrollToSectionAndCloseMobileMenu" data-shared--header-section-param="<%= item[:name].downcase %>">
+                <%= item[:name] %>
+              </button>
+            <% end %>
+          </div>
+        <% end %>
+
+        <div class="py-3 space-y-2">
+          <div class="flex items-center justify-between px-4 py-2">
+            <span class="text-gray-900 dark:text-white text-sm">Dark Mode</span>
+            <button type="button" id="mobile-theme-toggle" class="flex items-center p-1 text-sm text-gray-600 dark:text-gray-400 rounded-full bg-gray-100 dark:bg-gray-700" data-action="shared--header#toggleTheme">
+              <span id="mobile-toggle-light" class="h-6 w-6 flex items-center justify-center rounded-full transition-all bg-white dark:bg-transparent">
+                <svg class="w-4 h-4 text-yellow-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
+                </svg>
+              </span>
+              <span id="mobile-toggle-dark" class="h-6 w-6 flex items-center justify-center rounded-full transition-all dark:bg-gray-800 bg-transparent">
+                <svg class="w-4 h-4 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                </svg>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="border-t border-gray-200 dark:border-gray-700 py-3">
+          <% if user_signed_in? %>
+            <div class="px-4 py-2 flex items-center space-x-3">
+              <div class="relative w-8 h-8 flex-shrink-0">
+                <% if current_user.avatar.present? %>
+                  <%= image_tag current_user.avatar, class: "rounded-full h-8 w-8 object-cover" %>
+                <% else %>
+                  <div class="rounded-full h-8 w-8 bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                    <span class="text-sm font-medium text-purple-700 dark:text-purple-300">
+                      <%= current_user.name&.first&.upcase || current_user.email.first.upcase %>
+                    </span>
+                  </div>
+                <% end %>
+              </div>
+              <div class="text-gray-900 dark:text-white text-sm font-medium truncate">
+                <%= current_user.name || current_user.email %>
+              </div>
+            </div>
+
+            <%= link_to dashboard_path, class: "block w-full text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors py-2 px-4 text-sm" do %>
+              <div class="flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Profile</span>
+              </div>
+            <% end %>
+
+            <%= link_to dashboard_courses_path, class: "block w-full text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors py-2 px-4 text-sm" do %>
+              <div class="flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span>My Courses</span>
+              </div>
+            <% end %>
+
+            <%= link_to dashboard_path, class: "block w-full text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors py-2 px-4 text-sm" do %>
+              <div class="flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Settings</span>
+              </div>
+            <% end %>
+
+            <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "block w-full text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors py-2 px-4 text-sm" do %>
+              <div class="flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Sign out</span>
+              </div>
+            <% end %>
+          <% else %>
+            <div class="px-4 py-2 space-y-2">
+              <%= link_to new_user_session_path, class: "block w-full px-4 py-2 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-md text-sm text-center border border-gray-300 dark:border-gray-600" do %>
+                <div class="flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                  Log in
+                </div>
+              <% end %>
+
+              <%= link_to new_user_registration_path, class: "block w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-md text-sm text-center mt-2" do %>
+                <div class="flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                  Sign up
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </header>
+</div>

@@ -1,0 +1,59 @@
+<section class="py-24 bg-gray-50 dark:bg-gray-900">
+  <div class="container mx-auto px-4">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Choose Your Learning Path</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <% plans = [
+        {
+          name: 'Basic',
+          price: '$9.99',
+          features: ['Access to 100+ courses', 'Basic quizzes and assignments', 'Email support'],
+          cta: 'Get Started'
+        },
+        {
+          name: 'Pro',
+          price: '$19.99',
+          features: ['Access to all courses', 'Advanced projects', 'Priority email support', 'Career services'],
+          cta: 'Upgrade to Pro',
+          popular: true
+        },
+        {
+          name: 'Enterprise',
+          price: 'Custom',
+          features: ['Custom course creation', 'Dedicated account manager', 'API access', 'Advanced analytics'],
+          cta: 'Contact Sales'
+        }
+      ] %>
+
+      <% plans.each do |plan| %>
+      <div class="flex flex-col rounded-lg shadow-md overflow-hidden <%= plan[:popular] ? 'border-2 border-purple-500 dark:border-purple-400 shadow-lg scale-105' : 'border border-gray-200 dark:border-gray-700' %>">
+        <div class="p-6 relative">
+          <h3 class="text-2xl font-bold text-center"><%= plan[:name] %></h3>
+          <% if plan[:popular] %>
+          <span class="bg-purple-500 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            Most Popular
+          </span>
+          <% end %>
+        </div>
+        <div class="p-6 flex-grow">
+          <p class="text-4xl font-bold text-center mb-6"><%= plan[:price] %></p>
+          <ul class="space-y-3">
+            <% plan[:features].each do |feature| %>
+            <li class="flex items-center">
+              <svg class="h-5 w-5 text-green-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span><%= feature %></span>
+            </li>
+            <% end %>
+          </ul>
+        </div>
+        <div class="p-6">
+          <button class="w-full py-2 px-4 rounded-md <%= plan[:popular] ? 'bg-purple-500 hover:bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600' %>">
+            <%= plan[:cta] %>
+          </button>
+        </div>
+      </div>
+      <% end %>
+    </div>
+  </div>
+</section>
