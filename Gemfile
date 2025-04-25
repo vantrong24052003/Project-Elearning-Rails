@@ -67,4 +67,5 @@ gem 'vite_rails'
 
 gem 'cancancan'
 gem 'devise'
+gem 'enumerize'
 gem 'rolify'

@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-# Xóa dữ liệu
-Upload.destroy_all
-Video.destroy_all
+# Xóa dữ liệu - Reorder to respect foreign key constraints
 Progress.destroy_all
+Video.destroy_all # This needs to come before Upload.destroy_all
+Upload.destroy_all
 QuizQuestion.destroy_all
 Question.destroy_all
 Quiz.destroy_all
@@ -17,31 +17,48 @@ User.destroy_all
 
 # Reset lại primary key
 %w[
-  uploads videos progresses quiz_questions questions quizzes
+  videos uploads progresses quiz_questions questions quizzes
   lessons chapters course_categories categories courses roles users
 ].each do |table_name|
   ActiveRecord::Base.connection.reset_pk_sequence!(table_name)
 end
 
 # Tạo người dùng
-admin = User.create_with_confirmation(
-  email: 'admin@gmail.com', password: 'Admin123@',
-  name: 'Admin User', phone: '1234567890', address: 'Admin Address',
-  bio: 'This is an admin user', date_of_birth: '1985-05-10'
-)
+admin = begin
+  user = User.new(
+    email: 'admin@gmail.com', password: 'Admin123@',
+    name: 'Admin User', phone: '1234567890', address: 'Admin Address',
+    bio: 'This is an admin user', date_of_birth: '1985-05-10'
+  )
+  user.skip_confirmation!
+  user.confirm
+  user.save
+  user
+end
 
-instructor = User.create_with_confirmation(
-  email: 'instructor@gmail.com', password: 'Admin123@',
-  name: 'Instructor User', phone: '0987654321', address: 'Instructor Address',
-  bio: 'This is an instructor user', date_of_birth: '1990-07-15'
-)
+instructor = begin
+  user = User.new(
+    email: 'instructor@gmail.com', password: 'Admin123@',
+    name: 'Instructor User', phone: '0987654321', address: 'Instructor Address',
+    bio: 'This is an instructor user', date_of_birth: '1990-07-15'
+  )
+  user.skip_confirmation!
+  user.confirm
+  user.save
+  user
+end
 
-student = User.create_with_confirmation(
-  email: 'student@gmail.com', password: 'Admin123@',
-  name: 'Student User', phone: '1122334455', address: 'Student Address',
-  bio: 'This is a student user', date_of_birth: '2000-02-20'
-)
-
+student = begin
+  user = User.new(
+    email: 'student@gmail.com', password: 'Admin123@',
+    name: 'Student User', phone: '1122334455', address: 'Student Address',
+    bio: 'This is a student user', date_of_birth: '2000-02-20'
+  )
+  user.skip_confirmation!
+  user.confirm
+  user.save
+  user
+end
 puts '✅ Created users.'
 
 # Tạo role
