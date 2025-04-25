@@ -4,10 +4,9 @@ module ExceptionHandler
   extend ActiveSupport::Concern
   included do
     rescue_from ActiveRecord::RecordNotFound, with: :handle_not_found
-    rescue_from ActiveRecord::RecordInvalid, with: :handle_invalid_record
+    rescue_from ActiveRecord::RecordInvalid, with: :handle_record_invalid
     rescue_from ActiveRecord::RecordNotUnique, with: :handle_not_unique
     rescue_from CanCan::AccessDenied, with: :handle_unauthorized
-    rescue_from ActiveRecord::RecordInvalid, with: :handle_record_invalid
     rescue_from ActiveRecord::InvalidForeignKey, with: :handle_foreign_key_violation
   end
 
@@ -27,7 +26,7 @@ module ExceptionHandler
   def handle_not_found(_e)
     respond_to do |format|
       format.html { render 'errors/404', status: :not_found, layout: 'error' }
-      format.json { render json: { error: 'Resource not found' }, status: :not_found, layout: 'error' }
+      format.json { render json: { error: 'Resource not foun  d' }, status: :not_found, layout: 'error' }
     end
   end
 
@@ -46,6 +45,18 @@ module ExceptionHandler
     redirect_back fallback_location: root_path
   end
 
+  def handle_not_unique(_e)
+    respond_to do |format|
+      format.html do
+        flash[:error] = 'Duplicate data. Please check the information again.'
+        redirect_back fallback_location: root_path
+      end
+      format.json do
+        render json: { error: 'Duplicate data. Please check the information again.' }, status: :conflict
+      end
+    end
+  end
+
   def handle_foreign_key_violation(_e)
     respond_to do |format|
       format.html do
@@ -53,8 +64,8 @@ module ExceptionHandler
         redirect_back fallback_location: root_path
       end
       format.json do
-        render json: { error: 'This item cannot be deleted because it is in use elsewhere' },
-               status: :unprocessable_entity
+        render json: { error: 'This item cannot be deleted because it is in use elsewhere.' },
+               status: :conflict
       end
     end
   end
