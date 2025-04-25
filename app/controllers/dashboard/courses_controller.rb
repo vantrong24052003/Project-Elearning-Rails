@@ -22,7 +22,7 @@ module Dashboard
       courses = courses.where('price >= ?', params[:min_price]) if params[:min_price].present?
       courses = courses.where('price <= ?', params[:max_price]) if params[:max_price].present?
 
-      unless current_user.has_role?(:instructor) || current_user.has_role?(:admin)
+      if !(current_user.has_role?(:instructor) || current_user.has_role?(:admin))
         courses = courses.where(status: 'published')
       end
 
