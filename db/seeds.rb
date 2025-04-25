@@ -2,7 +2,7 @@
 
 # Xóa dữ liệu - Reorder to respect foreign key constraints
 Progress.destroy_all
-Video.destroy_all # This needs to come before Upload.destroy_all
+Video.destroy_all
 Upload.destroy_all
 QuizQuestion.destroy_all
 Question.destroy_all
