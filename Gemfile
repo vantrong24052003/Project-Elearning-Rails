@@ -72,13 +72,12 @@ group :test do
   gem 'selenium-webdriver'
 end
 
-gem 'stimulus-rails'
-gem 'turbo-rails'
-gem 'vite_rails'
-
 gem 'cancancan'
 gem 'devise'
 gem 'enumerize'
-gem 'rolify'
-
 gem 'kaminari'
+gem 'rolify'
+gem 'rubocop'
+gem 'stimulus-rails'
+gem 'turbo-rails'
+gem 'vite_rails'

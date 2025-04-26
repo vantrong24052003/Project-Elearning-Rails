@@ -10,13 +10,14 @@ Lesson.destroy_all
 Chapter.destroy_all
 CourseCategory.destroy_all
 Category.destroy_all
+Enrollment.destroy_all
 Course.destroy_all
 Role.destroy_all
 User.destroy_all
 
 %w[
   videos uploads progresses quiz_questions questions quizzes
-  lessons chapters course_categories categories courses roles users
+  lessons chapters course_categories categories enrollments courses roles users
 ].each do |table_name|
   ActiveRecord::Base.connection.reset_pk_sequence!(table_name)
 end
@@ -88,6 +89,32 @@ course2 = Course.create!(
 CourseCategory.create!(course: course1, category: category1)
 CourseCategory.create!(course: course2, category: category2)
 puts '✅ Created courses and assigned categories.'
+
+Enrollment.create!(
+  user: student,
+  course: course1,
+  status: :active,
+  enrolled_at: Time.current,
+  price_paid: 50.0
+)
+
+Enrollment.create!(
+  user: student,
+  course: course2,
+  status: :pending,
+  enrolled_at: Time.current,
+  price_paid: 30.0
+)
+
+Enrollment.create!(
+  user: instructor,
+  course: course1,
+  status: :completed,
+  enrolled_at: 1.month.ago,
+  completed_at: 1.week.ago,
+  price_paid: 50.0
+)
+puts '✅ Created enrollments.'
 
 chapter1 = Chapter.create!(title: 'Introduction to Ruby', position: 1, course: course1)
 chapter2 = Chapter.create!(title: 'Basic Design Concepts', position: 1, course: course2)

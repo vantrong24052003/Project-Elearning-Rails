@@ -1,6 +1,7 @@
-# frozen_string_literal: true
+  # frozen_string_literal: true
 
-  class Dashboard::CoursesController < Dashboard::DashboardController
+module Dashboard
+      class CoursesController < Dashboard::DashboardController
     before_action :set_course, only: %i[show edit update destroy publish unpublish]
 
     def index
@@ -21,10 +22,6 @@
       courses = courses.where('price >= ?', params[:min_price]) if params[:min_price].present?
       courses = courses.where('price <= ?', params[:max_price]) if params[:max_price].present?
 
-      if !(current_user.has_role?(:instructor) || current_user.has_role?(:admin))
-        courses = courses.where(status: 'published')
-      end
-
       courses = case params[:sort_by]
                 when 'newest'
                   courses.order(created_at: :desc)
@@ -36,7 +33,7 @@
                   courses.order(created_at: :desc)
                 end
 
-      @courses = courses.page(params[:page]).per(12)
+      @courses = courses.page(params[:page]).per(10).accessible_by(current_ability)
 
       respond_to do |format|
         format.html
@@ -86,12 +83,12 @@
     end
 
     def publish
-      @course.update(status: 'published')
+      @course.update(status: :published)
       redirect_to dashboard_course_path(@course), notice: 'Course has been published.'
     end
 
     def unpublish
-      @course.update(status: 'draft')
+      @course.update(status: :draft)
       redirect_to dashboard_course_path(@course), notice: 'Course has been unpublished.'
     end
 
@@ -107,4 +104,5 @@
         :status, category_ids: []
       )
     end
+      end
   end

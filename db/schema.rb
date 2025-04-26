@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 20_250_423_034_929) do
+ActiveRecord::Schema[8.0].define(version: 20_250_423_042_000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension 'pg_catalog.plpgsql'
 
@@ -52,6 +52,20 @@ ActiveRecord::Schema[8.0].define(version: 20_250_423_034_929) do
     t.datetime 'created_at', null: false
     t.datetime 'updated_at', null: false
     t.index ['user_id'], name: 'index_courses_on_user_id'
+  end
+
+  create_table 'enrollments', force: :cascade do |t|
+    t.bigint 'user_id', null: false
+    t.bigint 'course_id', null: false
+    t.string 'status'
+    t.datetime 'enrolled_at'
+    t.datetime 'completed_at'
+    t.decimal 'price_paid'
+    t.datetime 'created_at', null: false
+    t.datetime 'updated_at', null: false
+    t.index ['course_id'], name: 'index_enrollments_on_course_id'
+    t.index %w[user_id course_id], name: 'index_enrollments_on_user_id_and_course_id', unique: true
+    t.index ['user_id'], name: 'index_enrollments_on_user_id'
   end
 
   create_table 'lessons', force: :cascade do |t|
@@ -201,6 +215,8 @@ ActiveRecord::Schema[8.0].define(version: 20_250_423_034_929) do
   add_foreign_key 'course_categories', 'categories'
   add_foreign_key 'course_categories', 'courses'
   add_foreign_key 'courses', 'users'
+  add_foreign_key 'enrollments', 'courses'
+  add_foreign_key 'enrollments', 'users'
   add_foreign_key 'lessons', 'chapters'
   add_foreign_key 'progresses', 'courses'
   add_foreign_key 'progresses', 'lessons'

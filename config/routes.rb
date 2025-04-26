@@ -8,23 +8,77 @@ Rails.application.routes.draw do
     passwords: 'users/passwords'
   }
 
+  # Routes cho người dùng thông thường
+  resources :courses, only: %i[index show] do
+    resources :chapters, only: %i[index show] do
+      resources :lessons, only: %i[show]
+    end
+    resources :quizzes, only: %i[show] do
+      member do
+        post :attempt
+      end
+    end
+    resources :enrollments, only: %i[create]
+  end
+
+  resources :quiz_attempts, only: %i[show]
+  resources :enrollments, only: %i[index show]
+
+  # Dashboard cho giảng viên
   namespace :dashboard do
     resources :courses do
       member do
         patch :publish
         patch :unpublish
       end
+
+      resources :chapters do
+        resources :lessons do
+          resources :videos
+        end
+      end
+
+      resources :quizzes do
+        resources :questions
+      end
+
+      resources :enrollments, only: %i[index show update]
     end
+
+    resources :uploads
+    resources :quiz_attempts, only: %i[index show]
+    # Tránh trùng lặp với routes enrollments của courses
+    resources :enrollments, only: %i[index]
+
+    root to: 'courses#index'
   end
 
+  # Quản trị cho admin
   namespace :manage do
     resources :courses do
       member do
         post :publish
         post :draft
       end
+      resources :enrollments, only: %i[index]
     end
+
+    resources :chapters
+    resources :lessons
+    resources :videos
+    resources :quizzes
+    resources :questions
+    resources :quiz_attempts
+    resources :uploads
+    resources :enrollments
+    resources :users
+    resources :faqs
+    resources :payments
+    resources :reviews
+
+    root to: 'dashboard#index'
   end
 
+  # Trang chủ
   root to: 'home#index'
 end

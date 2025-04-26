@@ -471,6 +471,7 @@ DEPENDENCIES
   rails (~> 8.0.2)
   redis
   rolify
+  rubocop
   rubocop-rails-omakase
   selenium-webdriver
   sidekiq
