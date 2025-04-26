@@ -30,6 +30,10 @@ Rails.application.routes.draw do
       member do
         patch :publish
         patch :unpublish
+        post :add_to_cart
+        post :enroll
+        get :course_viewer
+        get :payment
       end
 
       resources :chapters do

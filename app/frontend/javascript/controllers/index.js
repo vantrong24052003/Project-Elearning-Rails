@@ -10,6 +10,8 @@ import bulk_action_controller from "./dashboard/bulk_action_controller";
 import price_slider_controller from "./dashboard/price_slider_controller";
 import sidebar_controller from "./manage/sidebar_controller";
 import lazy_loading_controller from "./shared/lazy_loading_controller";
+import tabs_controller from "./dashboard/tabs_controller";
+import accordion_controller from "./dashboard/accordion_controller";
 
 // home
 application.register("home--faq", faq_controller);
@@ -26,6 +28,8 @@ application.register("dashboard--course-filter", course_filter_controller);
 application.register("dashboard--course-selection", course_selection_controller);
 application.register("dashboard--bulk-action", bulk_action_controller);
 application.register("dashboard--price-slider", price_slider_controller);
+application.register("dashboard--tabs", tabs_controller);
+application.register("dashboard--accordion", accordion_controller);
 
 // manage
 application.register("manage--sidebar", sidebar_controller);
