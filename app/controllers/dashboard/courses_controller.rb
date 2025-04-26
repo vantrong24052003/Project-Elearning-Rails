@@ -21,10 +21,6 @@
       courses = courses.where('price >= ?', params[:min_price]) if params[:min_price].present?
       courses = courses.where('price <= ?', params[:max_price]) if params[:max_price].present?
 
-      if !(current_user.has_role?(:instructor) || current_user.has_role?(:admin))
-        courses = courses.where(status: 'published')
-      end
-
       courses = case params[:sort_by]
                 when 'newest'
                   courses.order(created_at: :desc)
@@ -36,7 +32,7 @@
                   courses.order(created_at: :desc)
                 end
 
-      @courses = courses.page(params[:page]).per(12)
+      @courses = courses.page(params[:page]).per(10).accessible_by(current_ability)
 
       respond_to do |format|
         format.html
