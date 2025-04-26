@@ -6,5 +6,8 @@ class Enrollment < ApplicationRecord
 
   validates :user_id, uniqueness: { scope: :course_id, message: 'already enrolled in this course' }
 
-  enumerize :status, in: %i[pending active completed cancelled], default: :pending, predicates: true, scope: true
+  enumerize :status, in: %i[pending active], default: :pending, predicates: true, scope: true
+
+  scope :active, -> { where(status: :active) }
+  scope :pending, -> { where(status: :pending) }
 end

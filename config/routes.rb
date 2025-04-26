@@ -8,7 +8,6 @@ Rails.application.routes.draw do
     passwords: 'users/passwords'
   }
 
-  # Routes cho người dùng thông thường
   resources :courses, only: %i[index show] do
     resources :chapters, only: %i[index show] do
       resources :lessons, only: %i[show]
@@ -24,7 +23,6 @@ Rails.application.routes.draw do
   resources :quiz_attempts, only: %i[show]
   resources :enrollments, only: %i[index show]
 
-  # Dashboard cho giảng viên
   namespace :dashboard do
     resources :courses do
       member do
@@ -51,13 +49,11 @@ Rails.application.routes.draw do
 
     resources :uploads
     resources :quiz_attempts, only: %i[index show]
-    # Tránh trùng lặp với routes enrollments của courses
     resources :enrollments, only: %i[index]
 
     root to: 'courses#index'
   end
 
-  # Quản trị cho admin
   namespace :manage do
     resources :courses do
       member do
@@ -83,6 +79,5 @@ Rails.application.routes.draw do
     root to: 'dashboard#index'
   end
 
-  # Trang chủ
   root to: 'home#index'
 end

@@ -19,6 +19,12 @@ class Ability
     can :read, Lesson, chapter: { course: { enrollments: { user_id: user.id } } }
     can :read, Video, lesson: { chapter: { course: { enrollments: { user_id: user.id } } } }
 
+    can :course_viewer, Course do |course|
+      course.user_id == user.id ||
+        user.has_role?(:admin) ||
+        course.enrollments.active.exists?(user_id: user.id) # Học viên đã mua khóa học
+    end
+
     can :read, Quiz, course: { enrollments: { user_id: user.id } }
     can :attempt, Quiz, course: { enrollments: { user_id: user.id } }
     can :create, QuizAttempt, user_id: user.id
@@ -45,7 +51,6 @@ class Ability
 
       can :read, QuizAttempt, quiz: { course: { user_id: user.id } }
 
-      # Enrollment
       can :read, Enrollment, course: { user_id: user.id }
       can :update, Enrollment, course: { user_id: user.id }
     end

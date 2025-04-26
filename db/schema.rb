@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_26_094010) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_26_175210) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -199,6 +199,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_26_094010) do
     t.index ["user_id"], name: "index_users_roles_on_user_id"
   end
 
+  create_table "video_progresses", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "video_id", null: false
+    t.boolean "watched", default: false
+    t.datetime "watched_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "video_id"], name: "index_video_progresses_on_user_id_and_video_id", unique: true
+    t.index ["user_id"], name: "index_video_progresses_on_user_id"
+    t.index ["video_id"], name: "index_video_progresses_on_video_id"
+  end
+
   create_table "videos", force: :cascade do |t|
     t.string "title"
     t.date "is_locked"
@@ -206,6 +218,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_26_094010) do
     t.bigint "upload_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "thumbnail"
+    t.integer "position"
     t.index ["lesson_id"], name: "index_videos_on_lesson_id"
     t.index ["upload_id"], name: "index_videos_on_upload_id"
   end
@@ -228,6 +242,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_26_094010) do
   add_foreign_key "quiz_questions", "quizzes"
   add_foreign_key "quizzes", "courses"
   add_foreign_key "uploads", "users"
+  add_foreign_key "video_progresses", "users"
+  add_foreign_key "video_progresses", "videos"
   add_foreign_key "videos", "lessons"
   add_foreign_key "videos", "uploads"
 end
