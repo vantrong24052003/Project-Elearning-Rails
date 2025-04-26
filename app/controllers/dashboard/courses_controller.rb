@@ -1,6 +1,7 @@
-# frozen_string_literal: true
+  # frozen_string_literal: true
 
-  class Dashboard::CoursesController < Dashboard::DashboardController
+module Dashboard
+      class CoursesController < Dashboard::DashboardController
     before_action :set_course, only: %i[show edit update destroy publish unpublish]
 
     def index
@@ -82,12 +83,12 @@
     end
 
     def publish
-      @course.update(status: 'published')
+      @course.update(status: :published)
       redirect_to dashboard_course_path(@course), notice: 'Course has been published.'
     end
 
     def unpublish
-      @course.update(status: 'draft')
+      @course.update(status: :draft)
       redirect_to dashboard_course_path(@course), notice: 'Course has been unpublished.'
     end
 
@@ -103,4 +104,5 @@
         :status, category_ids: []
       )
     end
+      end
   end
