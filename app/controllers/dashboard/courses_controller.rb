@@ -1,7 +1,6 @@
   # frozen_string_literal: true
 
-module Dashboard
-      class CoursesController < Dashboard::DashboardController
+  class Dashboard::CoursesController < Dashboard::DashboardController
     before_action :set_course, only: %i[show edit update destroy publish unpublish]
 
     def index
@@ -105,4 +104,3 @@ module Dashboard
       )
     end
       end
-  end
