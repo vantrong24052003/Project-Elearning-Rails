@@ -58,7 +58,6 @@ export default class extends Controller {
       form.appendChild(methodInput)
     }
 
-    // Add CSRF token
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
     if (csrfToken) {
       const csrfInput = document.createElement('input')
@@ -68,7 +67,6 @@ export default class extends Controller {
       form.appendChild(csrfInput)
     }
 
-    // Add course IDs
     selectedIds.forEach(id => {
       const input = document.createElement('input')
       input.type = 'hidden'
@@ -77,7 +75,6 @@ export default class extends Controller {
       form.appendChild(input)
     })
 
-    // Submit the form
     document.body.appendChild(form)
     form.requestSubmit()
   }

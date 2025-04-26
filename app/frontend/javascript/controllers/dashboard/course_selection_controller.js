@@ -39,7 +39,6 @@ export default class extends Controller {
   updateSelectedCount() {
     const selectedCount = this.checkboxTargets.filter(checkbox => checkbox.checked).length;
 
-    // Dispatch a custom event to notify other components
     const event = new CustomEvent('dashboard--course-selection:change', {
       detail: { count: selectedCount },
       bubbles: true
