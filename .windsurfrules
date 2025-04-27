@@ -193,3 +193,9 @@ Documentation content includes:
 
 ## 18. routes.
 -Before writing anything related to permissions, you should check the routes again.
+course_viewewer
+## 19. Handle only UI-related issues in stimulus, do not call APIs.
+- In the stimulus, only handle matters related to user interface (UI) functionality. Avoid making any API calls within the stimulus controller.
+
+## 20. Write views directly if they are related, do not separate files.
+- If multiple elements in a view are related, write them directly within the same file. For example, if using turbo in a viewer, write the turbo-related code directly in the viewer file rather than separating it into another file

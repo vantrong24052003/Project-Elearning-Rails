@@ -121,8 +121,13 @@
       @course = Course.find(params[:id])
 
       if request.query_parameters.empty?
-        redirect_to course_viewer_dashboard_course_path(@course, lesson_id: 1, video_id: 1)
-        return
+        first_lesson = @course.lessons.order(:position).first
+        first_video = first_lesson&.videos&.order(:position)&.first if first_lesson
+
+        if first_lesson && first_video
+          redirect_to course_viewer_dashboard_course_path(@course, lesson_id: first_lesson.id, video_id: first_video.id)
+          return
+        end
       end
 
       @current_lesson = @course.lessons.find_by(id: params[:lesson_id]) if params[:lesson_id]
