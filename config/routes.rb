@@ -15,8 +15,13 @@ Rails.application.routes.draw do
         get :payment
         post :demo_success
       end
-
       resources :quizzes
+    end
+
+    resources :profiles, only: %i[show update] do
+      member do
+        patch :change_password
+      end
     end
   end
 

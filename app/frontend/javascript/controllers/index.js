@@ -16,6 +16,7 @@ import sidebar_controller from "./manage/sidebar_controller"
 import lazy_loading_controller from "./shared/lazy_loading_controller"
 import AccordionController from "./dashboard/accordion_controller"
 import TabsController from "./dashboard/tabs_controller"
+import profile_controller from "./dashboard/profile_controller"
 
 // home
 application.register("home--faq", faq_controller)
@@ -36,6 +37,7 @@ application.register("dashboard--bulk-action", bulk_action_controller)
 application.register("dashboard--price-slider", price_slider_controller)
 application.register("dashboard--accordion", AccordionController)
 application.register("dashboard--tabs", TabsController)
+application.register("dashboard--profile", profile_controller)
 
 // manage
 application.register("manage--sidebar", sidebar_controller)

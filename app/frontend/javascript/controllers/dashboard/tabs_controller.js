@@ -1,31 +1,56 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["tab", "panel"]
+  static targets = ["trigger", "content"]
 
   connect() {
-    this.showTab(0)
-  }
-
-  switch(event) {
-    event.preventDefault()
-    const button = event.currentTarget
-    const tabIndex = this.tabTargets.indexOf(button)
-    this.showTab(tabIndex)
-  }
-
-  showTab(index) {
-    this.tabTargets.forEach((tab, i) => {
-      const panel = this.panelTargets[i]
-      if (i === index) {
-        tab.classList.add("border-b-2", "border-purple-500", "text-purple-500")
-        tab.classList.remove("text-gray-500", "hover:text-gray-700", "hover:border-gray-300")
-        panel.classList.remove("hidden")
+    if (this.triggerTargets.length > 0 && this.contentTargets.length > 0) {
+      // Kiểm tra URL hash để xác định tab nào nên được kích hoạt
+      const hash = window.location.hash.substr(1);
+      if (hash) {
+        const trigger = this.triggerTargets.find(t => t.dataset.tab === hash);
+        if (trigger) {
+          this.select({ currentTarget: trigger });
+        } else {
+          this.select({ currentTarget: this.triggerTargets[0] });
+        }
       } else {
-        tab.classList.remove("border-b-2", "border-purple-500", "text-purple-500")
-        tab.classList.add("text-gray-500", "hover:text-gray-700", "hover:border-gray-300")
-        panel.classList.add("hidden")
+        this.select({ currentTarget: this.triggerTargets[0] });
       }
-    })
+    }
+  }
+
+  select(event) {
+    const selectedTab = event.currentTarget.dataset.tab;
+    
+    // Bỏ active khỏi tất cả tabs
+    this.triggerTargets.forEach(trigger => {
+      trigger.dataset.active = "false";
+      trigger.classList.remove("dark:bg-purple-600");
+    });
+    
+    // Ẩn tất cả nội dung
+    this.contentTargets.forEach(content => {
+      content.classList.add("hidden");
+    });
+    
+    // Hiển thị tab được chọn
+    event.currentTarget.dataset.active = "true";
+    event.currentTarget.classList.add("dark:bg-purple-600");
+    
+    const selectedContent = this.contentTargets.find(
+      content => content.dataset.tab === selectedTab
+    );
+    
+    if (selectedContent) {
+      selectedContent.classList.remove("hidden");
+    }
+    
+    // Cập nhật URL hash để giữ trạng thái tab khi refresh
+    if (history.replaceState) {
+      history.replaceState(null, null, `#${selectedTab}`);
+    } else {
+      location.hash = `#${selectedTab}`;
+    }
   }
 }
