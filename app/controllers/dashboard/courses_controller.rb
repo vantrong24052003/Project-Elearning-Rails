@@ -53,26 +53,6 @@
       set_related_courses
     end
 
-    def add_to_cart
-      @course = Course.find(params[:id])
-      current_user.cart_items.create(course: @course)
-
-      respond_to do |format|
-        format.html { redirect_to dashboard_course_path(@course), notice: 'Đã thêm khóa học vào giỏ hàng' }
-        format.turbo_stream { flash.now[:notice] = 'Đã thêm khóa học vào giỏ hàng' }
-      end
-    end
-
-    def enroll
-      @course = Course.find(params[:id])
-      current_user.enrollments.create(course: @course, status: :active)
-
-      respond_to do |format|
-        format.html { redirect_to course_viewer_dashboard_course_path(@course), notice: 'Đăng ký khóa học thành công' }
-        format.turbo_stream { flash.now[:notice] = 'Đăng ký khóa học thành công' }
-      end
-    end
-
     def new
       @course = Course.new
       @categories = Category.all
@@ -149,7 +129,10 @@
       @progress.update(status: :done)
 
       respond_to do |format|
-        format.html { redirect_to course_viewer_dashboard_course_path(@course, lesson_id: @lesson.id), notice: 'Đã đánh dấu hoàn thành bài học' }
+        format.html do
+          redirect_to course_viewer_dashboard_course_path(@course, lesson_id: @lesson.id),
+                      notice: 'Đã đánh dấu hoàn thành bài học'
+        end
         format.turbo_stream
       end
     end
@@ -240,11 +223,11 @@
     end
 
     def calculate_course_progress(course)
-      return {
-        completed_lessons: 0,
-        total_lessons: 0,
-        percentage: 0
-      } unless course
+        return {
+          completed_lessons: 0,
+          total_lessons: 0,
+          percentage: 0
+        } unless course
 
       total_lessons = course.lessons.count
       completed_lessons = Progress.where(
