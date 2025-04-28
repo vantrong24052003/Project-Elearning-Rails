@@ -18,22 +18,22 @@ module ExceptionHandler
     Sentry.capture_exception(e) if Rails.env.production?
 
     respond_to do |format|
-      format.html { render 'errors/500', status: 500, layout: 'error' }
-      format.json { render json: { error: 'Internal Server Error' }, status: 500, layout: 'error' }
+      format.html { render file: Rails.public_path.join('500.html'), layout: false, status: :internal_server_error }
+      format.json { render json: { error: 'Internal Server Error' }, status: :internal_server_error }
     end
   end
 
   def handle_not_found(_e)
     respond_to do |format|
-      format.html { render 'errors/404', status: :not_found, layout: 'error' }
-      format.json { render json: { error: 'Resource not foun  d' }, status: :not_found, layout: 'error' }
+      format.html { render file: Rails.public_path.join('404.html'), layout: false, status: :not_found }
+      format.json { render json: { error: 'Resource not foun  d' }, status: :not_found }
     end
   end
 
   def handle_unauthorized(_e)
     respond_to do |format|
       format.html do
-        flash[:error] = 'Unauthorized'
+        flash[:alert] = 'Unauthorized'
         redirect_to root_path
       end
       format.json { render json: { error: 'Unauthorized' }, status: :forbidden }
@@ -48,7 +48,7 @@ module ExceptionHandler
   def handle_not_unique(_e)
     respond_to do |format|
       format.html do
-        flash[:error] = 'Duplicate data. Please check the information again.'
+        flash[:alert] = 'Duplicate data. Please check the information again.'
         redirect_back fallback_location: root_path
       end
       format.json do
@@ -60,7 +60,7 @@ module ExceptionHandler
   def handle_foreign_key_violation(_e)
     respond_to do |format|
       format.html do
-        flash[:error] = 'This item cannot be deleted because it is in use elsewhere.'
+        flash[:alert] = 'This item cannot be deleted because it is in use elsewhere.'
         redirect_back fallback_location: root_path
       end
       format.json do

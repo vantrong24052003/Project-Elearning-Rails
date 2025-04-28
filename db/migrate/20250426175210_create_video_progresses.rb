@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateVideoProgresses < ActiveRecord::Migration[8.0]
   def change
     create_table :video_progresses, id: :uuid do |t|

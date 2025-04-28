@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
   class Dashboard::CoursesController < Dashboard::DashboardController
-    before_action :set_course, only: %i[show edit update destroy publish unpublish course_viewer mark_lesson_completed]
-    before_action :authorize_course_viewer!, only: [:course_viewer]
+    before_action :set_course, only: %i[show edit update destroy]
 
     def index
       @categories = Category.all
@@ -42,7 +41,6 @@
     end
 
     def show
-      @course = Course.find(params[:id])
       @chapters = @course.chapters
       @lessons = Lesson.where(chapter_id: @chapters.pluck(:id))
       @videos = Video.includes(:upload).where(lesson_id: @lessons.pluck(:id))
@@ -51,26 +49,6 @@
       set_course_statistics
       set_user_progress if user_enrolled?
       set_related_courses
-    end
-
-    def add_to_cart
-      @course = Course.find(params[:id])
-      current_user.cart_items.create(course: @course)
-
-      respond_to do |format|
-        format.html { redirect_to dashboard_course_path(@course), notice: 'Đã thêm khóa học vào giỏ hàng' }
-        format.turbo_stream { flash.now[:notice] = 'Đã thêm khóa học vào giỏ hàng' }
-      end
-    end
-
-    def enroll
-      @course = Course.find(params[:id])
-      current_user.enrollments.create(course: @course, status: :active)
-
-      respond_to do |format|
-        format.html { redirect_to course_viewer_dashboard_course_path(@course), notice: 'Đăng ký khóa học thành công' }
-        format.turbo_stream { flash.now[:notice] = 'Đăng ký khóa học thành công' }
-      end
     end
 
     def new
@@ -107,16 +85,6 @@
       redirect_to dashboard_courses_path, notice: 'Course was successfully deleted.'
     end
 
-    def publish
-      @course.update(status: :published)
-      redirect_to dashboard_course_path(@course), notice: 'Course has been published.'
-    end
-
-    def unpublish
-      @course.update(status: :draft)
-      redirect_to dashboard_course_path(@course), notice: 'Course has been unpublished.'
-    end
-
     def course_viewer
       @course = Course.find(params[:id])
 
@@ -137,26 +105,38 @@
 
       @next_lesson = find_next_lesson if @current_lesson
 
+      return unless enrolled?
+
       @progress = current_user.progresses.find_by(
         course: @course,
         lesson: @current_lesson
-      ) if enrolled?
+      )
     end
 
-    def mark_lesson_completed
-      @course = Course.find(params[:id])
-      @lesson = @course.lessons.find(params[:lesson_id])
-
-      @progress = current_user.progresses.find_or_create_by(
-        course: @course,
-        lesson: @lesson
-      )
-      @progress.update(status: :done)
-
-      respond_to do |format|
-        format.html { redirect_to course_viewer_dashboard_course_path(@course, lesson_id: @lesson.id), notice: 'Đã đánh dấu hoàn thành bài học' }
-        format.turbo_stream
+    def payment
+      @enrollment = Enrollment.find_or_create_by(course: @course, user: current_user) do |enrollment|
+        enrollment.status = :pending
+        enrollment.amount = @course.price
+        enrollment.payment_code = SecureRandom.hex(4).upcase
       end
+      render 'dashboard/payments/show'
+    end
+
+    def demo_success
+      @enrollment = Enrollment.find_or_create_by(course: @course, user: current_user) do |enrollment|
+        enrollment.status = :pending
+        enrollment.amount = @course.price
+        enrollment.payment_code = SecureRandom.hex(4).upcase
+      end
+
+      @enrollment.update!(
+        status: :active,
+        payment_method: 'payment',
+        paid_at: Time.current,
+        enrolled_at: Time.current
+      )
+
+      redirect_to dashboard_course_path(@course), notice: 'Thanh toán thành công!'
     end
 
     private
@@ -174,7 +154,7 @@
       total_duration = 0
 
       @videos.each do |video|
-        total_duration += video.upload.duration if video.upload && video.upload.duration
+        total_duration += video.upload.duration if video.upload&.duration
       end
 
       total_duration
@@ -203,11 +183,11 @@
 
     def set_related_courses
       @related_courses = Course.published
-                              .joins(:course_categories)
-                              .where(course_categories: { category_id: @course.category_ids })
-                              .where.not(id: @course.id)
-                              .distinct
-                              .limit(3)
+                               .joins(:course_categories)
+                               .where(course_categories: { category_id: @course.category_ids })
+                               .where.not(id: @course.id)
+                               .distinct
+                               .limit(3)
     end
 
     def course_params
@@ -215,10 +195,6 @@
         :title, :description, :price, :thumbnail_path, :language,
         :status, category_ids: []
       )
-    end
-
-    def authorize_course_viewer!
-      authorize! :course_viewer, @course
     end
 
     def enrolled?
@@ -245,11 +221,13 @@
     end
 
     def calculate_course_progress(course)
-      return {
-        completed_lessons: 0,
-        total_lessons: 0,
-        percentage: 0
-      } unless course
+      unless course
+        return {
+          completed_lessons: 0,
+          total_lessons: 0,
+          percentage: 0
+        }
+      end
 
       total_lessons = course.lessons.count
       completed_lessons = Progress.where(
@@ -258,7 +236,7 @@
         status: :done
       ).count
 
-      percentage = total_lessons > 0 ? (completed_lessons.to_f / total_lessons * 100).round : 0
+      percentage = total_lessons.positive? ? (completed_lessons.to_f / total_lessons * 100).round : 0
 
       {
         completed_lessons: completed_lessons,
