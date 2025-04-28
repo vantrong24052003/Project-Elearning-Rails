@@ -10,7 +10,6 @@ toastr.options = {
   timeOut: "5000",
 };
 
-// Initialize Lucide icons when DOM is loaded and on Turbo navigation
 document.addEventListener("DOMContentLoaded", () => {
   createIcons({ icons })
 })
