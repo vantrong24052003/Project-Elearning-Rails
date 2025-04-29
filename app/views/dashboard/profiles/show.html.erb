@@ -203,7 +203,7 @@
             <p class="text-gray-400">Xem và truy cập các khóa học bạn đã thanh toán thành công.</p>
           </div>
           <div class="p-8">
-            <% paid_enrollments = @enrollments.select { |e| e.status == 'paid' || e.paid_at.present? } %>
+            <% paid_enrollments = @enrollments.select { |e| e.status == 'active'} %>
             <% if paid_enrollments.present? && paid_enrollments.any? %>
               <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <% paid_enrollments.each do |enrollment| %>

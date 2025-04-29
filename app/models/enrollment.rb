@@ -12,11 +12,4 @@ class Enrollment < ApplicationRecord
   scope :active, -> { where(status: :active) }
   scope :pending, -> { where(status: :pending) }
   scope :completed, -> { where(status: :completed) }
-
-  # Trạng thái hoàn thành
-  def completed?
-    # Logic xác định khóa học đã hoàn thành
-    # Ví dụ: progress >= 100 hoặc completed_at.present?
-    progress.to_i >= 100 || completed_at.present?
-  end
 end

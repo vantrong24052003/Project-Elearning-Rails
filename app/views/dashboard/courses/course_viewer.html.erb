@@ -21,8 +21,8 @@
         <%= turbo_frame_tag "video_player" do %>
         <div class="bg-gray-800 rounded-lg shadow-sm overflow-hidden mb-4">
           <% if @current_video %>
-            <video 
-              data-controller="dashboard--video-player" 
+            <video
+              data-controller="dashboard--video-player"
               data-dashboard--video-player-target="video"
               data-lesson-id="<%= @current_lesson.id %>"
               class="w-full aspect-video object-cover"
@@ -122,7 +122,7 @@
             <div class="hidden bg-gray-800/30" data-dashboard--accordion-target="content">
               <% chapter.lessons.each do |lesson| %>
                 <%# Mỗi lesson cũng có một controller riêng %>
-                <div class="border-t border-gray-700" 
+                <div class="border-t border-gray-700"
                      data-controller="dashboard--accordion"
                      data-lesson-id="<%= lesson.id %>">
                   <%# Lesson header %>
@@ -144,7 +144,7 @@
 
                   <div class="hidden bg-gray-800/20" data-dashboard--accordion-target="content">
                     <% lesson.videos.order(position: :asc).each do |video| %>
-                      <%= link_to course_viewer_dashboard_course_path(@course, lesson_id: lesson.id, video_id: video.id), 
+                      <%= link_to course_viewer_dashboard_course_path(@course, lesson_id: lesson.id, video_id: video.id),
                           data: {
                             turbo_frame: ["video_player","arcoding"],
                             turbo: true,
