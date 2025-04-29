@@ -8,18 +8,6 @@ Rails.application.routes.draw do
     passwords: 'users/passwords'
   }
 
-  resources :courses, only: %i[index show] do
-    resources :chapters, only: %i[index show] do
-      resources :lessons, only: %i[show]
-    end
-    resources :quizzes, only: %i[show] do
-      member do
-        post :attempt
-      end
-    end
-    resources :enrollments, only: %i[create]
-  end
-
   resources :quiz_attempts, only: %i[show]
   resources :enrollments, only: %i[index show]
 
@@ -28,8 +16,6 @@ Rails.application.routes.draw do
       member do
         patch :publish
         patch :unpublish
-        post :add_to_cart
-        post :enroll
         get :course_viewer
         get :payment
       end
@@ -47,6 +33,8 @@ Rails.application.routes.draw do
       resources :enrollments, only: %i[index show update]
     end
 
+    resources :carts, only: %i[create destroy]
+    resources :enrollments, only: %i[create]
     resources :uploads
     resources :quiz_attempts, only: %i[index show]
     resources :enrollments, only: %i[index]
