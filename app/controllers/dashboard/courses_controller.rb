@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Dashboard::CoursesController < Dashboard::DashboardController
-  before_action :set_course, only: %i[show edit update destroy payment demo_success course_viewer]
+  before_action :set_course, only: %i[show edit update destroy]
 
   def index
     @categories = Category.all
@@ -32,7 +32,7 @@ class Dashboard::CoursesController < Dashboard::DashboardController
                 courses.order(created_at: :desc)
               end
 
-    @courses = courses.page(params[:page]).per(12).accessible_by(current_ability)
+    @courses = courses.page(params[:page]).per(12)
 
     respond_to do |format|
       format.html
@@ -41,6 +41,7 @@ class Dashboard::CoursesController < Dashboard::DashboardController
   end
 
   def show
+    @course = Course.find(params[:id])
     @chapters = @course.chapters
     @lessons = Lesson.where(chapter_id: @chapters.pluck(:id))
     @videos = Video.includes(:upload).where(lesson_id: @lessons.pluck(:id))
@@ -85,68 +86,6 @@ class Dashboard::CoursesController < Dashboard::DashboardController
     redirect_to dashboard_courses_path, notice: 'Course was successfully deleted.'
   end
 
-  def course_viewer
-    @course = Course.find(params[:id])
-
-    if request.query_parameters.empty?
-      first_lesson = @course.lessons.order(:position).first
-      first_video = first_lesson&.videos&.order(:position)&.first if first_lesson
-
-      if first_lesson && first_video
-        redirect_to course_viewer_dashboard_course_path(@course, lesson_id: first_lesson.id, video_id: first_video.id)
-        return
-      end
-    end
-
-    @current_lesson = @course.lessons.find_by(id: params[:lesson_id]) if params[:lesson_id]
-    @current_video = @current_lesson&.videos&.find_by(id: params[:video_id]) if params[:video_id]
-
-    @course_progress = calculate_course_progress(@course)
-
-    @next_lesson = find_next_lesson if @current_lesson
-
-    return unless enrolled?
-
-    @progress = current_user.progresses.find_by(
-      course: @course,
-      lesson: @current_lesson
-    )
-  end
-
-  def payment
-    if @course
-      @enrollment = Enrollment.find_or_create_by(course: @course, user: current_user) do |enrollment|
-        enrollment.status = :pending
-        enrollment.amount = @course.price
-        enrollment.payment_code = SecureRandom.hex(4).upcase
-      end
-      render 'dashboard/payments/show'
-    else
-      redirect_to dashboard_courses_path, alert: 'Course not found.'
-    end
-  end
-
-  def demo_success
-    if @course
-      @enrollment = Enrollment.find_or_create_by(course: @course, user: current_user) do |enrollment|
-        enrollment.status = :pending
-        enrollment.amount = @course.price
-        enrollment.payment_code = SecureRandom.hex(4).upcase
-      end
-
-      @enrollment.update!(
-        status: :active,
-        payment_method: 'payment',
-        paid_at: Time.current,
-        enrolled_at: Time.current
-      )
-
-      redirect_to dashboard_course_path(@course), notice: 'Thanh toán thành công!'
-    else
-      redirect_to dashboard_courses_path, alert: 'Course not found.'
-    end
-  end
-
   private
 
   def set_course
@@ -162,7 +101,7 @@ class Dashboard::CoursesController < Dashboard::DashboardController
     total_duration = 0
 
     @videos.each do |video|
-      total_duration += video.upload.duration if video.upload&.duration
+      total_duration += video.upload.duration if video.upload && video.upload.duration
     end
 
     total_duration
@@ -203,53 +142,5 @@ class Dashboard::CoursesController < Dashboard::DashboardController
       :title, :description, :price, :thumbnail_path, :language,
       :status, category_ids: []
     )
-  end
-
-  def enrolled?
-    return false unless current_user && @course
-
-    current_user.enrollments.active.exists?(course: @course)
-  end
-
-  def find_next_lesson
-    current_chapter = @current_lesson.chapter
-    current_lesson_index = current_chapter.lessons.index(@current_lesson)
-
-    next_lesson = current_chapter.lessons[current_lesson_index + 1] if current_lesson_index
-
-    unless next_lesson
-      current_chapter_index = @course.chapters.index(current_chapter)
-      if current_chapter_index
-        next_chapter = @course.chapters[current_chapter_index + 1]
-        next_lesson = next_chapter&.lessons&.first
-      end
-    end
-
-    next_lesson
-  end
-
-  def calculate_course_progress(course)
-    unless course
-      return {
-        completed_lessons: 0,
-        total_lessons: 0,
-        percentage: 0
-      }
-    end
-
-    total_lessons = course.lessons.count
-    completed_lessons = Progress.where(
-      user: current_user,
-      course: course,
-      status: :done
-    ).count
-
-    percentage = total_lessons.positive? ? (completed_lessons.to_f / total_lessons * 100).round : 0
-
-    {
-      completed_lessons: completed_lessons,
-      total_lessons: total_lessons,
-      percentage: percentage
-    }
   end
 end

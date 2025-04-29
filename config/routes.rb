@@ -9,20 +9,19 @@ Rails.application.routes.draw do
   }
 
   namespace :dashboard do
-    resources :courses do
-      member do
-        get :course_viewer
-        get :payment
-        post :demo_success
-      end
+    resources :courses, only: %i[index show new edit create update destroy] do
       resources :quizzes
+      resources :payments
+      resources :viewers
     end
 
-    resources :profiles, only: %i[show update] do
-      member do
-        patch :change_password
-      end
-    end
+    resources :uploads
+    resources :quiz_attempts, only: %i[index show]
+    resources :enrollments, only: %i[index]
+
+    resources :profiles, only: %i[show update]
+
+    resources :passwords, only: %i[edit update]
   end
 
   namespace :manage do

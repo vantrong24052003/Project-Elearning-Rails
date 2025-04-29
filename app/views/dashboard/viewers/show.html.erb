@@ -1,0 +1,158 @@
+<div class="flex flex-col px-8 lg:flex-row min-h-screen bg-gray-900 text-white gap-6">
+  <div class="w-full lg:w-[75%]">
+    <div class="h-full flex flex-col bg-gray-800 rounded-lg border border-gray-700">
+      <div class="bg-gray-800 border-b border-gray-700 p-4 rounded-t-lg">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center min-w-0">
+            <%= link_to dashboard_course_path(@course), class: "text-gray-400 hover:text-gray-200 mr-3" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <% end %>
+            <div class="min-w-0">
+              <h1 class="text-lg font-bold text-white truncate"><%= @course.title %></h1>
+              <div class="text-sm text-gray-400 truncate"><%= @current_lesson&.title %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1 p-4 overflow-y-auto">
+        <%= turbo_frame_tag "video_player" do %>
+        <div class="bg-gray-800 rounded-lg shadow-sm overflow-hidden mb-4">
+          <% if @current_video %>
+          <video data-controller="dashboard--video-player" data-dashboard--video-player-target="video" data-lesson-id="<%= @current_lesson.id %>" class="w-full aspect-video object-cover" controls src="<%= @current_video.upload.cdn_url %>">
+          </video>
+          <% else %>
+          <div class="aspect-video bg-gray-700 flex items-center justify-center">
+            <p class="text-gray-400">Không có video cho bài học này</p>
+          </div>
+          <% end %>
+        </div>
+        <% end %>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-gray-800/50 border border-gray-700 rounded-lg shadow-sm p-4 h-full">
+            <h3 class="text-lg font-semibold mb-3 flex items-center text-white">
+              <svg class="w-5 h-5 text-indigo-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span class="truncate">Tài liệu khóa học</span>
+            </h3>
+            <div class="space-y-2">
+              <a href="#" class="block p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition duration-150">
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-200 truncate">Tài liệu bài giảng</span>
+                  <svg class="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <div class="bg-gray-800/50 border border-gray-700 rounded-lg shadow-sm p-4 h-full">
+            <h3 class="text-lg font-semibold mb-3 flex items-center text-white">
+              <svg class="w-5 h-5 text-indigo-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              <span class="truncate">Bài kiểm tra</span>
+            </h3>
+            <div class="space-y-2">
+              <a href="#" class="block p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition duration-150">
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-200 truncate">Làm bài kiểm tra</span>
+                  <svg class="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full lg:w-[25%] bg-gray-800 rounded-lg border border-gray-700 h-[calc(100vh-4rem)] overflow-hidden">
+    <div class="sticky top-0 bg-gray-800 border-b border-gray-700 z-10 flex items-center justify-between p-4 rounded-t-lg">
+      <h3 class="text-lg font-semibold text-white">Nội dung khóa học</h3>
+      <div class="flex items-center">
+        <div class="w-32 bg-gray-700 rounded-full h-1.5 mr-2">
+          <div class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" data-course-progress style="width: <%='80' %>%">
+          </div>
+        </div>
+        <span class="text-xs text-gray-400" data-progress-text>
+          <%= '4' %> / <%= 5 %>
+        </span>
+      </div>
+    </div>
+
+    <div class="h-[calc(100%)] overflow-y-auto custom-scrollbar">
+      <div class="p-4 space-y-3">
+        <% @course.chapters.each do |chapter| %>
+        <%# Mỗi chapter có một controller riêng %>
+        <div class="bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden" data-controller="dashboard--accordion" data-chapter-id="<%= chapter.id %>">
+          <%= turbo_frame_tag "arcoding" do %>
+          <button class="w-full p-3 flex items-center justify-between hover:bg-gray-700/50 transition group" data-action="click->dashboard--accordion#toggle">
+            <div class="flex items-center min-w-0">
+              <svg class="w-4 h-4 text-indigo-400 mr-2 flex-shrink-0 transition-transform duration-200 group-[.is-active]:-rotate-180" data-dashboard--accordion-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+              <span class="font-medium text-white truncate"><%= chapter.title %></span>
+            </div>
+            <span class="text-xs text-gray-400 ml-2 flex-shrink-0"><%= pluralize(chapter.lessons.count, 'bài học') %></span>
+          </button>
+          <% end %>
+
+          <%# Lessons list - hidden by default %>
+          <div class="hidden bg-gray-800/30" data-dashboard--accordion-target="content">
+            <% chapter.lessons.each do |lesson| %>
+            <%# Mỗi lesson cũng có một controller riêng %>
+            <div class="border-t border-gray-700" data-controller="dashboard--accordion" data-lesson-id="<%= lesson.id %>">
+              <%# Lesson header %>
+              <button class="w-full p-3 pl-6 flex items-center justify-between hover:bg-gray-700/50 transition group
+                                <%= lesson.id == @current_lesson&.id ? 'bg-indigo-900/40' : '' %>" data-action="click->dashboard--accordion#toggle">
+                <div class="flex items-center min-w-0">
+                  <svg class="w-4 h-4 text-indigo-400 mr-2 flex-shrink-0 transition-transform duration-200 group-[.is-active]:-rotate-180" data-dashboard--accordion-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                  <span class="text-gray-200 truncate"><%= lesson.title %></span>
+                </div>
+                <% if lesson.videos.any? %>
+                <span class="text-xs text-gray-400 ml-2 flex-shrink-0"><%= lesson.videos.count %> video</span>
+                <% end %>
+              </button>
+
+              <div class="hidden bg-gray-800/20" data-dashboard--accordion-target="content">
+                <% lesson.videos.order(position: :asc).each do |video| %>
+                <%= link_to dashboard_course_viewer_path(@course, lesson_id: lesson.id, video_id: video.id),
+                          data: {
+                            turbo_frame: ["video_player","arcoding"],
+                            turbo: true,
+                            turbo_action: "advance"
+                          },
+                          class: "block p-3 pl-10 hover:bg-gray-700/50 transition flex items-center justify-between
+                                 #{@current_video&.id == video.id ? 'bg-indigo-900/40' : ''}" do %>
+                <div class="flex items-center min-w-0">
+                  <svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-gray-200 truncate"><%= video.title %></span>
+                </div>
+                <% if video.upload.duration %>
+                <span class="text-xs text-gray-400 ml-2 flex-shrink-0"><%= Time.at(video.upload.duration).utc.strftime("%M:%S") %></span>
+                <% end %>
+                <% end %>
+                <% end %>
+              </div>
+            </div>
+            <% end %>
+          </div>
+        </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
