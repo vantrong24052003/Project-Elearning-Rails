@@ -8,8 +8,21 @@ class Ability
 
     can :read, Course
 
-    can [:payment, :demo_success], Course do |course|
-      !course.enrollments.exists?(user: user, status: :active)
+    can [:create, :index], :payment do |_, course_id|
+      course = Course.find_by(id: course_id)
+      course && !user.enrollments.where(course: course, status: :active).exists?
+    end
+
+    can :payment, Course do |course|
+      !user.enrollments.where(course: course, status: :active).exists?
+    end
+
+    can :create_payment, Course do |course|
+      !user.enrollments.where(course: course, status: :active).exists?
+    end
+
+    can :view_payment, Course do |course|
+      !user.enrollments.where(course: course, status: :active).exists?
     end
 
     can :course_viewer, Course do |course|
