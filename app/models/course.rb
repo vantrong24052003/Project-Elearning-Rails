@@ -3,6 +3,7 @@
 class Course < ApplicationRecord
   belongs_to :user
   has_many :chapters
+  has_many :lessons, through: :chapters
   has_many :questions
   has_many :course_categories
   has_many :categories, through: :course_categories

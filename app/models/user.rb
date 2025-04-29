@@ -12,4 +12,10 @@ class User < ApplicationRecord
   has_many :courses
   has_many :enrollments, dependent: :destroy
   has_many :enrolled_courses, through: :enrollments, source: :course
+  has_many :progresses, dependent: :destroy
+  has_many :completed_lessons, -> { joins(:progresses).where(progresses: { status: :done }) },
+           through: :progresses,
+           source: :lesson
+  has_many :video_progresses, dependent: :destroy
+  has_many :watched_videos, through: :video_progresses, source: :video
 end

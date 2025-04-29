@@ -72,22 +72,68 @@ category1 = Category.create!(name: 'Programming', description: 'All about progra
 category2 = Category.create!(name: 'Design', description: 'Design and creative skills.')
 puts '✅ Created categories.'
 
+demo_videos = [
+  ActionController::Base.helpers.asset_path('video1.mp4'),
+  ActionController::Base.helpers.asset_path('video2.mp4'),
+  ActionController::Base.helpers.asset_path('video3.mp4'),
+  ActionController::Base.helpers.asset_path('video4.mp4')
+]
+
+thumbnails = [
+  'https://example.com/thumbnails/ruby1.jpg',
+  'https://example.com/thumbnails/ruby2.jpg',
+  'https://example.com/thumbnails/ruby3.jpg',
+  'https://example.com/thumbnails/ruby4.jpg'
+]
+
+uploads = demo_videos.map.with_index do |video_path, index|
+  Upload.create!(
+    file_type: 'video',
+    cdn_url: video_path,
+    thumbnail_path: thumbnails[index],
+    duration: rand(200..500),
+    resolution: '1080p',
+    user_id: instructor.id,
+    status: 'active'
+  )
+end
+
 course1 = Course.create!(
   title: 'Ruby on Rails for Beginners',
   description: 'Learn Ruby on Rails from scratch.',
   price: 50.0, language: 'English', status: 'published', user_id: admin.id,
-  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
+  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg',
+  demo_video_path: demo_videos[0]
 )
 
 course2 = Course.create!(
   title: 'Design Principles',
   description: 'Understand design principles for web and mobile.',
   price: 30.0, language: 'English', status: 'published', user_id: instructor.id,
-  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
+  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg',
+  demo_video_path: demo_videos[1]
+)
+
+course3 = Course.create!(
+  title: 'Advanced Web Development',
+  description: 'Master modern web development techniques.',
+  price: 75.0, language: 'English', status: 'published', user_id: instructor.id,
+  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg',
+  demo_video_path: demo_videos[2]
+)
+
+course4 = Course.create!(
+  title: 'UI/UX Design Masterclass',
+  description: 'Create beautiful and functional user interfaces.',
+  price: 60.0, language: 'English', status: 'published', user_id: instructor.id,
+  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg',
+  demo_video_path: demo_videos[3]
 )
 
 CourseCategory.create!(course: course1, category: category1)
 CourseCategory.create!(course: course2, category: category2)
+CourseCategory.create!(course: course3, category: category1)
+CourseCategory.create!(course: course4, category: category2)
 puts '✅ Created courses and assigned categories.'
 
 Enrollment.create!(
@@ -109,9 +155,8 @@ Enrollment.create!(
 Enrollment.create!(
   user: instructor,
   course: course1,
-  status: :completed,
+  status: :active,
   enrolled_at: 1.month.ago,
-  completed_at: 1.week.ago,
   price_paid: 50.0
 )
 puts '✅ Created enrollments.'
@@ -124,32 +169,56 @@ lesson1 = Lesson.create!(title: 'Getting Started with Ruby', description: 'Intro
 lesson2 = Lesson.create!(title: 'Understanding UI', description: 'UI Basics', position: 1, chapter: chapter2)
 puts '✅ Created chapters and lessons.'
 
-video_path = Rails.root.join('app/assets/videos/video.mp4')
+[lesson1, lesson2].each do |lesson|
+  rand(2..4).times do |i|
+    upload = uploads.sample
+    Video.create!(
+      title: "#{lesson.title} - Part #{i + 1}",
+      lesson: lesson,
+      upload: upload,
+      thumbnail: upload.thumbnail_path,
+      is_locked: i.zero? ? nil : '1985-05-10' # Chỉ video đầu tiên không khóa
+    )
+  end
+end
 
-upload1 = Upload.create!(
-  file_type: 'video',
-  cdn_url: video_path.to_s,
-  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg',
-  duration: 300,
-  resolution: '1080p',
-  user_id: admin.id,
-  status: 'active'
+puts '✅ Created multiple videos for each lesson.'
+
+chapter3 = Chapter.create!(
+  title: 'Advanced Ruby',
+  position: 3,
+  course: course1
 )
 
-upload2 = Upload.create!(
-  file_type: 'video',
-  cdn_url: video_path.to_s,
-  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg',
-  duration: 250,
-  resolution: '720p',
-  user_id: instructor.id,
-  status: 'active'
+chapter4 = Chapter.create!(
+  title: 'Ruby Best Practices',
+  position: 4,
+  course: course1
 )
-puts '✅ Created uploads from local video files.'
 
-Video.create!(title: 'Ruby Basics', lesson: lesson1, upload: upload1, is_locked: '1985-05-10')
-Video.create!(title: 'UI Design Basics', lesson: lesson2, upload: upload2)
-puts '✅ Created videos.'
+lesson3 = Lesson.create!(title: 'Ruby OOP Concepts', description: 'Learn about Object-Oriented Programming in Ruby', chapter: chapter1, position: 3)
+lesson4 = Lesson.create!(title: 'Ruby Modules & Mixins', description: 'Understanding modules and mixins in Ruby', chapter: chapter1, position: 4)
+
+lesson5 = Lesson.create!(title: 'Metaprogramming in Ruby', description: 'Advanced metaprogramming concepts', chapter: chapter3, position: 1)
+lesson6 = Lesson.create!(title: 'Ruby DSL Design', description: 'Creating Domain Specific Languages', chapter: chapter3, position: 2)
+
+lesson7 = Lesson.create!(title: 'Code Organization', description: 'Best practices for organizing Ruby code', chapter: chapter4, position: 1)
+lesson8 = Lesson.create!(title: 'Testing Strategies', description: 'Different approaches to testing Ruby code', chapter: chapter4, position: 2)
+
+[lesson3, lesson4, lesson5, lesson6, lesson7, lesson8].each do |lesson|
+  rand(2..4).times do |i|
+    upload = uploads.sample
+    Video.create!(
+      title: "#{lesson.title} - Part #{i + 1}",
+      lesson: lesson,
+      upload: upload,
+      thumbnail: upload.thumbnail_path,
+      is_locked: i.zero? ? nil : '1985-05-10' # Chỉ video đầu tiên không khóa
+    )
+  end
+end
+
+puts '✅ Created multiple videos for each lesson.'
 
 question1 = Question.create!(
   content: 'What is Ruby?',
@@ -180,7 +249,8 @@ QuizQuestion.create!(quiz: quiz2, question: question2)
 
 puts '✅ Created quizzes and linked questions.'
 
-Progress.create!(user: student, course: course1, lesson: lesson1, status: 'in_progress')
+# Tạo progress cho student
+Progress.create!(user: student, course: course1, lesson: lesson1, status: :inprogress)
 puts '✅ Created progress.'
 
 puts "\n🎉 Seed data completed successfully!"
