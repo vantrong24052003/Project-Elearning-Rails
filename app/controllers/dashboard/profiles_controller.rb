@@ -6,7 +6,11 @@ class Dashboard::ProfilesController < Dashboard::DashboardController
   before_action :ensure_owner, only: %i[update]
 
   def show
-    @enrollments = current_user.enrollments.includes(:course)
+    if @user.has_role?(:admin) || @user.has_role?(:instructor)
+      @courses = @user.courses.includes(:categories) # Sử dụng :categories thay vì :category
+    else
+      @enrollments = @user.enrollments.includes(course: :categories).where(status: 'active')
+    end
   end
 
   def update
@@ -24,7 +28,7 @@ class Dashboard::ProfilesController < Dashboard::DashboardController
   private
 
   def set_user
-    @user = current_user
+    @user = params[:id] ? User.find(params[:id]) : current_user
   end
 
   def ensure_owner
@@ -35,7 +39,6 @@ class Dashboard::ProfilesController < Dashboard::DashboardController
   end
 
   def user_params
-    # Loại bỏ marketing_emails vì nó không có trong schema
     params.require(:user).permit(:name, :avatar, :bio, :phone, :address)
   end
 end
