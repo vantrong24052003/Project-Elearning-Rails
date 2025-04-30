@@ -3,11 +3,10 @@
 class Dashboard::ProfilesController < Dashboard::DashboardController
   before_action :authenticate_user!
   before_action :set_user, only: %i[show update]
-  before_action :ensure_owner, only: %i[update]
 
   def show
     if @user.has_role?(:admin) || @user.has_role?(:instructor)
-      @courses = @user.courses.includes(:categories) # Sử dụng :categories thay vì :category
+      @courses = @user.courses.includes(:categories)
     else
       @enrollments = @user.enrollments.includes(course: :categories).where(status: 'active')
     end
@@ -29,13 +28,6 @@ class Dashboard::ProfilesController < Dashboard::DashboardController
 
   def set_user
     @user = params[:id] ? User.find(params[:id]) : current_user
-  end
-
-  def ensure_owner
-    return if @user == current_user
-
-    redirect_to dashboard_profile_path(current_user), alert: 'You are not authorized to perform this action.'
-    false
   end
 
   def user_params
