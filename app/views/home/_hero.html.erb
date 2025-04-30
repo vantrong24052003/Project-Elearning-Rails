@@ -15,10 +15,12 @@
         achieve your goals with expert-led courses tailored to your needs.
       </p>
       <div class="flex flex-col sm:flex-row gap-4">
-        <%= link_to new_user_session_path, class: "inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 font-semibold px-8 py-4 rounded-lg text-center transition-colors duration-300 text-lg text-white w-full sm:w-auto", data: { home__hero_target: "button" } do %>
-        Get Started
+        <% if !user_signed_in? %>
+          <%= link_to new_user_session_path, class: "inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 font-semibold px-8 py-4 rounded-lg text-center transition-colors duration-300 text-lg text-white w-full sm:w-auto sm:min-w-[160px]", data: { home__hero_target: "button" } do %>
+          Get Started
+          <% end %>
         <% end %>
-        <%= link_to dashboard_courses_path, class: "inline-block bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-purple-600 dark:text-purple-400 font-semibold px-8 py-4 rounded-lg text-center border-2 border-purple-600 dark:border-purple-400 text-lg w-full sm:w-auto", data: { home__hero_target: "button" } do %>
+        <%= link_to dashboard_courses_path, class: "inline-block bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-purple-600 dark:text-purple-400 font-semibold px-8 py-4 rounded-lg text-center border-2 border-purple-600 dark:border-purple-400 text-lg w-full sm:w-auto sm:min-w-[160px]", data: { home__hero_target: "button" } do %>
         Explore Courses
         <% end %>
       </div>

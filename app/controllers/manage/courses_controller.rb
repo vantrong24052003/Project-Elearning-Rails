@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-  class Manage::CoursesController < Manage::BaseController
+module Manage
+  class CoursesController < Manage::BaseController
     before_action :set_course, only: %i[show edit update destroy publish draft]
     before_action :set_categories, only: %i[new edit create update]
     before_action :load_categories_for_filter, only: %i[index]
@@ -108,3 +109,4 @@
       end
     end
   end
+end

@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 class Dashboard::ViewersController < Dashboard::DashboardController
-  def index
-  end
+  def index; end
 
   def show
     @course = Course.find(params[:id])
@@ -50,7 +49,7 @@ class Dashboard::ViewersController < Dashboard::DashboardController
       status: :done
     ).count
 
-    percentage = total_lessons > 0 ? (completed_lessons.to_f / total_lessons * 100).round : 0
+    percentage = total_lessons.positive? ? (completed_lessons.to_f / total_lessons * 100).round : 0
 
     {
       completed_lessons: completed_lessons,
