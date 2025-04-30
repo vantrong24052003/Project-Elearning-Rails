@@ -102,6 +102,7 @@ class Dashboard::CoursesController < Dashboard::DashboardController
 
     @videos.each do |video|
       total_duration += video.upload.duration if video.upload&.duration
+      total_duration += video.upload.duration if video.upload&.duration
     end
 
     total_duration
