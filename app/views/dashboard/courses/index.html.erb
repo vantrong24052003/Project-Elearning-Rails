@@ -195,10 +195,16 @@
                   <% end %>
                 </div>
 
-                <% if course.status == 'published' || (current_user && current_user.has_role?(:instructor)) %>
-                <span class="absolute top-3 left-3 px-2 py-1 text-xs font-semibold rounded-full <%= course.status == 'published' ? 'bg-green-500' : 'bg-yellow-500' %> text-white shadow">
-                  <%= course.status.capitalize %>
-                </span>
+                <% if course.course_categories.any? %>
+                <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 max-w-[90%]">
+                  <% course.course_categories.each do |course_category| %>
+                    <% if course_category.category %>
+                      <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-500 text-white shadow truncate max-w-[200px]">
+                        <%= course_category.category.name %>
+                      </span>
+                    <% end %>
+                  <% end %>
+                </div>
                 <% end %>
               </div>
 
@@ -298,7 +304,7 @@
         <% end %>
       <% end %>
 
-      <div class="fixed flex inset-0 bg-black bg-opacity-50 z-50 items-center justify-center hidden" data-dashboard--course-filter-target="filterModal">
+      <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden" data-dashboard--course-filter-target="filterModal">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full p-6 m-4">
           <div class="flex justify-between items-center mb-5">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Advanced Filters</h3>
@@ -332,20 +338,22 @@
                 </span>
               </label>
 
-              <div class="px-2">
+              <div data-controller="dashboard--price-slider" data-dashboard--price-slider-min-value="0" data-dashboard--price-slider-max-value="1000000" data-dashboard--price-slider-step-value="50000" data-action="dashboard--price-slider:change->dashboard--course-filter#updateModalPriceRange" class="px-2">
                 <div class="relative pt-6 pb-2">
                   <div class="relative z-10">
-                    <input id="minPriceSlider" type="range" min="0" max="1000000" step="50000" value="<%= params[:min_price] || 0 %>"
-                          class="absolute w-full appearance-none bg-transparent pointer-events-auto outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:z-20 [&::-webkit-slider-thumb]:relative"
-                          data-action="input->dashboard--course-filter#updateRangeSliders">
+                    <input type="range" min="0" max="1000000" step="50000" value="<%= params[:min_price] || 0 %>"
+                          class="absolute w-full appearance-none bg-transparent pointer-events-none outline-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white"
+                          data-dashboard--price-slider-target="minSlider"
+                          data-action="input->dashboard--price-slider#updateValues">
 
-                    <input id="maxPriceSlider" type="range" min="0" max="1000000" step="50000" value="<%= params[:max_price] || 1000000 %>"
-                          class="absolute w-full appearance-none bg-transparent pointer-events-auto outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:z-20 [&::-webkit-slider-thumb]:relative"
-                          data-action="input->dashboard--course-filter#updateRangeSliders">
+                    <input type="range" min="0" max="1000000" step="50000" value="<%= params[:max_price] || 1000000 %>"
+                          class="absolute w-full appearance-none bg-transparent pointer-events-none outline-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white"
+                          data-dashboard--price-slider-target="maxSlider"
+                          data-action="input->dashboard--price-slider#updateValues">
                   </div>
 
                   <div class="absolute top-6 left-0 right-0 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-md">
-                    <div id="rangeTrack" class="absolute h-full bg-purple-500 rounded-md"
+                    <div data-dashboard--price-slider-target="range" class="absolute h-full bg-purple-500 rounded-md"
                         style="left: <%= (params[:min_price].to_f / 1000000 * 100).round rescue 0 %>%; right: <%= (100 - (params[:max_price].to_f / 1000000 * 100)).round rescue 0 %>%;">
                     </div>
                   </div>
