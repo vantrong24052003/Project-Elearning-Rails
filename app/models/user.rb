@@ -19,7 +19,6 @@ class User < ApplicationRecord
   has_many :video_progresses, dependent: :destroy
   has_many :watched_videos, through: :video_progresses, source: :video
 
-  # Cập nhật mật khẩu với mật khẩu hiện tại
   def update_with_password(params)
     current_password = params.delete(:current_password)
 
