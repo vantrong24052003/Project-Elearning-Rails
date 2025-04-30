@@ -1,8 +1,7 @@
-<div class="flex flex-col lg:flex-row min-h-screen bg-gray-900 text-white mx-8">
-  <%# Main Content (Left Side) - takes 3/4 on large screens %>
+<div class="flex flex-col px-8 lg:flex-row min-h-screen bg-gray-900 text-white gap-6">
   <div class="w-full lg:w-[75%]">
-    <div class="h-full flex flex-col">
-      <div class="bg-gray-800 border-b border-gray-700 p-4">
+    <div class="h-full flex flex-col bg-gray-800 rounded-lg border border-gray-700">
+      <div class="bg-gray-800 border-b border-gray-700 p-4 rounded-t-lg">
         <div class="flex items-center justify-between">
           <div class="flex items-center min-w-0">
             <%= link_to dashboard_course_path(@course), class: "text-gray-400 hover:text-gray-200 mr-3" do %>
@@ -11,16 +10,15 @@
               </svg>
             <% end %>
             <div class="min-w-0">
-              <h1 class="text-lg font-bold text-whx`ite truncate"><%= @course.title %></h1>
+              <h1 class="text-lg font-bold text-white truncate"><%= @course.title %></h1>
               <div class="text-sm text-gray-400 truncate"><%= @current_lesson&.title %></div>
             </div>
           </div>
         </div>
       </div>
 
-      <%# Main content area with video and resources %>
-      <div class="flex-1 py-4 md:mr-4 overflow-y-auto ">
-        <%# Video Player %>
+      <div class="flex-1 p-4 overflow-y-auto">
+        <%= turbo_frame_tag "video_player" do %>
         <div class="bg-gray-800 rounded-lg shadow-sm overflow-hidden mb-4">
           <% if @current_video %>
             <video 
@@ -37,11 +35,10 @@
             </div>
           <% end %>
         </div>
+        <% end %>
 
-        <%# Resources and Quiz in a simplified grid %>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <%# Resources card %>
-          <div class="bg-gray-800 border border-gray-700 rounded-lg shadow-sm p-4">
+          <div class="bg-gray-800/50 border border-gray-700 rounded-lg shadow-sm p-4 h-full">
             <h3 class="text-lg font-semibold mb-3 flex items-center text-white">
               <svg class="w-5 h-5 text-indigo-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -60,8 +57,7 @@
             </div>
           </div>
 
-          <%# Quiz card %>
-          <div class="bg-gray-800 border border-gray-700 rounded-lg shadow-sm p-4">
+          <div class="bg-gray-800/50 border border-gray-700 rounded-lg shadow-sm p-4 h-full">
             <h3 class="text-lg font-semibold mb-3 flex items-center text-white">
               <svg class="w-5 h-5 text-indigo-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -84,37 +80,34 @@
     </div>
   </div>
 
-  <%# Right Sidebar - takes 1/4 on large screens %>
-  <div class="w-full lg:w-[25%] bg-gray-800 max-h-[400px] lg:max-h-screen custom-scrollbar overflow-y-auto">
-    <%# Course Content Header %>
-    <div class="sticky top-0 bg-gray-800 border-gray-700 z-10 flex  items-center justify-arround ">
-      <h3 class="text-lg font-semibold p-4 text-white">Nội dung khóa học</h3>
-         <div class="flex items-center">
-
-            <div class="w-32 bg-gray-700 rounded-full h-1.5 mr-2">
-              <div class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300"
-                   data-course-progress
-                   style="width: <%='80' %>%">
-              </div>
-            </div>
-            <span class="text-xs text-gray-400" data-progress-text>
-              <%= '4' %> / <%= 5 %>
-            </span>
+  <div class="w-full lg:w-[25%] bg-gray-800 rounded-lg border border-gray-700 h-[calc(100vh-4rem)] overflow-hidden">
+    <div class="sticky top-0 bg-gray-800 border-b border-gray-700 z-10 flex items-center justify-between p-4 rounded-t-lg">
+      <h3 class="text-lg font-semibold text-white">Nội dung khóa học</h3>
+      <div class="flex items-center">
+        <div class="w-32 bg-gray-700 rounded-full h-1.5 mr-2">
+          <div class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300"
+               data-course-progress
+               style="width: <%='80' %>%">
           </div>
+        </div>
+        <span class="text-xs text-gray-400" data-progress-text>
+          <%= '4' %> / <%= 5 %>
+        </span>
+      </div>
     </div>
 
-    <div>
+    <div class="h-[calc(100%)] overflow-y-auto custom-scrollbar">
       <div class="p-4 space-y-3">
         <% @course.chapters.each do |chapter| %>
           <%# Mỗi chapter có một controller riêng %>
-          <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden"
+          <div class="bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden"
                data-controller="dashboard--accordion"
                data-chapter-id="<%= chapter.id %>">
-            <%# Chapter header %>
-            <button class="w-full p-3 flex items-center justify-between hover:bg-gray-700 transition"
+             <%= turbo_frame_tag "arcoding" do %>
+            <button class="w-full p-3 flex items-center justify-between hover:bg-gray-700/50 transition group"
                    data-action="click->dashboard--accordion#toggle">
               <div class="flex items-center min-w-0">
-                <svg class="w-4 h-4 text-indigo-400 mr-2 flex-shrink-0 transition-transform duration-200"
+                <svg class="w-4 h-4 text-indigo-400 mr-2 flex-shrink-0 transition-transform duration-200 group-[.is-active]:-rotate-180"
                      data-dashboard--accordion-target="icon"
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -123,20 +116,21 @@
               </div>
               <span class="text-xs text-gray-400 ml-2 flex-shrink-0"><%= pluralize(chapter.lessons.count, 'bài học') %></span>
             </button>
+            <% end %>
 
             <%# Lessons list - hidden by default %>
-            <div class="hidden" data-dashboard--accordion-target="content">
+            <div class="hidden bg-gray-800/30" data-dashboard--accordion-target="content">
               <% chapter.lessons.each do |lesson| %>
                 <%# Mỗi lesson cũng có một controller riêng %>
                 <div class="border-t border-gray-700" 
                      data-controller="dashboard--accordion"
                      data-lesson-id="<%= lesson.id %>">
                   <%# Lesson header %>
-                  <button class="w-full p-3 pl-6 flex items-center justify-between hover:bg-gray-700 transition
-                                <%= lesson.id == @current_lesson&.id ? 'bg-indigo-900 bg-opacity-20' : '' %>"
+                  <button class="w-full p-3 pl-6 flex items-center justify-between hover:bg-gray-700/50 transition group
+                                <%= lesson.id == @current_lesson&.id ? 'bg-indigo-900/40' : '' %>"
                          data-action="click->dashboard--accordion#toggle">
                     <div class="flex items-center min-w-0">
-                      <svg class="w-4 h-4 text-indigo-400 mr-2 flex-shrink-0 transition-transform duration-200"
+                      <svg class="w-4 h-4 text-indigo-400 mr-2 flex-shrink-0 transition-transform duration-200 group-[.is-active]:-rotate-180"
                            data-dashboard--accordion-target="icon"
                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -148,12 +142,16 @@
                     <% end %>
                   </button>
 
-                  <%# Videos list - hidden by default %>
-                  <div class="hidden" data-dashboard--accordion-target="content">
+                  <div class="hidden bg-gray-800/20" data-dashboard--accordion-target="content">
                     <% lesson.videos.order(position: :asc).each do |video| %>
                       <%= link_to course_viewer_dashboard_course_path(@course, lesson_id: lesson.id, video_id: video.id), 
-                          class: "block p-3 pl-10 hover:bg-gray-700 transition flex items-center justify-between
-                                 #{@current_video&.id == video.id ? 'bg-indigo-900 bg-opacity-20' : ''}" do %>
+                          data: {
+                            turbo_frame: ["video_player","arcoding"],
+                            turbo: true,
+                            turbo_action: "advance"
+                          },
+                          class: "block p-3 pl-10 hover:bg-gray-700/50 transition flex items-center justify-between
+                                 #{@current_video&.id == video.id ? 'bg-indigo-900/40' : ''}" do %>
                         <div class="flex items-center min-w-0">
                           <svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />

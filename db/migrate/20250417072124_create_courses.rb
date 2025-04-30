@@ -9,7 +9,10 @@ class CreateCourses < ActiveRecord::Migration[8.0]
       t.string :thumbnail_path
       t.string :language
       t.string :status
+      t.string :demo_video_path
       t.references :user, null: false, foreign_key: true, type: :uuid
+      t.references :category, null: false, foreign_key: true, type: :uuid
+      t.boolean :is_free, default: false
 
       t.timestamps
     end

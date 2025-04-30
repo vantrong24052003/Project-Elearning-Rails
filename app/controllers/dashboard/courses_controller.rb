@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class Dashboard::CoursesController < Dashboard::DashboardController
-  before_action :set_course, only: %i[show edit update destroy]
+  before_action :set_course, only: %i[show edit update destroy course_viewer]
+  before_action :authorize_course_viewer!, only: [:course_viewer]
 
   def index
     @categories = Category.all
@@ -101,7 +102,7 @@ class Dashboard::CoursesController < Dashboard::DashboardController
     total_duration = 0
 
     @videos.each do |video|
-      total_duration += video.upload.duration if video.upload && video.upload.duration
+      total_duration += video.upload.duration if video.upload&.duration
     end
 
     total_duration
@@ -187,7 +188,7 @@ class Dashboard::CoursesController < Dashboard::DashboardController
       status: :done
     ).count
 
-    percentage = total_lessons > 0 ? (completed_lessons.to_f / total_lessons * 100).round : 0
+    percentage = total_lessons.positive? ? (completed_lessons.to_f / total_lessons * 100).round : 0
 
     {
       completed_lessons: completed_lessons,
