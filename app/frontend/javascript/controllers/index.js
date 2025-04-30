@@ -11,9 +11,7 @@ import countdown_controller from "./shared/countdown_controller"
 import course_filter_controller from "./dashboard/course_filter_controller"
 import sidebar_controller from "./manage/sidebar_controller"
 import lazy_loading_controller from "./shared/lazy_loading_controller"
-import AccordionController from "./dashboard/accordion_controller"
-import CourseTabsController from "./dashboard/course_tabs_controller"
-import AccordionCourseController from "./dashboard/accordion_course_controller"
+import CourseViewerController from "./dashboard/course_viewer_controller"
 
 // home
 application.register("home--faq", faq_controller)
@@ -29,9 +27,7 @@ application.register("shared--countdown", countdown_controller)
 
 // dashboard
 application.register("dashboard--course-filter", course_filter_controller)
-application.register("dashboard--accordion", AccordionController)
-application.register("dashboard--course-tabs", CourseTabsController)
-application.register("dashboard--accordion-course", AccordionCourseController)
+application.register("dashboard--course-viewer", CourseViewerController)
 
 // manage
 application.register("manage--sidebar", sidebar_controller)
