@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Dashboard::QuizAttemptsController < Dashboard::DashboardController
+class Dashboard::AttemptsController < Dashboard::DashboardController
   before_action :set_course
   before_action :set_quiz
   before_action :set_attempt, only: %i[show edit update destroy]
