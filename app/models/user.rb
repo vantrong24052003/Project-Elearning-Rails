@@ -19,25 +19,4 @@ class User < ApplicationRecord
   has_many :video_progresses, dependent: :destroy
   has_many :watched_videos, through: :video_progresses, source: :video
 
-  # Cập nhật mật khẩu với mật khẩu hiện tại
-  def update_with_password(params)
-    current_password = params.delete(:current_password)
-
-    if params[:password].blank?
-      errors.add(:password, "can't be blank")
-      return false
-    end
-
-    if params[:password_confirmation] != params[:password]
-      errors.add(:password_confirmation, "doesn't match Password")
-      return false
-    end
-
-    if valid_password?(current_password)
-      update(params)
-    else
-      errors.add(:current_password, 'is invalid')
-      false
-    end
-  end
 end

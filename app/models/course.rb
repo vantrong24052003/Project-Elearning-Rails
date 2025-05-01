@@ -7,6 +7,7 @@ class Course < ApplicationRecord
   has_many :questions
   has_many :course_categories
   has_many :categories, through: :course_categories
+  has_many :quizzes, dependent: :destroy
 
   has_many :enrollments, dependent: :destroy
   has_many :enrolled_users, through: :enrollments, source: :user
