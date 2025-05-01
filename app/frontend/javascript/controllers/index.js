@@ -11,7 +11,7 @@ import countdown_controller from "./shared/countdown_controller"
 import course_filter_controller from "./dashboard/course_filter_controller"
 import sidebar_controller from "./manage/sidebar_controller"
 import lazy_loading_controller from "./shared/lazy_loading_controller"
-import CourseViewerController from "./dashboard/course_viewer_controller"
+import course_viewer_controller from "./dashboard/course_viewer_controller"
 import quiz_timer_controller from "./dashboard/quiz_timer_controller"
 import QuizIndexController from "./dashboard/quiz_index_controller"
 
@@ -29,7 +29,7 @@ application.register("shared--countdown", countdown_controller)
 
 // dashboard
 application.register("dashboard--course-filter", course_filter_controller)
-application.register("dashboard--course-viewer", CourseViewerController)
+application.register("dashboard--course-viewer", course_viewer_controller)
 application.register("dashboard--quiz-timer", quiz_timer_controller)
 application.register("dashboard--quiz-index", QuizIndexController)
 
