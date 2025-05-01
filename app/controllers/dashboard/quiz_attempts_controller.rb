@@ -3,8 +3,8 @@
 class Dashboard::QuizAttemptsController < Dashboard::DashboardController
   before_action :set_course
   before_action :set_quiz
-  before_action :set_attempt, only: [:show, :edit, :update, :destroy]
-  before_action :check_enrollment, only: [:index, :show, :new, :create]
+  before_action :set_attempt, only: %i[show edit update destroy]
+  before_action :check_enrollment, only: %i[index show new create]
 
   def index
     @attempts = QuizAttempt.where(quiz: @quiz, user: current_user)
@@ -29,7 +29,7 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
       user_answer = answers[question.id.to_s].to_i
       correct_count += 1 if user_answer == question.correct_option
     end
-    score = @quiz.questions.count > 0 ? (correct_count.to_f / @quiz.questions.count * 100).round : 0
+    score = @quiz.questions.count.positive? ? (correct_count.to_f / @quiz.questions.count * 100).round : 0
 
     @attempt = QuizAttempt.new(
       quiz: @quiz,
@@ -77,10 +77,10 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
   end
 
   def check_enrollment
-    unless current_user.enrollments.active.exists?(course: @course)
-      redirect_to dashboard_course_path(@course),
-                  alert: 'Bạn cần đăng ký khóa học này để làm bài kiểm tra'
-    end
+    return if current_user.enrollments.active.exists?(course: @course)
+
+    redirect_to dashboard_course_path(@course),
+                alert: 'Bạn cần đăng ký khóa học này để làm bài kiểm tra'
   end
 
   def quiz_attempt_params

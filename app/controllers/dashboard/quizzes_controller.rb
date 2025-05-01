@@ -2,7 +2,7 @@
 
 class Dashboard::QuizzesController < Dashboard::DashboardController
   before_action :set_course
-  before_action :set_quiz, only: [:show, :edit, :update, :destroy]
+  before_action :set_quiz, only: %i[show edit update destroy]
   before_action :check_enrollment, only: [:show]
 
   def index
@@ -27,7 +27,7 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
     @practice_attempts = QuizAttempt.where(quiz: @quiz, user: current_user)
                                     .order(created_at: :desc)
                                     .limit(5)
-                                    .select { |attempt| !@quiz.is_exam }
+                                    .reject { |_attempt| @quiz.is_exam }
   end
 
   def new
@@ -44,8 +44,7 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
     end
   end
 
-  def edit
-  end
+  def edit; end
 
   def update
     if @quiz.update(quiz_params)
@@ -71,9 +70,9 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   end
 
   def check_enrollment
-    if !current_user.enrollments.active.exists?(course: @course)
-      redirect_to dashboard_course_path(@course), alert: 'You need to enroll in this course to take quizzes'
-    end
+    return if current_user.enrollments.active.exists?(course: @course)
+
+    redirect_to dashboard_course_path(@course), alert: 'You need to enroll in this course to take quizzes'
   end
 
   def quiz_params

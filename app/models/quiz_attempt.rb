@@ -20,14 +20,10 @@ class QuizAttempt < ApplicationRecord
   end
 
   def correct_answer?(question_id)
-    if answers.blank? || !answers.key?(question_id.to_s)
-      return false
-    end
+    return false if answers.blank? || !answers.key?(question_id.to_s)
 
     question = Question.find_by(id: question_id)
-    if question.nil?
-      return false
-    end
+    return false if question.nil?
 
     answers[question_id.to_s].to_i == question.correct_option
   end

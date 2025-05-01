@@ -18,5 +18,4 @@ class User < ApplicationRecord
            source: :lesson
   has_many :video_progresses, dependent: :destroy
   has_many :watched_videos, through: :video_progresses, source: :video
-
 end
