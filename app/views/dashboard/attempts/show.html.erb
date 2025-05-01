@@ -37,7 +37,17 @@
 
         <div class="space-y-6">
           <% @questions.each_with_index do |question, index| %>
-            <div class="p-5 border border-gray-700 rounded-lg <%= @attempt.correct_answer?(question.id) ? 'bg-green-900/20 border-green-700' : 'bg-red-900/20 border-red-700' %>">
+            <%
+              user_answered = @attempt.answers&.key?(question.id.to_s)
+              question_border_class = if !user_answered
+                                        'bg-gray-800 border-yellow-700'
+                                      elsif @attempt.correct_answer?(question.id)
+                                        'bg-green-900/20 border-green-700'
+                                      else
+                                        'bg-red-900/20 border-red-700'
+                                      end
+            %>
+            <div class="p-5 border border-gray-700 rounded-lg <%= question_border_class %>">
               <div class="flex items-start gap-4 mb-4">
                 <div class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 text-white flex-shrink-0">
                   <%= index + 1 %>
@@ -47,26 +57,28 @@
 
                   <div class="space-y-2 mb-4">
                     <% question.options.each_with_index do |option, opt_index| %>
-                      <div class="flex items-center p-3 rounded-lg border 
-                        <%= if opt_index == question.correct_option
-                              'bg-green-900/20 border-green-700'
-                            elsif @attempt.answers[question.id.to_s].to_i == opt_index && opt_index != question.correct_option
-                              'bg-red-900/20 border-red-700'
-                            else
-                              'bg-gray-700 border-gray-600'
-                            end %>">
+                      <%
+                        option_class = if opt_index == question.correct_option
+                          'bg-green-900/20 border-green-700'
+                        elsif user_answered && @attempt.answers[question.id.to_s].to_i == opt_index && opt_index != question.correct_option
+                          'bg-red-900/20 border-red-700'
+                        else
+                          'bg-gray-700 border-gray-600'
+                        end
+
+                        letter_class = if opt_index == question.correct_option
+                          'bg-green-500 text-white'
+                        elsif user_answered && @attempt.answers[question.id.to_s].to_i == opt_index && opt_index != question.correct_option
+                          'bg-red-500 text-white'
+                        else
+                          'bg-gray-600 text-gray-300'
+                        end
+                      %>
+                      <div class="flex items-center justify-between p-3 rounded-lg border <%= option_class %>">
                         <div class="flex items-center">
-                          <div class="flex items-center justify-center w-6 h-6 rounded-full mr-3 
-                            <%= if opt_index == question.correct_option
-                                  'bg-green-500 text-white'
-                                elsif @attempt.answers[question.id.to_s].to_i == opt_index && opt_index != question.correct_option
-                                  'bg-red-500 text-white'
-                                else
-                                  'bg-gray-600 text-gray-300'
-                                end %>">
+                          <div class="flex items-center justify-center w-6 h-6 rounded-full mr-3 <%= letter_class %>">
                             <%= ('A'.ord + opt_index).chr %>
                           </div>
-
                           <span class="text-gray-200"><%= option %></span>
                         </div>
 
@@ -74,7 +86,7 @@
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                           </svg>
-                        <% elsif @attempt.answers[question.id.to_s].to_i == opt_index && opt_index != question.correct_option %>
+                        <% elsif user_answered && @attempt.answers[question.id.to_s].to_i == opt_index %>
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -85,7 +97,19 @@
 
                   <div class="bg-gray-700 p-4 rounded-lg">
                     <h4 class="text-purple-400 text-sm font-semibold mb-1">Giải thích:</h4>
-                    <p class="text-gray-300"><%= question.explanation %></p>
+                    <p class="text-gray-300">
+                      <% if !user_answered %>
+                        <span class="text-yellow-400">Bạn chưa trả lời câu hỏi này.</span>
+                        <% if question.explanation.present? %>
+                          <br>
+                          <span class="text-gray-400">Đáp án đúng là <%= ('A'.ord + question.correct_option).chr %>: <%= question.options[question.correct_option] %></span>
+                          <br><br>
+                          <%= question.explanation %>
+                        <% end %>
+                      <% else %>
+                        <%= question.explanation %>
+                      <% end %>
+                    </p>
                   </div>
                 </div>
               </div>
@@ -121,36 +145,39 @@
             <span class="text-white font-medium"><%= @questions.count %></span>
           </div>
           <div class="flex justify-between py-2 border-b border-gray-700">
+            <span class="text-gray-400">Đã trả lời</span>
+            <span class="text-white font-medium"><%= @attempt.answers&.keys&.size || 0 %></span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-gray-700">
             <span class="text-gray-400">Trả lời đúng</span>
             <span class="text-green-400 font-medium"><%= @attempt.correct_answers %></span>
           </div>
           <div class="flex justify-between py-2 border-b border-gray-700">
             <span class="text-gray-400">Trả lời sai</span>
-            <span class="text-red-400 font-medium"><%= @questions.count - @attempt.correct_answers %></span>
+            <span class="text-red-400 font-medium"><%= (@attempt.answers&.keys&.size || 0) - @attempt.correct_answers %></span>
           </div>
           <div class="flex justify-between py-2 border-b border-gray-700">
-            <span class="text-gray-400">Thời gian làm bài</span>
-            <span class="text-white font-medium"><%= Time.at(@attempt.time_spent).utc.strftime("%H:%M:%S") %></span>
-          </div>
-          <div class="flex justify-between py-2 border-b border-gray-700">
-            <span class="text-gray-400">Ngày thực hiện</span>
-            <span class="text-white font-medium"><%= @attempt.created_at.strftime("%d/%m/%Y") %></span>
+            <span class="text-gray-400">Bỏ qua</span>
+            <span class="text-yellow-400 font-medium"><%= @questions.count - (@attempt.answers&.keys&.size || 0) %></span>
           </div>
         </div>
 
         <div class="space-y-3">
-          <%= link_to dashboard_course_quiz_path(@course, @quiz), class: "w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg flex items-center justify-center transition-colors" do %>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-            Quay lại bài kiểm tra
-          <% end %>
-
           <%= link_to dashboard_course_path(@course), class: "w-full bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg flex items-center justify-center transition-colors" do %>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Quay lại khóa học
+          <% end %>
+          
+          <% if !@attempt.quiz.is_exam? %>
+            <%= link_to dashboard_course_quiz_path(@course, @attempt.quiz, force: true), 
+                        class: "w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg flex items-center justify-center transition-colors mt-3" do %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Làm lại bài kiểm tra
+            <% end %>
           <% end %>
         </div>
       </div>

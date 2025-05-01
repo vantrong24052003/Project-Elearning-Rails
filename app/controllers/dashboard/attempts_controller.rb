@@ -2,9 +2,10 @@
 
 class Dashboard::AttemptsController < Dashboard::DashboardController
   before_action :set_course
-  before_action :set_quiz
-  before_action :set_attempt, only: %i[show edit update destroy]
-  before_action :check_enrollment, only: %i[index show new create]
+  before_action :set_quiz, only: [:create]
+  before_action :set_attempt, only: [:show]
+  before_action :check_ownership, only: [:show]
+  after_action :clear_session_data, only: [:create]
 
   def index
     @attempts = QuizAttempt.where(quiz: @quiz, user: current_user)
@@ -12,7 +13,9 @@ class Dashboard::AttemptsController < Dashboard::DashboardController
   end
 
   def show
-    @questions = @quiz.questions
+    @questions = @attempt.quiz.questions
+    mark_quiz_as_submitted(@attempt.quiz_id)
+    @can_retake = !@attempt.quiz.is_exam?
   end
 
   def new
@@ -23,28 +26,34 @@ class Dashboard::AttemptsController < Dashboard::DashboardController
   def create
     answers = params[:answers] || {}
     time_spent = params[:time_spent].to_i
-
+    total_questions = @quiz.questions.count
     correct_count = 0
-    @quiz.questions.each do |question|
-      user_answer = answers[question.id.to_s].to_i
-      correct_count += 1 if user_answer == question.correct_option
+    formatted_answers = {}
+
+    answers.each do |question_id, answer|
+      formatted_answers[question_id.to_s] = answer.to_i
+      question = Question.find_by(id: question_id)
+      correct_count += 1 if question && answer.to_i == question.correct_option
     end
-    score = @quiz.questions.count.positive? ? (correct_count.to_f / @quiz.questions.count * 100).round : 0
+
+    score = total_questions.positive? ? (correct_count.to_f / total_questions * 100).round : 0
 
     @attempt = QuizAttempt.new(
       quiz: @quiz,
       user: current_user,
       score: score,
       time_spent: time_spent,
-      answers: answers
+      answers: formatted_answers
     )
 
     if @attempt.save
+      session["quiz_#{@quiz.id}_submitted"] = true
+
       redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, @attempt),
-                  notice: 'Bài làm của bạn đã được lưu thành công.'
+                  notice: 'Your quiz has been submitted successfully.'
     else
-      @questions = @quiz.questions
-      render :new, status: :unprocessable_entity
+      redirect_to dashboard_course_quiz_path(@course, @quiz),
+                  alert: 'There was an error submitting your quiz. Please try again.'
     end
   end
 
@@ -74,16 +83,25 @@ class Dashboard::AttemptsController < Dashboard::DashboardController
 
   def set_attempt
     @attempt = QuizAttempt.find(params[:id])
+    @quiz = @attempt.quiz
   end
 
-  def check_enrollment
-    return if current_user.enrollments.active.exists?(course: @course)
+  def check_ownership
+    return if current_user == @attempt.user
 
-    redirect_to dashboard_course_path(@course),
-                alert: 'Bạn cần đăng ký khóa học này để làm bài kiểm tra'
+    redirect_to dashboard_course_quizzes_path(@course),
+                alert: "You don't have permission to view this attempt."
   end
 
-  def quiz_attempt_params
-    params.require(:quiz_attempt).permit(:score, :time_spent, answers: {})
+  def mark_quiz_as_submitted(quiz_id)
+    session[:recent_submitted_quizzes] ||= []
+    session[:recent_submitted_quizzes] << quiz_id.to_s
+    session[:recent_submitted_quizzes].uniq!
+  end
+
+  def clear_session_data
+    response.headers['X-Clear-Quiz-Storage'] = "quiz_#{@quiz.id}"
+    response.headers['X-Quiz-Is-Exam'] = @quiz.is_exam?.to_s
+    response.headers['X-Quiz-Submitted'] = 'true'
   end
 end
