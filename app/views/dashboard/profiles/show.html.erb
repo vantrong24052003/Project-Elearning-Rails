@@ -1,0 +1,515 @@
+<div class="min-h-screen w-full dark:bg-gray-900" data-controller="dashboard--profile">
+  <!-- Cover Image -->
+  <div class="w-full h-60 md:h-80 bg-gradient-to-r from-purple-600 to-pink-500 relative">
+    <% if @user.avatar.present? %>
+    <div class="w-full h-full bg-cover bg-center" style="background-image: url('<%= @user.avatar %>')"></div>
+    <% end %>
+
+    <!-- Edit cover button (only visible for own profile) -->
+    <% if current_user == @user %>
+    <button class="absolute bottom-4 right-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-md backdrop-blur-sm flex items-center gap-2 transition-all">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+      </svg>
+      Chỉnh sửa ảnh bìa
+    </button>
+    <% end %>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <!-- Avatar and basic info -->
+    <div class="flex flex-col md:flex-row gap-6 items-start">
+      <!-- Avatar -->
+      <div class="relative -mt-16 md:-mt-24">
+        <div class="w-28 h-28 md:w-44 md:h-44 rounded-full border-4 border-gray-900 overflow-hidden bg-gray-800">
+          <% if @user.avatar.present? %>
+          <img src="<%= @user.avatar %>" alt="<%= @user.name %>" class="w-full h-full object-cover avatar-preview" />
+          <% else %>
+          <div class="w-full h-full flex items-center justify-center bg-purple-700 text-white text-4xl font-bold">
+            <%= @user.name.first %>
+          </div>
+          <% end %>
+        </div>
+        <% if current_user == @user %>
+        <button class="absolute bottom-2 right-2 bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-full" data-action="click->dashboard--profile#triggerAvatarUpload">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+        </button>
+        <input type="file" id="avatar-input" class="hidden" accept="image/*" data-action="change->dashboard--profile#previewAvatar">
+        <% end %>
+      </div>
+
+      <!-- Basic info -->
+      <div class="flex-1 pt-4 md:pt-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 class="text-2xl md:text-4xl font-bold text-white"><%= @user.name %></h1>
+            <p class="text-purple-300"><%= @user.email %></p>
+
+            <!-- Instructor badge if applicable -->
+            <% if @user.roles.exists?(name: 'instructor') %>
+            <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-900/50 text-purple-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+              </svg>
+              Giảng viên
+            </div>
+            <% end %>
+
+            <div class="flex items-center gap-2 mt-2 text-gray-400">
+              <% if @user.address.present? %>
+              <span class="flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <%= @user.address %>
+              </span>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="flex gap-3 mt-2 md:mt-0">
+            <% if current_user == @user %>
+            <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md font-medium transition-colors" data-action="click->dashboard--profile#toggleBioEditor">
+              Chỉnh sửa hồ sơ
+            </button>
+            <%= link_to edit_user_registration_path, class: "bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-md font-medium transition-colors" do %>
+            Đổi mật khẩu
+            <% end %>
+            <% else %>
+            <!-- Follow button for other users' profiles -->
+            <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md font-medium transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <line x1="20" y1="8" x2="20" y2="14"></line>
+                <line x1="23" y1="11" x2="17" y2="11"></line>
+              </svg>
+              Theo dõi
+            </button>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main profile content -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+      <!-- Left column - Bio and contact info -->
+      <div class="md:col-span-1 space-y-6 md:space-y-8 order-2 md:order-1">
+        <!-- Bio section -->
+        <div class="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+          <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="12" y1="16" x2="12" y2="16"></line>
+            </svg>
+            Giới thiệu
+          </h2>
+
+          <!-- Bio display -->
+          <div class="space-y-4 text-gray-300 bio-display">
+            <% if @user.bio.present? %>
+            <p><%= @user.bio %></p>
+            <% else %>
+            <p class="text-gray-500 italic">Chưa có thông tin giới thiệu</p>
+            <% end %>
+
+            <% if current_user == @user %>
+            <button class="text-purple-400 hover:text-purple-300 font-medium flex items-center gap-1" data-action="click->dashboard--profile#toggleBioEditor">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Chỉnh sửa giới thiệu
+            </button>
+            <% end %>
+          </div>
+
+          <!-- Bio editor (hidden by default) -->
+          <% if current_user == @user %>
+          <div class="bio-editor hidden">
+            <%= form_with(model: @user, url: dashboard_profile_path(@user), method: :patch, class: "space-y-4") do |f| %>
+            <div>
+              <%= f.text_area :bio, class: "w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-gray-300 focus:ring-purple-500 focus:border-purple-500", rows: 5, placeholder: "Viết giới thiệu về bạn..." %>
+            </div>
+            <div class="flex justify-end space-x-3">
+              <button type="button" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-md hover:bg-gray-600 transition" data-action="click->dashboard--profile#toggleBioEditor">
+                Hủy
+              </button>
+              <%= f.submit "Lưu thay đổi", class: "px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition" %>
+            </div>
+            <% end %>
+          </div>
+          <% end %>
+        </div>
+
+        <!-- Contact info -->
+        <div class="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+          <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+            Thông tin liên hệ
+          </h2>
+
+          <!-- Contact display -->
+          <div class="space-y-3 text-gray-300 contact-display">
+            <div class="flex items-start gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </svg>
+              <div>
+                <p class="font-medium"><%= @user.email %></p>
+                <p class="text-sm text-gray-500">Email</p>
+              </div>
+            </div>
+
+            <% if @user.phone.present? %>
+            <div class="flex items-start gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              <div>
+                <p class="font-medium"><%= @user.phone %></p>
+                <p class="text-sm text-gray-500">Điện thoại</p>
+              </div>
+            </div>
+            <% end %>
+
+            <% if @user.address.present? %>
+            <div class="flex items-start gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <div>
+                <p class="font-medium"><%= @user.address %></p>
+                <p class="text-sm text-gray-500">Địa chỉ</p>
+              </div>
+            </div>
+            <% end %>
+
+            <% if current_user == @user %>
+            <button class="text-purple-400 hover:text-purple-300 font-medium flex items-center gap-1 mt-2" data-action="click->dashboard--profile#toggleContactEditor">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Chỉnh sửa thông tin liên hệ
+            </button>
+            <% end %>
+          </div>
+
+          <!-- Contact editor (hidden by default) -->
+          <% if current_user == @user %>
+          <div class="contact-editor hidden">
+            <%= form_with(model: @user, url: dashboard_profile_path(@user), method: :patch, class: "space-y-4") do |f| %>
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">Số điện thoại</label>
+              <%= f.text_field :phone, class: "w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-gray-300 focus:ring-purple-500 focus:border-purple-500" %>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">Địa chỉ</label>
+              <%= f.text_field :address, class: "w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-gray-300 focus:ring-purple-500 focus:border-purple-500" %>
+            </div>
+            <div class="flex justify-end space-x-3 mt-4">
+              <button type="button" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-md hover:bg-gray-600 transition" data-action="click->dashboard--profile#toggleContactEditor">
+                Hủy
+              </button>
+              <%= f.submit "Lưu thay đổi", class: "px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition" %>
+            </div>
+            <% end %>
+          </div>
+          <% end %>
+        </div>
+
+        <!-- Achievements section (only for own profile) -->
+        <% if current_user == @user && !(@user.has_role?(:admin) || @user.has_role?(:instructor)) %>
+        <div class="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+          <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 15c6.627 0 12 1.343 12 3v3H0v-3c0-1.657 5.373-3 12-3z"></path>
+              <path d="M12 12c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7z"></path>
+            </svg>
+            Thành tựu
+          </h2>
+
+          <div class="space-y-3 text-gray-300">
+            <div class="flex items-center gap-3">
+              <div class="bg-purple-900/50 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                </svg>
+              </div>
+              <div>
+                <p class="font-medium">Hoàn thành <%= @completed_courses_count || 0 %> khóa học</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="bg-purple-900/50 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="8" r="7"></circle>
+                  <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                </svg>
+              </div>
+              <div>
+                <p class="font-medium">Nhận <%= @certificates_count || 0 %> chứng chỉ</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="bg-purple-900/50 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20v-6M6 20V10M18 20V4"></path>
+                </svg>
+              </div>
+              <div>
+                <p class="font-medium">Đang học <%= @in_progress_courses_count || 0 %> khóa học</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <% end %>
+      </div>
+
+      <!-- Right column - Main content -->
+      <div class="md:col-span-2 order-1 md:order-2">
+        <% if @user.has_role?(:admin) || @user.has_role?(:instructor) %>
+        <!-- INSTRUCTOR/ADMIN VIEW: Courses taught by instructor -->
+        <div class="bg-gray-800/30 p-6 rounded-xl border border-gray-700">
+          <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            Khóa học của giảng viên
+          </h2>
+
+          <% if @courses.present? && @courses.any? %>
+          <div class="max-h-[800px] overflow-y-auto pr-2" style="scrollbar-width: thin; scrollbar-color: #6b46c1 #1f2937;">
+            <div class="grid gap-6 md:grid-cols-2">
+              <% @courses.each do |course| %>
+              <%= link_to dashboard_course_path(course), class: "group block" do %>
+              <div class="bg-gray-800/50 group-hover:bg-gray-800 border border-gray-700 rounded-xl overflow-hidden transition-all duration-200 group-hover:shadow-lg group-hover:shadow-purple-900/20">
+                <!-- Course thumbnail -->
+                <div class="aspect-video w-full">
+                  <% if course.thumbnail_path.present? %>
+                  <img src="<%= course.thumbnail_path %>" alt="<%= course.title %>" class="w-full h-full object-cover" />
+                  <% else %>
+                  <div class="w-full h-full bg-gray-700 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                      <line x1="7" y1="2" x2="7" y2="22"></line>
+                      <line x1="17" y1="2" x2="17" y2="22"></line>
+                      <line x1="2" y1="12" x2="22" y2="12"></line>
+                      <line x1="2" y1="7" x2="7" y2="7"></line>
+                      <line x1="2" y1="17" x2="7" y2="17"></line>
+                      <line x1="17" y1="17" x2="22" y2="17"></line>
+                      <line x1="17" y1="7" x2="22" y2="7"></line>
+                    </svg>
+                  </div>
+                  <% end %>
+                </div>
+
+                <!-- Course info -->
+                <div class="p-4">
+                  <div class="flex items-center gap-2 mb-2">
+                    <% if course.categories.present? %>
+                    <span class="px-2 py-1 rounded-full bg-purple-900/50 text-purple-300 text-xs font-medium">
+                      <%= course.categories.first.name %>
+                    </span>
+                    <% else %>
+                    <span class="px-2 py-1 rounded-full bg-purple-900/50 text-purple-300 text-xs font-medium">
+                      Chưa phân loại
+                    </span>
+                    <% end %>
+                    <% if course.is_free %>
+                    <span class="px-2 py-1 rounded-full bg-green-900/50 text-green-300 text-xs font-medium">
+                      Miễn phí
+                    </span>
+                    <% end %>
+                  </div>
+
+                  <h3 class="text-lg font-bold text-white mb-2 group-hover:text-purple-300 transition-colors"><%= course.title %></h3>
+
+                  <p class="text-gray-400 text-sm mb-3 line-clamp-2"><%= course.description %></p>
+
+                  <div class="flex items-center justify-between mt-4">
+                    <div class="flex items-center gap-1 text-sm text-gray-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                      </svg>
+                      <%= course.enrollments.count %> học viên
+                    </div>
+
+                    <% if course.is_free %>
+                    <span class="text-lg font-bold text-white">Miễn phí</span>
+                    <% else %>
+                    <span class="text-lg font-bold text-white"><%= number_to_currency(course.price, unit: "₫", precision: 0, delimiter: ".") %></span>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+              <% end %>
+              <% end %>
+            </div>
+          </div>
+          <% else %>
+          <div class="text-center py-16">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 mx-auto dark:text-purple-400 mb-6 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p class="text-2xl font-semibold mb-3 dark:text-purple-300">Chưa có khóa học nào</p>
+            <p class="text-gray-400 mb-6 text-lg max-w-md mx-auto">Giảng viên này chưa tạo khóa học nào.</p>
+            <% if current_user == @user %>
+            <%= link_to "Tạo khóa học mới", new_manage_course_path, class: "inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-md transition-colors duration-200 shadow-lg hover:shadow-xl" %>
+            <% end %>
+          </div>
+          <% end %>
+        </div>
+        <% else %>
+        <!-- STUDENT VIEW: Courses purchased by user -->
+        <div class="bg-gray-800/30 p-6 rounded-xl border border-gray-700">
+          <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            Khóa học của tôi
+          </h2>
+
+          <% if @enrollments.present? && @enrollments.any? %>
+
+          <div class="space-y-6 max-h-[800px] overflow-y-auto pr-2" style="scrollbar-width: thin; scrollbar-color: #6b46c1 #1f2937;">
+            <% @enrollments.each do |enrollment| %>
+            <% course = enrollment.course %>
+            <% if course.present? %>
+            <div class="bg-gray-800/50 hover:bg-gray-800 border border-gray-700 rounded-xl overflow-hidden transition-all duration-200">
+              <div class="flex flex-col md:flex-row">
+                <!-- Thumbnail -->
+                <div class="md:w-1/3 h-48 md:h-auto">
+                  <% if course.thumbnail_path.present? %>
+                  <div class="w-full h-full bg-cover bg-center" style="background-image: url('<%= course.thumbnail_path %>')"></div>
+                  <% else %>
+                  <div class="w-full h-full bg-gray-700 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                      <line x1="7" y1="2" x2="7" y2="22"></line>
+                      <line x1="17" y1="2" x2="17" y2="22"></line>
+                      <line x1="2" y1="12" x2="22" y2="12"></line>
+                      <line x1="2" y1="7" x2="7" y2="7"></line>
+                      <line x1="2" y1="17" x2="7" y2="17"></line>
+                      <line x1="17" y1="17" x2="22" y2="17"></line>
+                      <line x1="17" y1="7" x2="22" y2="7"></line>
+                    </svg>
+                  </div>
+                  <% end %>
+                </div>
+
+                <!-- Course Info -->
+                <div class="p-4 md:p-6 flex-1 flex flex-col">
+                  <div class="flex-1">
+                    <div class="flex flex-wrap items-center gap-3 mb-3">
+                      <% if enrollment.completed_at.present? %>
+                      <span class="px-3 py-1 rounded-full bg-green-900/50 text-green-300 text-xs font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="inline-block w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        Hoàn thành
+                      </span>
+                      <% else %>
+                      <span class="px-3 py-1 rounded-full bg-blue-900/50 text-blue-300 text-xs font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="inline-block w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M12 20V10"></path>
+                          <path d="M18 20V4"></path>
+                          <path d="M6 20v-6"></path>
+                        </svg>
+                        Đang học
+                      </span>
+                      <% end %>
+
+                      <span class="px-3 py-1 rounded-full bg-purple-900/50 text-purple-300 text-xs">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="inline-block w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <%= enrollment.enrolled_at&.strftime("%d/%m/%Y") || enrollment.created_at&.strftime("%d/%m/%Y") %>
+                      </span>
+                    </div>
+
+                    <h3 class="text-xl font-bold text-white mb-2"><%= course.title %></h3>
+
+                    <p class="text-gray-400 text-sm mb-3 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                      <%= course.user.present? ? course.user.name : "Instructor" %>
+                    </p>
+
+                    <% if course.description.present? %>
+                    <p class="text-gray-300 line-clamp-2 mb-4"><%= course.description %></p>
+                    <% end %>
+                  </div>
+
+                  <div class="flex gap-3 mt-4">
+                    <% if enrollment.completed_at.present? %>
+                    <%= link_to dashboard_course_path(course), class: "flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md transition-colors duration-200 text-center font-medium flex items-center justify-center" do %>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                    </svg>
+                    Xem lại
+                    <% end %>
+                    <% else %>
+                    <%= link_to dashboard_course_path(course), class: "w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md transition-colors duration-200 text-center font-medium flex items-center justify-center" do %>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                    </svg>
+                    Tiếp tục học
+                    <% end %>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <% end %>
+            <% end %>
+          </div>
+
+          <div class="mt-6 text-center">
+            <%= link_to "Xem tất cả khóa học", dashboard_courses_path, class: "inline-block bg-gray-800 hover:bg-gray-700 text-purple-400 font-medium py-2 px-6 rounded-md border border-purple-500 transition-colors duration-200" %>
+          </div>
+          <% else %>
+          <div class="text-center py-16">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 mx-auto dark:text-purple-400 mb-6 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p class="text-2xl font-semibold mb-3 dark:text-purple-300">Chưa có khóa học nào</p>
+            <p class="text-gray-400 mb-6 text-lg max-w-md mx-auto">Bạn chưa mua khóa học nào. Hãy khám phá các khóa học hấp dẫn của chúng tôi.</p>
+            <%= link_to "Khám phá khóa học", dashboard_courses_path, class: "inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-md transition-colors duration-200 shadow-lg hover:shadow-xl" %>
+          </div>
+          <% end %>
+        </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

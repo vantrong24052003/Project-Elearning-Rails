@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class Dashboard::PaymentsController < Dashboard::DashboardController
-  before_action :authenticate_user!
   before_action :set_course
 
   def create

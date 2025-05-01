@@ -10,18 +10,18 @@ Rails.application.routes.draw do
 
   namespace :dashboard do
     resources :courses, only: %i[index show new edit create update destroy] do
-      member do
-        get :course_viewer
-      end
       resources :quizzes
       resources :payments
+      resources :viewers
     end
 
     resources :uploads
     resources :quiz_attempts, only: %i[index show]
     resources :enrollments, only: %i[index]
 
-    root to: 'courses#index'
+    resources :profiles, only: %i[show update]
+
+    resources :passwords, only: %i[edit update]
   end
 
   namespace :manage do

@@ -27,7 +27,7 @@ module Users
     end
 
     def configure_account_update_params
-      devise_par ameter_sanitizer.permit(:account_update, keys: %i[name bio avatar phone address date_of_birth])
+      devise_parameter_sanitizer.permit(:account_update, keys: %i[name bio avatar phone address date_of_birth])
     end
   end
 end
