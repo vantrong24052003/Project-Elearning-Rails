@@ -1,0 +1,159 @@
+<div class="container mx-auto px-4 py-8 bg-gray-900">
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-2">
+      <div class="bg-gray-800 rounded-lg p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-white">Chi tiết bài làm</h2>
+          <div class="flex items-center gap-4">
+            <span class="px-3 py-1 bg-purple-600 text-white text-sm rounded-full">
+              <%= @attempt.score %>%
+            </span>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 p-4 bg-gray-700 rounded-lg mb-6">
+          <div class="text-center md:text-left">
+            <p class="text-gray-400 text-sm">Thời gian hoàn thành</p>
+            <p class="text-white text-lg">
+              <%= Time.at(@attempt.time_spent).utc.strftime("%H:%M:%S") %>
+            </p>
+          </div>
+
+          <div class="text-center">
+            <p class="text-gray-400 text-sm">Số câu trả lời đúng</p>
+            <p class="text-white text-lg">
+              <%= @attempt.correct_answers %> / <%= @questions.count %>
+            </p>
+          </div>
+
+          <div class="text-center md:text-right">
+            <p class="text-gray-400 text-sm">Ngày làm bài</p>
+            <p class="text-white text-lg">
+              <%= @attempt.created_at.strftime("%d/%m/%Y") %>
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <% @questions.each_with_index do |question, index| %>
+            <div class="p-5 border border-gray-700 rounded-lg <%= @attempt.correct_answer?(question.id) ? 'bg-green-900/20 border-green-700' : 'bg-red-900/20 border-red-700' %>">
+              <div class="flex items-start gap-4 mb-4">
+                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 text-white flex-shrink-0">
+                  <%= index + 1 %>
+                </div>
+                <div>
+                  <h3 class="text-white text-lg mb-2"><%= question.content %></h3>
+
+                  <div class="space-y-2 mb-4">
+                    <% question.options.each_with_index do |option, opt_index| %>
+                      <div class="flex items-center p-3 rounded-lg border 
+                        <%= if opt_index == question.correct_option
+                              'bg-green-900/20 border-green-700'
+                            elsif @attempt.answers[question.id.to_s].to_i == opt_index && opt_index != question.correct_option
+                              'bg-red-900/20 border-red-700'
+                            else
+                              'bg-gray-700 border-gray-600'
+                            end %>">
+                        <div class="flex items-center">
+                          <div class="flex items-center justify-center w-6 h-6 rounded-full mr-3 
+                            <%= if opt_index == question.correct_option
+                                  'bg-green-500 text-white'
+                                elsif @attempt.answers[question.id.to_s].to_i == opt_index && opt_index != question.correct_option
+                                  'bg-red-500 text-white'
+                                else
+                                  'bg-gray-600 text-gray-300'
+                                end %>">
+                            <%= ('A'.ord + opt_index).chr %>
+                          </div>
+
+                          <span class="text-gray-200"><%= option %></span>
+                        </div>
+
+                        <% if opt_index == question.correct_option %>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                        <% elsif @attempt.answers[question.id.to_s].to_i == opt_index && opt_index != question.correct_option %>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </div>
+
+                  <div class="bg-gray-700 p-4 rounded-lg">
+                    <h4 class="text-purple-400 text-sm font-semibold mb-1">Giải thích:</h4>
+                    <p class="text-gray-300"><%= question.explanation %></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-1">
+      <div class="bg-gray-800 rounded-lg p-6 sticky top-4">
+        <h2 class="text-xl font-semibold text-white mb-4">Tổng kết</h2>
+
+        <div class="mb-6">
+          <div class="relative pt-1">
+            <div class="flex mb-2 items-center justify-between">
+              <div>
+                <span class="text-sm font-semibold text-white">Điểm số</span>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-semibold text-white"><%= @attempt.score %>%</span>
+              </div>
+            </div>
+            <div class="overflow-hidden h-2 text-xs flex rounded bg-gray-700">
+              <div style="width:<%= @attempt.score %>%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center <%= @attempt.score >= 70 ? 'bg-green-500' : (@attempt.score >= 40 ? 'bg-yellow-500' : 'bg-red-500') %>"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3 mb-6">
+          <div class="flex justify-between py-2 border-b border-gray-700">
+            <span class="text-gray-400">Tổng số câu hỏi</span>
+            <span class="text-white font-medium"><%= @questions.count %></span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-gray-700">
+            <span class="text-gray-400">Trả lời đúng</span>
+            <span class="text-green-400 font-medium"><%= @attempt.correct_answers %></span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-gray-700">
+            <span class="text-gray-400">Trả lời sai</span>
+            <span class="text-red-400 font-medium"><%= @questions.count - @attempt.correct_answers %></span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-gray-700">
+            <span class="text-gray-400">Thời gian làm bài</span>
+            <span class="text-white font-medium"><%= Time.at(@attempt.time_spent).utc.strftime("%H:%M:%S") %></span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-gray-700">
+            <span class="text-gray-400">Ngày thực hiện</span>
+            <span class="text-white font-medium"><%= @attempt.created_at.strftime("%d/%m/%Y") %></span>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <%= link_to dashboard_course_quiz_path(@course, @quiz), class: "w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg flex items-center justify-center transition-colors" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Quay lại bài kiểm tra
+          <% end %>
+
+          <%= link_to dashboard_course_path(@course), class: "w-full bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg flex items-center justify-center transition-colors" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Quay lại khóa học
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

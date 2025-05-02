@@ -10,7 +10,9 @@ Rails.application.routes.draw do
 
   namespace :dashboard do
     resources :courses, only: %i[index show new edit create update destroy] do
-      resources :quizzes
+      resources :quizzes do
+        resources :attempts
+      end
       resources :payments
       resources :viewers
     end
