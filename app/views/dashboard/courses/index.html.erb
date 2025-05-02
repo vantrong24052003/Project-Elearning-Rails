@@ -195,16 +195,16 @@
                   <% end %>
                 </div>
 
-                <% if current_user.has_role?(:instructor) %>
-                <span class="absolute top-3 left-3 px-2 py-1 text-xs font-semibold rounded-full <%= course.status == 'published' ? 'bg-green-500' : 'bg-yellow-500' %> text-white shadow">
-                  <%= course.status.capitalize %>
-                </span>
-                <% else %>
-                <% if course.course_categories.first %>
-                <span class="absolute top-3 left-3 px-2 py-1 text-xs font-semibold rounded-full bg-purple-500 text-white shadow">
-                  <%= course.course_categories.first.category.name %>
-                </span>
-                <% end %>
+                <% if course.course_categories.any? %>
+                <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 max-w-[90%]">
+                  <% course.course_categories.each do |course_category| %>
+                    <% if course_category.category %>
+                      <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-500 text-white shadow truncate max-w-[200px]">
+                        <%= course_category.category.name %>
+                      </span>
+                    <% end %>
+                  <% end %>
+                </div>
                 <% end %>
               </div>
 
@@ -258,7 +258,7 @@
                 </div>
 
                 <div class="flex items-center space-x-2">
-                  <% if current_user.has_role?(:instructor) && course.user_id == current_user.id %>
+                  <% if current_user && current_user.has_role?(:instructor) && course.user_id == current_user.id %>
                   <%= link_to edit_dashboard_course_path(course), class: "p-2 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300" do %>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -267,7 +267,7 @@
                   <% end %>
 
                   <%= link_to dashboard_course_path(course), class: "px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium", data: { turbo_frame: "_top" } do %>
-                    <% if Enrollment.exists?(user_id: current_user.id, course_id: course.id, status: :active) %>
+                    <% if current_user && Enrollment.exists?(user_id: current_user.id, course_id: course.id, status: :active) %>
                       Continue
                     <% else %>
                       View Details
@@ -380,7 +380,7 @@
     </div>
   </section>
 
-  <% if current_user.has_role?(:instructor) && @courses.any? %>
+  <% if current_user && current_user.has_role?(:instructor) && @courses.any? %>
   <section class="mt-8">
     <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Course Performance</h2>
     <div class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-6">

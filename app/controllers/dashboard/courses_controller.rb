@@ -6,7 +6,7 @@ class Dashboard::CoursesController < Dashboard::DashboardController
   def index
     @categories = Category.all
 
-    courses = if current_user.has_role?(:instructor)
+    courses = if current_user&.has_role?(:instructor)
                 current_user.courses
               else
                 Course.all
@@ -101,6 +101,7 @@ class Dashboard::CoursesController < Dashboard::DashboardController
     total_duration = 0
 
     @videos.each do |video|
+      total_duration += video.upload.duration if video.upload&.duration
       total_duration += video.upload.duration if video.upload&.duration
     end
 

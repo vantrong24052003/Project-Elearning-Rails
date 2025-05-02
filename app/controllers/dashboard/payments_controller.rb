@@ -34,10 +34,8 @@ class Dashboard::PaymentsController < Dashboard::DashboardController
 
   def set_course
     @course = Course.find_by(id: params[:course_id])
-
     return unless @course.nil?
 
     redirect_to dashboard_courses_path, alert: 'Course not found'
-    false
   end
 end
