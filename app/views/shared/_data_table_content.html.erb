@@ -2,23 +2,22 @@
 <div class="p-4 md:p-6" data-controller="icons-loader">
   <div class="overflow-y-auto h-[320px] scrollbar-hide hover:scrollbar-default transition-opacity text-gray-800 bg-white dark:text-white dark:bg-gray-800/60 backdrop-blur-sm rounded-xl shadow-xl border border-gray-200 dark:border-purple-900/30">
     <table class="w-full">
-      <thead class="sticky top-0 bg-gray-100 dark:bg-gray-900 z-10">
-        <tr class="border-b border-gray-300 dark:border-gray-800">
+      <thead class="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10">
+        <tr class="border-b border-gray-200 dark:border-gray-800">
           <% if defined?(selectable) && selectable == true %>
           <th class="text-center py-3 px-2 w-10">
-            <input type="checkbox" data-data-table-target="mainCheckbox" data-action="change->data-table#toggleAll" class="rounded border-gray-400 dark:border-gray-600 bg-white dark:bg-gray-800 text-purple-600 focus:ring-purple-500">
+            <input type="checkbox" data-data-table-target="mainCheckbox" data-action="change->data-table#toggleAll" class="rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-blue-600 dark:text-purple-600 focus:ring-blue-500 dark:focus:ring-purple-500">
           </th>
           <% end %>
 
           <% columns.each do |column| %>
-          <% next if column[:key] == "actions" %> <%# Bỏ qua cột actions trong columns %>
-          <th class="py-3 px-4 text-gray-700 dark:text-gray-400 font-medium <%= column[:align] == 'right' ? 'text-right' : 'text-left' %>">
+          <% next if column[:key] == "actions" %>
+          <th class="py-3 px-4 text-gray-600 dark:text-gray-400 font-medium <%= column[:align] == 'right' ? 'text-right' : 'text-left' %>">
             <%= column[:label] %>
           </th>
           <% end %>
 
-          <%# Luôn render header cho cột actions %>
-          <th class="text-right py-3 px-4 text-gray-700 dark:text-gray-400 font-medium">Actions</th>
+          <th class="text-right py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -45,7 +44,7 @@
     </table>
   </div>
 
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-4 mb-2 border-t border-gray-300 dark:border-gray-700 pt-4">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-4 mb-2 border-t border-gray-200 dark:border-gray-700 pt-4">
     <div class="text-sm text-gray-800 dark:text-white flex items-center">
       <span class="mr-2">Hiển thị:</span>
       <%= form_with url: url_for(request.query_parameters), method: :get, data: { turbo_frame: turbo_frame_id } do |f| %>
@@ -133,7 +132,7 @@
 
         <% (start_page..end_page).each do |page| %>
         <% if page == collection.current_page %>
-        <span class="flex items-center justify-center w-9 h-9 rounded-md border border-purple-500 dark:border-purple-700 bg-purple-100 dark:bg-purple-700/30 text-purple-700 dark:text-white font-medium">
+        <span class="flex items-center justify-center w-9 h-9 rounded-md border border-blue-500 dark:border-purple-700 bg-blue-50 dark:bg-purple-700/30 text-blue-700 dark:text-white font-medium">
           <%= page %>
         </span>
         <% else %>
@@ -143,7 +142,7 @@
         <% end %>
         <% end %>
         <% else %>
-        <span class="flex items-center justify-center w-9 h-9 rounded-md border border-purple-500 dark:border-purple-700 bg-purple-100 dark:bg-purple-700/30 text-purple-700 dark:text-white font-medium">
+        <span class="flex items-center justify-center w-9 h-9 rounded-md border border-blue-500 dark:border-purple-700 bg-blue-50 dark:bg-purple-700/30 text-blue-700 dark:text-white font-medium">
           1
         </span>
         <% end %>
@@ -182,7 +181,6 @@
   </div>
 </div>
 
-<%# Script để tải lại các icon Lucide sau khi nội dung được cập nhật qua Turbo %>
 <script>
   document.addEventListener("turbo:load", function() {
     if (window.lucide) {

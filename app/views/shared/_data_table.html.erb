@@ -7,7 +7,7 @@
         <div class="w-full lg:flex-1">
           <div class="relative group">
             <%= f.text_field :search, value: params[:search],
-                    class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 pl-10 pr-12 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300",
+                    class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 pl-10 pr-12 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 focus:border-blue-500 dark:focus:border-purple-500 transition-all duration-300",
                     placeholder: filters[:search_placeholder] || "Tìm kiếm...",
                     autocomplete: "off"
                 %>
@@ -39,7 +39,7 @@
             <%= f.select :status, filters[:status_options],
                       { selected: params[:status] },
                       {
-                        class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-2 px-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-200",
+                        class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-2 px-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 transition-colors duration-200",
                         onchange: "this.form.requestSubmit()"
                       }
                   %>
@@ -52,7 +52,7 @@
                       filters[:categories].collect { |c| [c.name, c.id] },
                       { include_blank: 'All Category', selected: params[:category_id] },
                       {
-                        class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-2 px-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-200",
+                        class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-2 px-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 transition-colors duration-200",
                         onchange: "this.form.requestSubmit()"
                       }
                   %>
@@ -76,7 +76,7 @@
   <div class="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
       <div>
-        <h2 class="text-lg md:text-xl text-purple-600 dark:text-purple-400 font-medium"><%= title %></h2>
+        <h2 class="text-lg md:text-xl text-blue-600 dark:text-purple-400 font-medium"><%= title %></h2>
         <% if defined?(subtitle) && subtitle.present? %>
         <p class="text-sm text-gray-600 dark:text-gray-400"><%= subtitle %></p>
         <% end %>

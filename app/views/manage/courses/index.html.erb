@@ -1,9 +1,19 @@
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white p-6">
   <div class="container">
+    <% header_actions_content = capture do %>
+      <%= link_to new_manage_course_path, class: "flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors", data: { turbo: false } do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Thêm khóa học
+      <% end %>
+    <% end %>
+
     <%= render 'shared/data_table',
       title: "Courses",
       subtitle: "Manage your courses here",
-      header_actions: render(partial: "manage/courses/header_actions"),
+      header_actions: header_actions_content,
       turbo_frame_id: "courses_data_table",
       filters: {
         url: manage_courses_path,

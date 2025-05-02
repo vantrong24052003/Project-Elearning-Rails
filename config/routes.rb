@@ -17,7 +17,6 @@ Rails.application.routes.draw do
       resources :viewers
     end
 
-    resources :uploads
     resources :quiz_attempts, only: %i[index show]
     resources :enrollments, only: %i[index]
 
@@ -27,6 +26,8 @@ Rails.application.routes.draw do
   end
 
   namespace :manage do
+    root to: 'courses#index'
+
     resources :courses do
       member do
         post :publish
