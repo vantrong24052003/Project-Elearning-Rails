@@ -1,3 +1,11 @@
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+  <meta name="turbo-visit-control" content="reload">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+<% end %>
+
 <div class="container mx-auto px-4 py-8 bg-gray-900"
      data-controller="dashboard--quiz-timer"
      data-dashboard--quiz-timer-mode-value="<%= @mode %>"
@@ -25,7 +33,7 @@
 
           <div class="mt-2 flex justify-center">
             <button type="button"
-                    class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm <%= @mode == 'exam' ? 'hidden' : '' %>"
+                    class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm <%= @quiz.is_exam ? 'hidden' : '' %>"
                     data-dashboard--quiz-timer-target="pauseBtn"
                     data-action="click->dashboard--quiz-timer#togglePause">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
