@@ -1,15 +1,15 @@
 <div class="container mx-auto px-4 py-8 bg-gray-900">
   <div class="mb-6">
     <div class="flex items-center gap-2 text-gray-400 mb-2">
-      <%= link_to "Khóa học", dashboard_courses_path, class: "hover:text-purple-400 transition-colors" %>
+      <%= link_to "Khóa học", dashboard_courses_path, class: "hover:text-purple-400 " %>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
-      <%= link_to @course.title, dashboard_course_path(@course), class: "hover:text-purple-400 transition-colors" %>
+      <%= link_to @course.title, dashboard_course_path(@course), class: "hover:text-purple-400 " %>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
-      <%= link_to "Bài kiểm tra", dashboard_course_quizzes_path(@course), class: "hover:text-purple-400 transition-colors" %>
+      <%= link_to "Bài kiểm tra", dashboard_course_quizzes_path(@course), class: "hover:text-purple-400 " %>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
@@ -79,7 +79,7 @@
   </div>
 
   <div class="mt-8">
-    <%= link_to dashboard_course_quiz_path(@course, @quiz), class: "inline-flex items-center text-gray-400 hover:text-purple-400 transition-colors" do %>
+    <%= link_to dashboard_course_quiz_path(@course, @quiz), class: "inline-flex items-center text-gray-400 hover:text-purple-400 " do %>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
       </svg>

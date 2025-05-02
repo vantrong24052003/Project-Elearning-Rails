@@ -7,20 +7,10 @@ class Dashboard::AttemptsController < Dashboard::DashboardController
   before_action :check_ownership, only: [:show]
   after_action :clear_session_data, only: [:create]
 
-  def index
-    @attempts = QuizAttempt.where(quiz: @quiz, user: current_user)
-                           .order(created_at: :desc)
-  end
 
   def show
     @questions = @attempt.quiz.questions
     mark_quiz_as_submitted(@attempt.quiz_id)
-    @can_retake = !@attempt.quiz.is_exam?
-  end
-
-  def new
-    @attempt = QuizAttempt.new
-    @questions = @quiz.questions
   end
 
   def create
@@ -55,14 +45,6 @@ class Dashboard::AttemptsController < Dashboard::DashboardController
       redirect_to dashboard_course_quiz_path(@course, @quiz),
                   alert: 'There was an error submitting your quiz. Please try again.'
     end
-  end
-
-  def edit
-    redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, @attempt)
-  end
-
-  def update
-    redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, @attempt)
   end
 
   def destroy
