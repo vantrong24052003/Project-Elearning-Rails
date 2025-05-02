@@ -1,47 +1,40 @@
-import { Controller } from "@hotwired/stimulus";
+import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["mobileMenu", "menuOpenIcon", "menuCloseIcon", "userMenu", "themeToggleLightIcon", "themeToggleDarkIcon"];
+  static targets = ["mobileMenu", "lightIcon", "darkIcon", "userMenu"]
 
   connect() {
-    this.applyStoredTheme()
+    this.updateThemeIcons()
   }
 
   toggleTheme() {
     if (document.documentElement.classList.contains('dark')) {
       document.documentElement.classList.remove('dark')
-      localStorage.setItem('color-theme', 'light')
-      document.getElementById('theme-toggle-dark-icon').classList.add('hidden')
-      document.getElementById('theme-toggle-light-icon').classList.remove('hidden')
+      document.documentElement.setAttribute('data-theme', 'light')
+      localStorage.setItem('theme-mode', 'light')
     } else {
       document.documentElement.classList.add('dark')
-      localStorage.setItem('color-theme', 'dark')
-      document.getElementById('theme-toggle-light-icon').classList.add('hidden')
-      document.getElementById('theme-toggle-dark-icon').classList.remove('hidden')
+      document.documentElement.setAttribute('data-theme', 'dark')
+      localStorage.setItem('theme-mode', 'dark')
     }
+
+    this.updateThemeIcons()
   }
 
-  applyStoredTheme() {
-    const storedTheme = localStorage.getItem('color-theme')
-    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const isDarkMode = storedTheme === 'dark' || (!storedTheme && darkModeMediaQuery.matches)
+  updateThemeIcons() {
+    const isDarkMode = document.documentElement.classList.contains('dark')
 
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark')
-      document.getElementById('theme-toggle-dark-icon').classList.remove('hidden')
-      document.getElementById('theme-toggle-light-icon').classList.add('hidden')
-    } else {
-      document.documentElement.classList.remove('dark')
-      document.getElementById('theme-toggle-dark-icon').classList.add('hidden')
-      document.getElementById('theme-toggle-light-icon').classList.remove('hidden')
-    }
+    this.lightIconTargets.forEach(icon => {
+      icon.classList.toggle('hidden', isDarkMode)
+    })
+
+    this.darkIconTargets.forEach(icon => {
+      icon.classList.toggle('hidden', !isDarkMode)
+    })
   }
 
   toggleMobileMenu(event) {
     this.mobileMenuTarget.classList.toggle('hidden')
-
-    const expanded = !this.mobileMenuTarget.classList.contains('hidden')
-    event.currentTarget.setAttribute('aria-expanded', expanded)
   }
 
   scrollToSection(event) {
@@ -54,11 +47,8 @@ export default class extends Controller {
 
   scrollToSectionAndCloseMobileMenu(event) {
     this.scrollToSection(event)
-    this.mobileMenuTarget.classList.add('hidden')
-
-    const mobileMenuButton = document.querySelector('[aria-controls="mobile-menu"]')
-    if (mobileMenuButton) {
-      mobileMenuButton.setAttribute('aria-expanded', 'false')
+    if (this.hasMobileMenuTarget) {
+      this.mobileMenuTarget.classList.add('hidden')
     }
   }
 }
