@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Dashboard::ViewersController < Dashboard::DashboardController
+  before_action :authenticate_user!
+
   def index; end
 
   def show

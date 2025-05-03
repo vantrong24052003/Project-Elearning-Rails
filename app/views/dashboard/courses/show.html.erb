@@ -86,7 +86,7 @@
             <span class="text-sm text-gray-500 dark:text-gray-400">Thời lượng</span>
             <div class="text-xl font-semibold text-gray-800 dark:text-white">
               <% if @total_duration && @total_duration > 0 %>
-              <%= pluralize((@total_duration / 3600.0).ceil, "giờ") %>
+              <%= (@total_duration / 3600.0).ceil  %> giờ
               <% else %>
               Đang cập nhật
               <% end %>
@@ -262,7 +262,7 @@
             Bài kiểm tra
           </h2>
 
-          <% quizzes = @course.quizzes.where(is_exam: false).order(created_at: :desc).limit(3) %>
+          <% quizzes = @course.quizzes.order(created_at: :desc).limit(3) %>
 
           <% if quizzes.any? %>
             <div class="space-y-4 mb-6">
@@ -287,8 +287,16 @@
                   </div>
 
                   <% if user_signed_in? && current_user.enrollments.active.exists?(course: @course) %>
-                    <%= link_to dashboard_course_quiz_path(@course, quiz), class: "px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-medium  text-sm whitespace-nowrap" do %>
-                      Làm bài kiểm tra
+                    <% already_attempted = QuizAttempt.exists?(quiz: quiz, user: current_user) %>
+                    <% if already_attempted %>
+                      <% latest_attempt = QuizAttempt.where(quiz: quiz, user: current_user).order(created_at: :desc).first %>
+                      <%= link_to dashboard_course_quiz_attempt_path(@course, quiz, latest_attempt), class: "px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white font-medium text-sm whitespace-nowrap" do %>
+                        Xem kết quả (<%= latest_attempt.score %>%)
+                      <% end %>
+                    <% else %>
+                      <%= link_to dashboard_course_quiz_path(@course, quiz), class: "px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-medium text-sm whitespace-nowrap" do %>
+                        Làm bài kiểm tra
+                      <% end %>
                     <% end %>
                   <% else %>
                     <span class="px-4 py-2 rounded-lg bg-gray-400 text-white font-medium text-sm whitespace-nowrap cursor-not-allowed">

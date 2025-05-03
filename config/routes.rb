@@ -9,6 +9,8 @@ Rails.application.routes.draw do
   }
 
   namespace :dashboard do
+    root to: 'courses#index'
+
     resources :courses, only: %i[index show new edit create update destroy] do
       resources :quizzes do
         resources :attempts

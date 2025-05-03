@@ -9,3 +9,6 @@ Style/Documentation:
 
 Style/ClassAndModuleChildren:
   Enabled: false
+
+Style/GuardClause:
+  Enabled: false

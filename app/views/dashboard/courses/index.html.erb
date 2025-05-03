@@ -304,23 +304,17 @@
         <% end %>
       <% end %>
 
-      <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden" data-dashboard--course-filter-target="filterModal">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full p-6 m-4">
-          <div class="flex justify-between items-center mb-5">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Advanced Filters</h3>
-            <button type="button" data-action="click->dashboard--course-filter#toggleFilterModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
+      <dialog id="filter_modal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box bg-white dark:bg-gray-800">
+          <h3 class="font-bold text-xl text-gray-900 dark:text-white mb-4">Bộ lọc nâng cao</h3>
 
           <div class="space-y-6">
-            <div class="space-y-3">
-              <label for="modal-category" class="text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
-              <select id="modal-category" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-3 px-4 text-gray-900 dark:text-white shadow-sm" data-dashboard--course-filter-target="modalCategorySelect">
-                <option value="">All categories</option>
+            <div class="form-control w-full">
+              <label class="label">
+                <span class="label-text text-gray-700 dark:text-gray-300">Danh mục</span>
+              </label>
+              <select id="modal-category" class="select select-bordered w-full bg-white dark:bg-gray-700 text-gray-800 dark:text-white" data-dashboard--course-filter-target="modalCategorySelect">
+                <option value="">Tất cả danh mục</option>
                 <% @categories.each do |category| %>
                 <option value="<%= category.id %>" <%= params[:category_id].to_i == category.id ? 'selected' : '' %>>
                   <%= category.name %>
@@ -329,54 +323,58 @@
               </select>
             </div>
 
-            <div class="space-y-3">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center justify-between">
-                Price Range
-                <span class="text-xs text-gray-500">
+            <div class="form-control w-full">
+              <label class="label">
+                <span class="label-text text-gray-700 dark:text-gray-300">Khoảng giá</span>
+                <span class="label-text-alt text-gray-500 dark:text-gray-400">
                   <span data-dashboard--course-filter-target="modalPriceMin"><%= number_to_currency(params[:min_price] || 0, unit: "", precision: 0) %></span> -
                   <span data-dashboard--course-filter-target="modalPriceMax"><%= number_to_currency(params[:max_price] || 1000000, unit: "", precision: 0) %></span>đ
                 </span>
               </label>
 
-              <div data-controller="dashboard--price-slider" data-dashboard--price-slider-min-value="0" data-dashboard--price-slider-max-value="1000000" data-dashboard--price-slider-step-value="50000" data-action="dashboard--price-slider:change->dashboard--course-filter#updateModalPriceRange" class="px-2">
-                <div class="relative pt-6 pb-2">
-                  <div class="relative z-10">
-                    <input type="range" min="0" max="1000000" step="50000" value="<%= params[:min_price] || 0 %>"
-                          class="absolute w-full appearance-none bg-transparent pointer-events-none outline-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white"
-                          data-dashboard--price-slider-target="minSlider"
-                          data-action="input->dashboard--price-slider#updateValues">
+              <div class="px-2 py-4">
+                <div class="relative">
+                  <input type="range" min="0" max="1000000" step="50000" value="<%= params[:min_price] || 0 %>"
+                        class="range range-xs range-primary absolute w-full"
+                        data-dashboard--course-filter-target="minSlider"
+                        data-action="input->dashboard--course-filter#updateSliderValues mousedown->dashboard--course-filter#trackDraggingMin">
 
-                    <input type="range" min="0" max="1000000" step="50000" value="<%= params[:max_price] || 1000000 %>"
-                          class="absolute w-full appearance-none bg-transparent pointer-events-none outline-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white"
-                          data-dashboard--price-slider-target="maxSlider"
-                          data-action="input->dashboard--price-slider#updateValues">
-                  </div>
+                  <input type="range" min="0" max="1000000" step="50000" value="<%= params[:max_price] || 1000000 %>"
+                        class="range range-xs range-secondary absolute w-full"
+                        data-dashboard--course-filter-target="maxSlider"
+                        data-action="input->dashboard--course-filter#updateSliderValues mousedown->dashboard--course-filter#trackDraggingMax">
 
-                  <div class="absolute top-6 left-0 right-0 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-md">
-                    <div data-dashboard--price-slider-target="range" class="absolute h-full bg-purple-500 rounded-md"
-                        style="left: <%= (params[:min_price].to_f / 1000000 * 100).round rescue 0 %>%; right: <%= (100 - (params[:max_price].to_f / 1000000 * 100)).round rescue 0 %>%;">
+                  <div class="range-track mt-2.5">
+                    <div data-dashboard--course-filter-target="range" class="h-2 absolute bg-primary rounded-full"
+                         style="left: <%= (params[:min_price].to_f / 1000000 * 100).round rescue 0 %>%; right: <%= (100 - (params[:max_price].to_f / 1000000 * 100)).round rescue 0 %>%;">
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div class="flex justify-between mt-2 px-2 text-xs text-gray-600 dark:text-gray-400">
-                <span>0đ</span>
-                <span>1,000,000đ</span>
+                <div class="flex justify-between mt-8 text-xs text-gray-600 dark:text-gray-400">
+                  <span>0đ</span>
+                  <span>1.000.000đ</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="flex justify-end space-x-3 mt-8 border-t dark:border-gray-700 pt-5">
-            <button type="button" class="px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" data-action="click->dashboard--course-filter#resetFilters">
-              Reset All
+          <div class="modal-action mt-6 flex justify-end border-t dark:border-gray-700 pt-4">
+            <button type="button" class="btn btn-outline" data-action="click->dashboard--course-filter#resetFilters">
+              Đặt lại
             </button>
-            <button type="button" class="px-4 py-2.5 rounded-lg border border-transparent text-sm font-medium text-white bg-purple-600 hover:bg-purple-700" data-action="click->dashboard--course-filter#applyModalFilters">
-              Apply Filters
+            <button type="button" class="btn btn-primary" data-action="click->dashboard--course-filter#applyModalFilters">
+              Áp dụng
             </button>
+            <form method="dialog">
+              <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
           </div>
         </div>
-      </div>
+        <form method="dialog" class="modal-backdrop">
+          <button>Đóng</button>
+        </form>
+      </dialog>
     </div>
   </section>
 
