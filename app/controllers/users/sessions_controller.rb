@@ -12,7 +12,7 @@ class Users::SessionsController < Devise::SessionsController
 
   def after_sign_in_path_for(resource)
     if resource.has_role?(:admin)
-      manage_root_path 
+      manage_root_path
     elsif resource.has_role?(:instructor)
       dashboard_instructor_courses_path
     else
