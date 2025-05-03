@@ -14,6 +14,7 @@ import course_viewer_controller from "./dashboard/course_viewer_controller"
 import quiz_timer_controller from "./dashboard/quiz_timer_controller"
 import quiz_index_controller from "./dashboard/quiz_index_controller"
 import drawer_controller from "./shared/drawer_controller"
+import ManageCoursesController from "./manage/courses_controller"
 
 // home
 application.register("home--faq", faq_controller)
@@ -33,3 +34,6 @@ application.register("dashboard--course-filter", course_filter_controller)
 application.register("dashboard--course-viewer", course_viewer_controller)
 application.register("dashboard--quiz-timer", quiz_timer_controller)
 application.register("dashboard--quiz-index", quiz_index_controller)
+
+// manage
+application.register("manage--courses", ManageCoursesController)
