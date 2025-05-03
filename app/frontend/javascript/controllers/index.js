@@ -33,5 +33,3 @@ application.register("dashboard--course-filter", course_filter_controller)
 application.register("dashboard--course-viewer", course_viewer_controller)
 application.register("dashboard--quiz-timer", quiz_timer_controller)
 application.register("dashboard--quiz-index", quiz_index_controller)
-
-// manage
