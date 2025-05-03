@@ -42,28 +42,38 @@ class Manage::VideosController < Manage::BaseController
 
   def filter_videos
     videos = Video.joins(:upload)
-                .includes(:lesson, upload: :user)
-                .where(uploads: { status: :success })
-                .order(created_at: :desc)
+                  .includes(:lesson, upload: :user)
+                  .where(uploads: { status: :success })
+                  .order(created_at: :desc)
 
     if params[:status].present? && params[:status].to_sym != :success
       videos = Video.includes(:lesson, upload: :user)
-                  .joins(:upload)
-                  .where(uploads: { status: params[:status] })
+                    .joins(:upload)
+                    .where(uploads: { status: params[:status] })
                     .order(created_at: :desc)
     end
 
     videos = videos.where(uploads: { user_id: params[:instructor_id] }) if params[:instructor_id].present?
-    videos = videos.where(uploads: { moderation_status: params[:moderation_status].to_sym }) if params[:moderation_status].present?
-    videos = videos.joins(lesson: { chapter: :course }).where(chapters: { course_id: params[:course_id] }) if params[:course_id].present?
+    if params[:moderation_status].present?
+      videos = videos.where(uploads: { moderation_status: params[:moderation_status].to_sym })
+    end
+    if params[:course_id].present?
+      videos = videos.joins(lesson: { chapter: :course }).where(chapters: { course_id: params[:course_id] })
+    end
 
     if params[:filename].present?
       search_term = "%#{params[:filename]}%"
-      videos = videos.where("uploads.filename ILIKE ? OR videos.title ILIKE ?", search_term, search_term)
+      videos = videos.where('uploads.filename ILIKE ? OR videos.title ILIKE ?', search_term, search_term)
     end
 
-    videos = videos.where("videos.created_at >= ?", params[:created_from].to_date.beginning_of_day) if params[:created_from].present?
-    videos = videos.where("videos.created_at <= ?", params[:created_to].to_date.end_of_day) if params[:created_to].present?
+    if params[:created_from].present?
+      videos = videos.where('videos.created_at >= ?',
+                            params[:created_from].to_date.beginning_of_day)
+    end
+    if params[:created_to].present?
+      videos = videos.where('videos.created_at <= ?',
+                            params[:created_to].to_date.end_of_day)
+    end
 
     videos.page(params[:page]).per(params[:per_page] || 10)
   end
