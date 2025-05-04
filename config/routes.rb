@@ -21,9 +21,7 @@ Rails.application.routes.draw do
 
     resources :quiz_attempts, only: %i[index show]
     resources :enrollments, only: %i[index]
-
     resources :profiles, only: %i[show update]
-
     resources :passwords, only: %i[edit update]
   end
 
@@ -39,7 +37,9 @@ Rails.application.routes.draw do
 
     resources :chapters
     resources :lessons
-    resources :videos
+    resources :videos do
+      resource :moderation, only: [:update]
+    end
     resources :quizzes
     resources :questions
     resources :quiz_attempts

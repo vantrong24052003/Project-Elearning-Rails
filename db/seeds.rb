@@ -117,21 +117,50 @@ course_descriptions = [
   'Master project management skills.'
 ]
 
-uploads = demo_videos.map.with_index do |video_path, index|
+uploads = demo_videos.map do |video_path|
+  upload_status = [:pending, :processing, :success, :failed].sample
+  progress = case upload_status
+             when :pending then 0
+             when :processing then rand(10..90)
+             when :success then 100
+             when :failed then rand(10..90)
+             end
+
+  formats = if upload_status == :success
+              ['mp4'].concat([:webm, :hls].sample(rand(0..2)))
+            else
+              []
+            end
+
+  processing_log = if upload_status == :failed
+                      ["Error processing video: codec not supported.",
+                       "Failed to transcode: invalid bitrate.",
+                       "Processing timeout after 30 minutes.",
+                       "Failed to generate thumbnails: corrupt file.",
+                       "Network error during file upload."].sample
+                    else
+                      nil
+                    end
+
   Upload.create!(
     file_type: 'video',
     cdn_url: video_path,
-    thumbnail_path: course_thumbnails[index % course_thumbnails.length],
+    thumbnail_path: course_thumbnails.sample,
     duration: rand(200..500),
-    resolution: '1080p',
+    resolution: ['720p', '1080p', '1440p', '4K'].sample,
     user_id: instructor.id,
-    status: 'success'
+    status: upload_status,
+    progress: progress,
+    formats: formats,
+    processing_log: processing_log,
+    created_at: rand(1..30).days.ago
   )
 end
 
 categories = [category1, category2, category3, category4]
 languages = %w[English Vietnamese Japanese]
 prices = [29.99, 49.99, 99.99, 149.99, 199.99]
+moderation_statuses = %i[pending approved rejected locked]
 
 100.times do |i|
   title_index = rand(0..course_titles.length - 1)
@@ -169,14 +198,17 @@ prices = [29.99, 49.99, 99.99, 149.99, 199.99]
       )
 
       (2..3).to_a.sample.times do |l|
-        upload = uploads.sample
+        success_uploads = uploads.select { |upload| upload.status == 'success' }
+        available_upload = success_uploads.any? ? success_uploads.sample : uploads.sample
+
         Video.create!(
           title: "Video #{l + 1}: #{lesson.title}",
           lesson: lesson,
-          upload: upload,
-          thumbnail: upload.thumbnail_path,
+          upload: available_upload,
+          thumbnail: available_upload.thumbnail_path,
           position: l + 1,
-          is_locked: l.zero? ? nil : '1985-05-10'
+          is_locked: l.zero? ? nil : '1985-05-10',
+          moderation_status: [:pending, :approved, :rejected, :locked].sample
         )
       end
     end
