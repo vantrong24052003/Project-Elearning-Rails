@@ -65,8 +65,8 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
                 alert: 'You need to enroll in this course to take quizzes.'
   end
 
-    def check_if_exam_already_taken
-      return unless @quiz.is_exam? && QuizAttempt.exists?(quiz: @quiz, user: current_user)
+  def check_if_exam_already_taken
+    return unless @quiz.is_exam? && QuizAttempt.exists?(quiz: @quiz, user: current_user)
 
     latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
     redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, latest_attempt),

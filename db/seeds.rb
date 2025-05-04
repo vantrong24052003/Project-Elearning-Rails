@@ -118,7 +118,7 @@ course_descriptions = [
 ]
 
 uploads = demo_videos.map do |video_path|
-  upload_status = [:pending, :processing, :success, :failed].sample
+  upload_status = %i[pending processing success failed].sample
   progress = case upload_status
              when :pending then 0
              when :processing then rand(10..90)
@@ -127,27 +127,25 @@ uploads = demo_videos.map do |video_path|
              end
 
   formats = if upload_status == :success
-              ['mp4'].concat([:webm, :hls].sample(rand(0..2)))
+              ['mp4'].concat(%i[webm hls].sample(rand(0..2)))
             else
               []
             end
 
   processing_log = if upload_status == :failed
-                      ["Error processing video: codec not supported.",
-                       "Failed to transcode: invalid bitrate.",
-                       "Processing timeout after 30 minutes.",
-                       "Failed to generate thumbnails: corrupt file.",
-                       "Network error during file upload."].sample
-                    else
-                      nil
-                    end
+                     ['Error processing video: codec not supported.',
+                      'Failed to transcode: invalid bitrate.',
+                      'Processing timeout after 30 minutes.',
+                      'Failed to generate thumbnails: corrupt file.',
+                      'Network error during file upload.'].sample
+                   end
 
   Upload.create!(
     file_type: 'video',
     cdn_url: video_path,
     thumbnail_path: course_thumbnails.sample,
     duration: rand(200..500),
-    resolution: ['720p', '1080p', '1440p', '4K'].sample,
+    resolution: %w[720p 1080p 1440p 4K].sample,
     user_id: instructor.id,
     status: upload_status,
     progress: progress,
@@ -160,7 +158,6 @@ end
 categories = [category1, category2, category3, category4]
 languages = %w[English Vietnamese Japanese]
 prices = [29.99, 49.99, 99.99, 149.99, 199.99]
-moderation_statuses = %i[pending approved rejected locked]
 
 100.times do |i|
   title_index = rand(0..course_titles.length - 1)
@@ -208,7 +205,7 @@ moderation_statuses = %i[pending approved rejected locked]
           thumbnail: available_upload.thumbnail_path,
           position: l + 1,
           is_locked: l.zero? ? nil : '1985-05-10',
-          moderation_status: [:pending, :approved, :rejected, :locked].sample
+          moderation_status: %i[pending approved rejected locked].sample
         )
       end
     end
