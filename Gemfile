@@ -36,19 +36,16 @@ gem 'thruster', require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
-# OmniAuth for authentication
+gem 'caxlsx'
+gem 'caxlsx_rails'
 gem 'omniauth'
 gem 'omniauth-google-oauth2'
-
+gem 'pagy'
 gem 'redis'
 gem 'sidekiq'
 
-# Pagination
-gem 'pagy'
-
-# Excel support
-gem 'caxlsx'
-gem 'caxlsx_rails'
+# Xử lý video
+gem 'streamio-ffmpeg', '3.0'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

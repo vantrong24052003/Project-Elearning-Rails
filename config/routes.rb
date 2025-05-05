@@ -43,7 +43,12 @@ Rails.application.routes.draw do
     resources :quizzes
     resources :questions
     resources :quiz_attempts
-    resources :uploads
+    resources :uploads do
+      member do
+        get :progress
+        post :retry
+      end
+    end
     resources :enrollments
     resources :users
     resources :faqs

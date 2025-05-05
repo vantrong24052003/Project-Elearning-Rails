@@ -17,6 +17,10 @@ import drawer_controller from "./shared/drawer_controller"
 import ManageCoursesController from "./manage/courses_controller"
 import VideoFilterController from "./manage/video_filter_controller"
 import PaginationController from "./shared/pagination_controller"
+import UploadFormController from "./manage/upload_form_controller"
+import UploadTranscodingController from "./manage/upload_transcoding_controller"
+import ManageUploadFormController from "./manage/upload_form_controller"
+import VideoPlayerController from "./shared/video_player_controller"
 
 // home
 application.register("home--faq", faq_controller)
@@ -31,13 +35,18 @@ application.register("shared--clipboard", clipboard_controller)
 application.register("shared--countdown", countdown_controller)
 application.register("shared--drawer", drawer_controller)
 application.register("shared--pagination", PaginationController)
+application.register("shared--video-player", VideoPlayerController)
 
 // dashboard
 application.register("dashboard--course-filter", course_filter_controller)
 application.register("dashboard--course-viewer", course_viewer_controller)
 application.register("dashboard--quiz-timer", quiz_timer_controller)
 application.register("dashboard--quiz-index", quiz_index_controller)
+application.register("dashboard--video-player", VideoPlayerController)
 
 // manage
 application.register("manage--courses", ManageCoursesController)
 application.register("manage--video-filter", VideoFilterController)
+application.register("manage--upload-form", UploadFormController)
+application.register("manage--upload-transcoding", UploadTranscodingController)
+application.register("manage--upload-form", ManageUploadFormController)
