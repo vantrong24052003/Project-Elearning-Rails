@@ -22,11 +22,22 @@ class Manage::UploadsController < Manage::BaseController
       if params[:upload] && params[:upload][:video].present?
         video_file = params[:upload][:video]
 
+        # Kiểm tra định dạng file video
+        unless video_file.content_type.start_with?('video/')
+          respond_to do |format|
+            format.html do
+              flash.now[:alert] = 'Please upload a valid video file. Supported formats: MP4, MOV, AVI, MKV, WebM, etc.'
+              render :new, status: :unprocessable_entity
+            end
+            format.json { render json: { success: false, errors: ['Invalid file format. Please upload a video file.'] }, status: :bad_request }
+          end
+          return
+        end
+
         @upload.file_type = video_file.content_type.split('/').last
         @upload.cdn_url = 'placeholder_url'
         @upload.thumbnail_path = 'placeholder_thumbnail'
         @upload.duration = 0
-        @upload.resolution = '0x0'
         @upload.formats = []
 
         temp_dir = Rails.root.join('tmp', 'videos')
@@ -121,11 +132,17 @@ class Manage::UploadsController < Manage::BaseController
   end
 
   def progress
-    render json: {
-      id: @upload.id,
-      status: @upload.status,
-      progress: @upload.progress || 0
-    }
+    if @upload
+      render json: {
+        id: @upload.id,
+        status: @upload.status,
+        progress: @upload.progress || 0
+      }
+    else
+      render json: {
+        error: 'Upload not found'
+      }, status: :not_found
+    end
   end
 
   def retry
@@ -163,7 +180,7 @@ class Manage::UploadsController < Manage::BaseController
   end
 
   def upload_params
-    params.require(:upload).permit(:video, :cdn_url, :file_type, :thumbnail_path, :duration, :resolution, :formats,
-                                   :status, :progress, :processing_log)
+    params.require(:upload).permit(:video, :cdn_url, :file_type, :thumbnail_path, :duration, :formats,
+                                   :status, :progress, :processing_log, :quality_360p_url, :quality_480p_url, :quality_720p_url)
   end
 end

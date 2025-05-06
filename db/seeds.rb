@@ -145,7 +145,6 @@ uploads = demo_videos.map do |video_path|
     cdn_url: video_path,
     thumbnail_path: course_thumbnails.sample,
     duration: rand(200..500),
-    resolution: %w[720p 1080p 1440p 4K].sample,
     user_id: instructor.id,
     status: upload_status,
     progress: progress,

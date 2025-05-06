@@ -19,7 +19,6 @@ Rails.application.routes.draw do
       resources :viewers
     end
 
-    resources :quiz_attempts, only: %i[index show]
     resources :enrollments, only: %i[index]
     resources :profiles, only: %i[show update]
     resources :passwords, only: %i[edit update]

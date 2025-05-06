@@ -2,6 +2,7 @@ import "@hotwired/turbo-rails"
 import "./controllers"
 import "toastr/build/toastr.min.css";
 import { createIcons, icons } from "lucide"
+import "hls.js"
 
 toastr.options = {
   closeButton: true,
