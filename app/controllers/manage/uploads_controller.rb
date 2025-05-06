@@ -53,26 +53,6 @@ class Manage::UploadsController < Manage::BaseController
           file.write(video_file.read)
         end
 
-        upload_dirs = [
-          Rails.root.join('public', 'uploads'),
-          Rails.root.join('public', 'uploads', 'videos'),
-          Rails.root.join('public', 'uploads', 'thumbnails'),
-          Rails.root.join('tmp', 'videos')
-        ]
-
-        upload_dirs.each do |dir|
-          FileUtils.mkdir_p(dir)
-          FileUtils.chmod(0o755, dir)
-        end
-
-        test_file_path = Rails.root.join('public', 'uploads', 'test_write_permission.txt')
-        begin
-          File.open(test_file_path, 'w') { |f| f.write('test') }
-          File.delete(test_file_path) if File.exist?(test_file_path)
-        rescue StandardError => e
-          Rails.logger.error "✗ Không có quyền ghi vào thư mục public/uploads: #{e.message}"
-        end
-
         if @upload.save
           @upload.update(processing_log: temp_file_path.to_s)
 
@@ -136,11 +116,22 @@ class Manage::UploadsController < Manage::BaseController
 
   def progress
     if @upload
-      render json: {
+      response = {
         id: @upload.id,
         status: @upload.status,
         progress: @upload.progress || 0
       }
+
+      if @upload.status == 'success'
+        response.merge!({
+                          cdn_url: @upload.cdn_url,
+                          thumbnail_url: @upload.thumbnail_path,
+                          duration: @upload.duration,
+                          formats: @upload.formats
+                        })
+      end
+
+      render json: response
     else
       render json: {
         error: 'Upload not found'

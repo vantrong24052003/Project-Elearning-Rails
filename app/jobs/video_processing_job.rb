@@ -1,12 +1,5 @@
 # frozen_string_literal: true
 
-begin
-  require 'streamio-ffmpeg'
-rescue LoadError
-  puts 'Gem streamio-ffmpeg chưa được cài đặt. Một số tính năng xử lý video sẽ không khả dụng.'
-end
-require 'fileutils'
-
 class VideoProcessingJob < ApplicationJob
   queue_as :default
 
@@ -24,35 +17,38 @@ class VideoProcessingJob < ApplicationJob
       temp_file_path = extract_temp_file_path(upload)
       raise "Temporary file not found: #{temp_file_path}" unless temp_file_path.present? && File.exist?(temp_file_path)
 
-      dirs = setup_directories(upload)
+      temp_dirs = setup_temp_directories(upload.id.to_s)
       formats = []
       update_upload_progress(upload, 20)
 
-      mp4_path = copy_original_video(temp_file_path, dirs[:videos_dir])
+      mp4_path = convert_to_mp4(temp_file_path, temp_dirs[:videos_dir])
       formats << 'mp4'
       update_upload_progress(upload, 40)
 
-      create_thumbnail(mp4_path, dirs[:thumbnail_dir])
+      create_thumbnail(mp4_path, temp_dirs[:thumbnail_dir])
       update_upload_progress(upload, 50)
 
-      hls_result = convert_to_hls(mp4_path, dirs[:hls_dir])
+      hls_result = convert_to_hls(mp4_path, temp_dirs[:hls_dir])
       formats << 'hls' if hls_result[:success]
       update_upload_progress(upload, 80)
 
       video_info = extract_video_info(mp4_path)
-      cdn_url = determine_cdn_url(upload.id, formats)
+
+      s3_paths = upload_to_s3(upload.id.to_s, temp_dirs, formats)
 
       update_upload_progress(upload, 100, 'success', {
-                               cdn_url: cdn_url,
-                               thumbnail_path: "/uploads/thumbnails/#{upload.id}/thumbnail.jpg",
+                               cdn_url: s3_paths[:hls_url] || s3_paths[:mp4_url],
+                               thumbnail_path: s3_paths[:thumbnail_url],
                                formats: formats,
                                duration: video_info[:duration].to_i,
-                               quality_360p_url: hls_result[:quality_urls]['360p'],
-                               quality_480p_url: hls_result[:quality_urls]['480p'],
-                               quality_720p_url: hls_result[:quality_urls]['720p']
+                               quality_360p_url: s3_paths[:quality_360p_url],
+                               quality_480p_url: s3_paths[:quality_480p_url],
+                               quality_720p_url: s3_paths[:quality_720p_url]
                              })
 
-      Rails.logger.info "Xử lý video hoàn tất: #{cdn_url}"
+      cleanup_temp_files(temp_dirs.values, temp_file_path)
+
+      Rails.logger.info "Xử lý video hoàn tất: #{s3_paths[:hls_url] || s3_paths[:mp4_url]}"
     rescue StandardError => e
       handle_error(upload, e, temp_file_path)
       raise e
@@ -67,11 +63,11 @@ class VideoProcessingJob < ApplicationJob
     nil
   end
 
-  def setup_directories(upload)
+  def setup_temp_directories(upload_id)
     dirs = {
-      videos_dir: Rails.root.join('public', 'uploads', 'videos', upload.id.to_s),
-      hls_dir: Rails.root.join('public', 'uploads', 'hls', upload.id.to_s),
-      thumbnail_dir: Rails.root.join('public', 'uploads', 'thumbnails', upload.id.to_s)
+      videos_dir: Rails.root.join('tmp', 'video_processing', upload_id, 'videos'),
+      hls_dir: Rails.root.join('tmp', 'video_processing', upload_id, 'hls'),
+      thumbnail_dir: Rails.root.join('tmp', 'video_processing', upload_id, 'thumbnails')
     }
 
     dirs.each_value do |dir|
@@ -82,17 +78,13 @@ class VideoProcessingJob < ApplicationJob
     dirs
   end
 
-  def copy_original_video(temp_file_path, videos_dir)
-    # Luôn chuyển đổi thành MP4 bất kể định dạng đầu vào là gì
+  def convert_to_mp4(temp_file_path, videos_dir)
     mp4_path = File.join(videos_dir, 'video.mp4')
 
-    # Sử dụng ffmpeg để chuyển đổi file từ bất kỳ định dạng video nào sang MP4
     convert_cmd = "ffmpeg -y -i #{temp_file_path} -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 128k #{mp4_path}"
     system(convert_cmd)
 
-    # Kiểm tra xem file MP4 đã được tạo thành công chưa
     unless File.exist?(mp4_path) && File.size?(mp4_path).to_i.positive?
-      # Nếu không thành công, thử phương pháp copy thẳng
       Rails.logger.warn 'Không thể chuyển đổi video sang MP4, thử phương pháp copy trực tiếp'
       FileUtils.cp(temp_file_path, mp4_path)
     end
@@ -147,7 +139,7 @@ class VideoProcessingJob < ApplicationJob
   def convert_to_hls(mp4_path, hls_dir)
     result = {
       success: false,
-      quality_urls: {
+      quality_dirs: {
         '360p' => nil,
         '480p' => nil,
         '720p' => nil
@@ -170,7 +162,7 @@ class VideoProcessingJob < ApplicationJob
         next unless quality_result[:success]
 
         master_content += quality_result[:master_content]
-        result[:quality_urls][quality] = quality_result[:url]
+        result[:quality_dirs][quality] = quality_result[:dir]
         hls_success = true
       end
 
@@ -178,6 +170,7 @@ class VideoProcessingJob < ApplicationJob
         File.write(master_m3u8_path, master_content)
         FileUtils.chmod(0o644, master_m3u8_path)
         result[:success] = true
+        result[:master_path] = master_m3u8_path
         Rails.logger.info 'Tạo master playlist HLS thành công'
       else
         Rails.logger.warn 'Không thể tạo master playlist HLS'
@@ -210,7 +203,7 @@ class VideoProcessingJob < ApplicationJob
   end
 
   def convert_quality(mp4_path, hls_dir, quality, options)
-    result = { success: false, master_content: '', url: nil }
+    result = { success: false, master_content: '', dir: nil }
 
     quality_dir = File.join(hls_dir, quality)
     playlist_m3u8_path = File.join(quality_dir, 'playlist.m3u8')
@@ -234,10 +227,10 @@ class VideoProcessingJob < ApplicationJob
       FileUtils.chmod(0o644, playlist_m3u8_path)
       FileUtils.chmod(0o644, Dir.glob("#{quality_dir}/*.ts"))
 
-      result[:url] = "/uploads/hls/#{File.basename(File.dirname(hls_dir))}/#{quality}/playlist.m3u8"
+      result[:dir] = quality_dir
       result[:success] = true
 
-      Rails.logger.info "Chuyển đổi HLS #{quality} thành công với đường dẫn: #{result[:url]}"
+      Rails.logger.info "Chuyển đổi HLS #{quality} thành công"
     else
       Rails.logger.warn "Không thể tạo HLS playlist cho #{quality}"
     end
@@ -283,11 +276,99 @@ class VideoProcessingJob < ApplicationJob
     { duration: 0, resolution: '0x0' }
   end
 
-  def determine_cdn_url(upload_id, formats)
+  def upload_to_s3(upload_id, temp_dirs, formats)
+    s3_config = YAML.safe_load(ERB.new(File.read(Rails.root.join('config', 'storage.yml'))).result)['amazon']
+
+    raise 'Cấu hình S3 không hợp lệ' if s3_config.nil? || s3_config['access_key_id'].blank?
+
+    s3_client = Aws::S3::Resource.new(
+      region: s3_config['region'],
+      access_key_id: s3_config['access_key_id'],
+      secret_access_key: s3_config['secret_access_key']
+    )
+
+    bucket = s3_client.bucket(s3_config['bucket'])
+
+    bucket.objects.limit(1).collect
+
+    base_s3_path = "uploads/#{upload_id}"
+
+    result = {
+      mp4_url: nil,
+      hls_url: nil,
+      thumbnail_url: nil,
+      quality_360p_url: nil,
+      quality_480p_url: nil,
+      quality_720p_url: nil
+    }
+
+    mp4_file = File.join(temp_dirs[:videos_dir], 'video.mp4')
+    if File.exist?(mp4_file)
+      mp4_key = "#{base_s3_path}/video.mp4"
+      bucket.object(mp4_key).upload_file(mp4_file)
+      result[:mp4_url] = "https://#{bucket.name}.s3.#{s3_client.client.config.region}.amazonaws.com/#{mp4_key}"
+    end
+
+    thumbnail_file = File.join(temp_dirs[:thumbnail_dir], 'thumbnail.jpg')
+    if File.exist?(thumbnail_file)
+      thumbnail_key = "#{base_s3_path}/thumbnail.jpg"
+      bucket.object(thumbnail_key).upload_file(thumbnail_file)
+      result[:thumbnail_url] = "https://#{bucket.name}.s3.#{s3_client.client.config.region}.amazonaws.com/#{thumbnail_key}"
+    end
+
     if formats.include?('hls')
-      "/uploads/hls/#{upload_id}/master.m3u8"
-    else
-      "/uploads/videos/#{upload_id}/video.mp4"
+      master_file = File.join(temp_dirs[:hls_dir], 'master.m3u8')
+      if File.exist?(master_file)
+        master_key = "#{base_s3_path}/hls/master.m3u8"
+        bucket.object(master_key).upload_file(master_file, {
+                                                content_type: 'application/x-mpegURL'
+                                              })
+        result[:hls_url] = "https://#{bucket.name}.s3.#{s3_client.client.config.region}.amazonaws.com/#{master_key}"
+      end
+
+      %w[360p 480p 720p].each do |quality|
+        quality_dir = File.join(temp_dirs[:hls_dir], quality)
+        next unless Dir.exist?(quality_dir)
+
+        playlist_file = File.join(quality_dir, 'playlist.m3u8')
+        if File.exist?(playlist_file)
+          playlist_key = "#{base_s3_path}/hls/#{quality}/playlist.m3u8"
+          bucket.object(playlist_key).upload_file(playlist_file, {
+                                                    content_type: 'application/x-mpegURL'
+                                                  })
+          result[:"quality_#{quality}_url"] = "https://#{bucket.name}.s3.#{s3_client.client.config.region}.amazonaws.com/#{playlist_key}"
+        end
+
+        segment_files = Dir.glob(File.join(quality_dir, '*.ts'))
+        segment_files.each do |segment_file|
+          segment_name = File.basename(segment_file)
+          segment_key = "#{base_s3_path}/hls/#{quality}/#{segment_name}"
+          bucket.object(segment_key).upload_file(segment_file, {
+                                                   content_type: 'video/MP2T'
+                                                 })
+        end
+      end
+    end
+
+    result
+  rescue StandardError => e
+    Rails.logger.error "Lỗi S3: #{e.message}"
+
+    {
+      mp4_url: 'https://via.placeholder.com/640x360.png?text=Video+Processing+Failed',
+      hls_url: nil,
+      thumbnail_url: 'https://via.placeholder.com/640x360.png?text=Thumbnail+Processing+Failed',
+      quality_360p_url: nil,
+      quality_480p_url: nil,
+      quality_720p_url: nil
+    }
+  end
+
+  def cleanup_temp_files(temp_dirs, original_temp_file = nil)
+    File.delete(original_temp_file) if original_temp_file && File.exist?(original_temp_file)
+
+    temp_dirs.each do |dir|
+      FileUtils.rm_rf(dir) if dir && Dir.exist?(dir)
     end
   end
 
@@ -304,6 +385,12 @@ class VideoProcessingJob < ApplicationJob
   def update_upload_progress(upload, progress, status = nil, additional_attrs = {})
     attrs = { progress: progress }
     attrs[:status] = status if status.present?
+
+    if status == 'success'
+      additional_attrs[:cdn_url] = additional_attrs[:cdn_url].presence || '/placeholder_url'
+      additional_attrs[:thumbnail_path] = additional_attrs[:thumbnail_path].presence || '/placeholder_thumbnail'
+    end
+
     attrs.merge!(additional_attrs) if additional_attrs.present?
 
     Rails.logger.info "Cập nhật tiến trình xử lý video #{upload.id}: #{progress}% - #{status || 'đang tiếp tục'}"

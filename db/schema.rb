@@ -169,9 +169,9 @@ ActiveRecord::Schema[8.0].define(version: 20_250_501_000_001) do
     t.string 'formats', default: [], array: true
     t.integer 'progress', default: 0
     t.text 'processing_log'
-    t.string 'quality_360p_url', comment: 'Đường dẫn video chất lượng 360p'
-    t.string 'quality_480p_url', comment: 'Đường dẫn video chất lượng 480p'
-    t.string 'quality_720p_url', comment: 'Đường dẫn video chất lượng 720p'
+    t.string 'quality_360p_url'
+    t.string 'quality_480p_url'
+    t.string 'quality_720p_url'
     t.index ['user_id'], name: 'index_uploads_on_user_id'
   end
 
