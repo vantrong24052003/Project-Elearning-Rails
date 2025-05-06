@@ -21,8 +21,6 @@ class Upload < ApplicationRecord
       quality_480p_url
     when '720p'
       quality_720p_url
-    else
-      nil
     end
   end
 end

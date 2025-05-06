@@ -29,7 +29,10 @@ class Manage::UploadsController < Manage::BaseController
               flash.now[:alert] = 'Please upload a valid video file. Supported formats: MP4, MOV, AVI, MKV, WebM, etc.'
               render :new, status: :unprocessable_entity
             end
-            format.json { render json: { success: false, errors: ['Invalid file format. Please upload a video file.'] }, status: :bad_request }
+            format.json do
+              render json: { success: false, errors: ['Invalid file format. Please upload a video file.'] },
+                     status: :bad_request
+            end
           end
           return
         end

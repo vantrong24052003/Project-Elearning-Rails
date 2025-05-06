@@ -32,7 +32,7 @@ class VideoProcessingJob < ApplicationJob
       formats << 'mp4'
       update_upload_progress(upload, 40)
 
-      thumbnail_path = create_thumbnail(mp4_path, dirs[:thumbnail_dir])
+      create_thumbnail(mp4_path, dirs[:thumbnail_dir])
       update_upload_progress(upload, 50)
 
       hls_result = convert_to_hls(mp4_path, dirs[:hls_dir])
@@ -43,14 +43,14 @@ class VideoProcessingJob < ApplicationJob
       cdn_url = determine_cdn_url(upload.id, formats)
 
       update_upload_progress(upload, 100, 'success', {
-        cdn_url: cdn_url,
-        thumbnail_path: "/uploads/thumbnails/#{upload.id}/thumbnail.jpg",
-        formats: formats,
-        duration: video_info[:duration].to_i,
-        quality_360p_url: hls_result[:quality_urls]['360p'],
-        quality_480p_url: hls_result[:quality_urls]['480p'],
-        quality_720p_url: hls_result[:quality_urls]['720p']
-      })
+                               cdn_url: cdn_url,
+                               thumbnail_path: "/uploads/thumbnails/#{upload.id}/thumbnail.jpg",
+                               formats: formats,
+                               duration: video_info[:duration].to_i,
+                               quality_360p_url: hls_result[:quality_urls]['360p'],
+                               quality_480p_url: hls_result[:quality_urls]['480p'],
+                               quality_720p_url: hls_result[:quality_urls]['720p']
+                             })
 
       Rails.logger.info "Xử lý video hoàn tất: #{cdn_url}"
     rescue StandardError => e
@@ -74,7 +74,7 @@ class VideoProcessingJob < ApplicationJob
       thumbnail_dir: Rails.root.join('public', 'uploads', 'thumbnails', upload.id.to_s)
     }
 
-    dirs.values.each do |dir|
+    dirs.each_value do |dir|
       FileUtils.mkdir_p(dir)
       FileUtils.chmod(0o755, dir)
     end
@@ -91,9 +91,9 @@ class VideoProcessingJob < ApplicationJob
     system(convert_cmd)
 
     # Kiểm tra xem file MP4 đã được tạo thành công chưa
-    unless File.exist?(mp4_path) && File.size?(mp4_path).to_i > 0
+    unless File.exist?(mp4_path) && File.size?(mp4_path).to_i.positive?
       # Nếu không thành công, thử phương pháp copy thẳng
-      Rails.logger.warn "Không thể chuyển đổi video sang MP4, thử phương pháp copy trực tiếp"
+      Rails.logger.warn 'Không thể chuyển đổi video sang MP4, thử phương pháp copy trực tiếp'
       FileUtils.cp(temp_file_path, mp4_path)
     end
 
@@ -107,7 +107,7 @@ class VideoProcessingJob < ApplicationJob
     begin
       duration_seconds = get_video_duration(mp4_path)
       thumbnail_position = determine_thumbnail_position(duration_seconds)
-      position_formatted = Time.at(thumbnail_position).utc.strftime("%H:%M:%S")
+      position_formatted = Time.at(thumbnail_position).utc.strftime('%H:%M:%S')
 
       Rails.logger.info "Trích xuất thumbnail tại vị trí: #{position_formatted} (#{thumbnail_position}s)"
 
@@ -131,7 +131,7 @@ class VideoProcessingJob < ApplicationJob
   end
 
   def determine_thumbnail_position(duration_seconds)
-    if duration_seconds > 0
+    if duration_seconds.positive?
       [10, duration_seconds / 2].min
     else
       3
@@ -167,11 +167,11 @@ class VideoProcessingJob < ApplicationJob
       qualities.each do |quality, options|
         quality_result = convert_quality(mp4_path, hls_dir, quality, options)
 
-        if quality_result[:success]
-          master_content += quality_result[:master_content]
-          result[:quality_urls][quality] = quality_result[:url]
-          hls_success = true
-        end
+        next unless quality_result[:success]
+
+        master_content += quality_result[:master_content]
+        result[:quality_urls][quality] = quality_result[:url]
+        hls_success = true
       end
 
       if hls_success
@@ -227,7 +227,8 @@ class VideoProcessingJob < ApplicationJob
     if File.exist?(playlist_m3u8_path)
       bandwidth = get_bandwidth_for_quality(quality)
 
-      result[:master_content] = "#EXT-X-STREAM-INF:BANDWIDTH=#{bandwidth},RESOLUTION=#{width != -2 ? width : 'auto'}x#{height}\n"
+      result[:master_content] =
+        "#EXT-X-STREAM-INF:BANDWIDTH=#{bandwidth},RESOLUTION=#{width != -2 ? width : 'auto'}x#{height}\n"
       result[:master_content] += "#{quality}/playlist.m3u8\n"
 
       FileUtils.chmod(0o644, playlist_m3u8_path)
@@ -269,19 +270,17 @@ class VideoProcessingJob < ApplicationJob
   end
 
   def extract_video_info(mp4_path)
-    begin
-      duration_seconds = get_video_duration(mp4_path)
+    duration_seconds = get_video_duration(mp4_path)
 
-      resolution_cmd = "ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 #{mp4_path}"
-      resolution = `#{resolution_cmd}`.strip
+    resolution_cmd = "ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 #{mp4_path}"
+    resolution = `#{resolution_cmd}`.strip
 
-      Rails.logger.info "Thông tin video: Thời lượng = #{duration_seconds}s, Độ phân giải = #{resolution}"
+    Rails.logger.info "Thông tin video: Thời lượng = #{duration_seconds}s, Độ phân giải = #{resolution}"
 
-      { duration: duration_seconds, resolution: resolution }
-    rescue StandardError => e
-      Rails.logger.error "Lỗi khi lấy thông tin video: #{e.message}"
-      { duration: 0, resolution: '0x0' }
-    end
+    { duration: duration_seconds, resolution: resolution }
+  rescue StandardError => e
+    Rails.logger.error "Lỗi khi lấy thông tin video: #{e.message}"
+    { duration: 0, resolution: '0x0' }
   end
 
   def determine_cdn_url(upload_id, formats)
