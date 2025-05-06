@@ -7,7 +7,6 @@ class Dashboard::AttemptsController < Dashboard::DashboardController
   before_action :check_ownership, only: [:show]
   after_action :clear_session_data, only: [:create]
 
-
   def show
     @questions = @attempt.quiz.questions
     mark_quiz_as_submitted(@attempt.quiz_id)

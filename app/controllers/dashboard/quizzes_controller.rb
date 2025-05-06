@@ -6,10 +6,11 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   before_action :check_enrollment, only: [:show]
   before_action :check_if_exam_already_taken, only: [:show]
   before_action :load_stats_data, only: [:index]
+  before_action :authenticate_user!
 
   def index
     @quizzes = @course.quizzes
-    @practice_quizzes = @quizzes.where(is_exam: false)
+    @practice_quizzes = @quizzes
     @exam_quizzes = @quizzes.where(is_exam: true)
   end
 
@@ -65,7 +66,6 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   end
 
   def check_if_exam_already_taken
-    # Nếu là bài thi và người dùng đã làm rồi thì chuyển đến trang kết quả
     return unless @quiz.is_exam? && QuizAttempt.exists?(quiz: @quiz, user: current_user)
 
     latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
@@ -74,11 +74,8 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   end
 
   def check_if_quiz_already_submitted
-    # Nếu có tham số force=true cho bài kiểm tra thường, cho phép làm lại
     return if params[:force] == 'true' && !@quiz.is_exam?
 
-    # Chỉ áp dụng chặn submit cho bài thi, không áp dụng cho bài kiểm tra thường
-    # có tham số force=true
     return unless @quiz.is_exam? && QuizAttempt.exists?(quiz: @quiz, user: current_user)
 
     latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
@@ -87,30 +84,24 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   end
 
   def load_stats_data
-    # Phân loại bài kiểm tra và bài thi
     @practice_quizzes = @course.quizzes.where(is_exam: false)
     @exam_quizzes = @course.quizzes.where(is_exam: true)
 
-    # Lấy tất cả các lần làm bài của người dùng hiện tại
     @all_quiz_attempts = QuizAttempt.joins(:quiz)
                                     .where(user: current_user, quizzes: { course_id: @course.id })
                                     .includes(:quiz)
                                     .order(created_at: :desc)
                                     .to_a
 
-    # Phân loại các lần làm bài kiểm tra và bài thi
     @practice_attempts = @all_quiz_attempts.select { |a| a.quiz.is_exam == false }
     @exam_attempts = @all_quiz_attempts.select { |a| a.quiz.is_exam == true }
 
-    # Tìm lần làm bài có điểm số cao nhất cho bài kiểm tra
     @practice_best_attempt = @practice_attempts.max_by(&:score) if @practice_attempts.any?
     @practice_best_score = @practice_best_attempt ? @practice_best_attempt.score : 0
 
-    # Tìm lần làm bài có điểm số cao nhất cho bài thi
     @exam_best_attempt = @exam_attempts.max_by(&:score) if @exam_attempts.any?
     @exam_best_score = @exam_best_attempt ? @exam_best_attempt.score : 0
 
-    # Thống kê cho bài kiểm tra
     practice_unique_quiz_ids = @practice_attempts.map(&:quiz_id).uniq
     @completed_practice_quizzes_count = practice_unique_quiz_ids.size
     @practice_average_score = @practice_attempts.any? ? (@practice_attempts.sum(&:score).to_f / @practice_attempts.size).round(1) : 0
@@ -121,7 +112,6 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
                                       end
     @practice_total_time_spent = @practice_attempts.sum(&:time_spent) || 0
 
-    # Thống kê cho bài thi
     exam_unique_quiz_ids = @exam_attempts.map(&:quiz_id).uniq
     @completed_exam_quizzes_count = exam_unique_quiz_ids.size
     @exam_average_score = @exam_attempts.any? ? (@exam_attempts.sum(&:score).to_f / @exam_attempts.size).round(1) : 0
@@ -132,7 +122,6 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
                                   end
     @exam_total_time_spent = @exam_attempts.sum(&:time_spent) || 0
 
-    # Thống kê chung
     @recent_attempts = @all_quiz_attempts.first(10)
 
     unique_quiz_ids = @all_quiz_attempts.map(&:quiz_id).uniq
@@ -148,7 +137,6 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
 
     @total_time_spent = @all_quiz_attempts.sum(&:time_spent) || 0
 
-    # Thống kê cho bảng xếp hạng
     @total_user_attempts = QuizAttempt.joins(:quiz).where(quizzes: { course_id: @course.id }).distinct.count('user_id')
 
     all_course_attempts = QuizAttempt.joins(:quiz)
@@ -162,7 +150,6 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
       @highest_score_user = @highest_score_attempt.user
     end
 
-    # Tạo bảng xếp hạng top 50 người dùng
     user_stats = {}
     all_course_attempts.each do |attempt|
       user_id = attempt.user_id
