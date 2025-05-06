@@ -9,7 +9,7 @@
       <% if @featured_courses.present? %>
         <% @featured_courses.each_with_index do |course, index| %>
           <div class="animate-fade-in-up" style="animation-delay: <%= index * 100 %>ms">
-            <div class="dark:bg-gray-800 dark:border-gray-700 overflow-hidden transform hover:scale-105 transition-transform duration-300 flex flex-col h-full rounded-lg shadow-md">
+            <div class="dark:bg-gray-800 dark:border-gray-700 overflow-hidden transform hover:scale-105 transition-transform  flex flex-col h-full rounded-lg shadow-md">
               <div class="p-0">
                 <div class="relative">
                   <% if course.thumbnail_path.present? && (course.thumbnail_path.start_with?('http://') || course.thumbnail_path.start_with?('https://')) %>
