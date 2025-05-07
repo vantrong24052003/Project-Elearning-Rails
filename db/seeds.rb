@@ -125,7 +125,7 @@ uploads = demo_videos.map.with_index do |video_path, index|
     duration: rand(200..500),
     resolution: '1080p',
     user_id: instructor.id,
-    status: 'active'
+    status: 'success'
   )
 end
 

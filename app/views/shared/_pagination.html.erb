@@ -1,6 +1,4 @@
-<%# Pagination info and buttons %>
-<div class="flex flex-col items-center space-y-4 mt-8">
-  <%# Pagination info %>
+<div class="flex flex-col items-center space-y-4 mt-8" data-controller="shared--pagination">
   <div class="text-sm text-gray-400">
     <% if collection.total_count > 0 %>
     Hiển thị <%= collection.offset_value + 1 %>-<%= [collection.offset_value + collection.limit_value, collection.total_count].min %>
@@ -16,7 +14,11 @@
     <% if collection.current_page > 2 %>
     <%= link_to url_for(request.params.merge(page: 1)),
           class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white ",
-          data: { turbo_frame: turbo_frame_id } do %>
+          data: {
+            turbo_frame: turbo_frame_id,
+            shared__pagination_target: "pageLink",
+            action: "click->shared--pagination#updateURL"
+          } do %>
     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="m11 17-5-5 5-5" />
       <path d="m18 17-5-5 5-5" />
@@ -35,7 +37,11 @@
     <% if collection.prev_page %>
     <%= link_to url_for(request.params.merge(page: collection.prev_page)),
           class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white ",
-          data: { turbo_frame: turbo_frame_id } do %>
+          data: {
+            turbo_frame: turbo_frame_id,
+            shared__pagination_target: "pageLink",
+            action: "click->shared--pagination#updateURL"
+          } do %>
     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="m15 18-6-6 6-6" />
     </svg>
@@ -61,16 +67,23 @@
     <% else %>
     <%= link_to page, url_for(request.params.merge(page: page)),
               class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white ",
-              data: { turbo_frame: turbo_frame_id } %>
+              data: {
+                turbo_frame: turbo_frame_id,
+                shared__pagination_target: "pageLink",
+                action: "click->shared--pagination#updateURL"
+              } %>
     <% end %>
     <% end %>
     <% end %>
 
-    <%# Next page button %>
     <% if collection.next_page %>
     <%= link_to url_for(request.params.merge(page: collection.next_page)),
           class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white ",
-          data: { turbo_frame: turbo_frame_id } do %>
+          data: {
+            turbo_frame: turbo_frame_id,
+            shared__pagination_target: "pageLink",
+            action: "click->shared--pagination#updateURL"
+          } do %>
     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="m9 18 6-6-6-6" />
     </svg>
@@ -87,7 +100,11 @@
     <% if collection.current_page < collection.total_pages - 1 %>
     <%= link_to url_for(request.params.merge(page: collection.total_pages)),
           class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white ",
-          data: { turbo_frame: turbo_frame_id } do %>
+          data: {
+            turbo_frame: turbo_frame_id,
+            shared__pagination_target: "pageLink",
+            action: "click->shared--pagination#updateURL"
+          } do %>
     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="m13 17 5-5-5-5" />
       <path d="m6 17 5-5-5-5" />

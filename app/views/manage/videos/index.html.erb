@@ -1,0 +1,476 @@
+<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Quản lý Video</h1>
+
+      <%= link_to new_manage_video_path, class: "btn btn-primary" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Thêm Video mới
+      <% end %>
+    </div>
+
+    <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+      <div class="rounded-lg p-5 bg-white dark:bg-gray-800 text-gray-800 dark:text-white" data-controller="manage--video-filter">
+        <%= form_with url: manage_videos_path, method: :get, id: "filter_form", data: {
+          turbo_frame: "videos_data",
+          manage__video_filter_target: "filterForm"
+        } do |f| %>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tìm kiếm</label>
+              <div class="relative">
+                <%= f.text_field :filename, value: params[:filename],
+                        class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2 pl-10 pr-4 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 focus:border-blue-500 dark:focus:border-purple-500",
+                        placeholder: "Tìm theo tên file...",
+                        data: {
+                          manage__video_filter_target: "searchInput",
+                          action: "input->manage--video-filter#search"
+                        }
+                    %>
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="h-4 w-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Instructor</label>
+              <%= f.select :instructor_id,
+                        User.with_role(:instructor).map { |u| [u.name, u.id] }.unshift(["Tất cả instructor", ""]),
+                        { selected: params[:instructor_id] },
+                        {
+                          class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 text-gray-900 dark:text-white",
+                          data: {
+                            manage__video_filter_target: "instructorSelect",
+                            action: "change->manage--video-filter#filterByInstructor"
+                          }
+                        }
+                    %>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái xử lý</label>
+              <%= f.select :status,
+                        [["Tất cả trạng thái", ""], ["Đang xử lý", "processing"], ["Hoàn thành", "success"], ["Lỗi", "failed"], ["Đang chờ", "pending"]],
+                        { selected: params[:status] },
+                        {
+                          class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 text-gray-900 dark:text-white",
+                          data: {
+                            manage__video_filter_target: "statusSelect",
+                            action: "change->manage--video-filter#filterByStatus"
+                          }
+                        }
+                    %>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái duyệt</label>
+              <%= f.select :moderation_status,
+                        [["Tất cả trạng thái", ""], ["Chờ duyệt", "pending"], ["Đã duyệt", "approved"], ["Bị từ chối", "rejected"]],
+                        { selected: params[:moderation_status] },
+                        {
+                          class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 text-gray-900 dark:text-white",
+                          data: {
+                            manage__video_filter_target: "moderationStatusSelect",
+                            action: "change->manage--video-filter#filterByModerationStatus"
+                          }
+                        }
+                    %>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Khóa học</label>
+              <%= f.select :course_id,
+                        Course.all.map { |c| [c.title, c.id] }.unshift(["Tất cả khóa học", ""]),
+                        { selected: params[:course_id] },
+                        {
+                          class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 text-gray-900 dark:text-white",
+                          data: {
+                            manage__video_filter_target: "courseSelect",
+                            action: "change->manage--video-filter#filterByCourse"
+                          }
+                        }
+                    %>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Từ ngày</label>
+              <%= f.date_field :created_from, value: params[:created_from],
+                        class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 text-gray-900 dark:text-white",
+                        data: {
+                          manage__video_filter_target: "dateFromInput",
+                          action: "change->manage--video-filter#filterByDate"
+                        }
+                    %>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Đến ngày</label>
+              <%= f.date_field :created_to, value: params[:created_to],
+                        class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 text-gray-900 dark:text-white",
+                        data: {
+                          manage__video_filter_target: "dateToInput",
+                          action: "change->manage--video-filter#filterByDate"
+                        }
+                    %>
+            </div>
+
+            <div class="flex items-end">
+              <div class="flex gap-2 w-full">
+                <button type="submit" class="btn btn-primary flex-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                  </svg>
+                  Lọc
+                </button>
+                <button type="button" class="btn btn-outline flex-1" data-action="manage--video-filter#resetFilters">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12a10 10 0 1 1 20 0 10 10 0 0 1-20 0Z"></path>
+                    <path d="M12 6v6l4 2"></path>
+                  </svg>
+                  Đặt lại
+                </button>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg">
+      <div class="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h2 class="text-lg md:text-xl text-blue-600 dark:text-purple-400 font-medium">Danh sách video</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Quản lý tất cả video trong hệ thống</p>
+          </div>
+
+          <div class="flex-shrink-0">
+            <div class="flex flex-wrap gap-2">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+                <span class="mr-1 w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400"></span>
+                Đang xử lý: <%= Video.joins(:upload).where(uploads: { status: 'processing' }).count %>
+              </span>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300">
+                <span class="mr-1 w-2 h-2 rounded-full bg-green-600 dark:bg-green-400"></span>
+                Hoàn thành: <%= Video.joins(:upload).where(uploads: { status: 'success' }).count %>
+              </span>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300">
+                <span class="mr-1 w-2 h-2 rounded-full bg-red-600 dark:bg-red-400"></span>
+                Lỗi: <%= Video.joins(:upload).where(uploads: { status: 'failed' }).count %>
+              </span>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300">
+                <span class="mr-1 w-2 h-2 rounded-full bg-yellow-600 dark:bg-yellow-400"></span>
+                Đang chờ: <%= Video.joins(:upload).where(uploads: { status: 'pending' }).count %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <%= turbo_frame_tag "videos_data" do %>
+        <div class="p-4 md:p-6">
+          <div class="overflow-x-auto overflow-y-auto max-h-[70vh]">
+            <table class="table table-zebra w-full">
+              <thead class="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10">
+                <tr>
+                  <th class="text-left">STT</th>
+                  <th class="text-left">Tên file</th>
+                  <th class="text-left">Instructor</th>
+                  <th class="text-left">Khóa học</th>
+                  <th class="text-left">Trạng thái</th>
+                  <th class="text-left">Thumbnail</th>
+                  <th class="text-left">Định dạng</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <% if @videos.any? %>
+                  <% @videos.each_with_index do |video, index| %>
+                    <tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+                        data-controller="manage--video-transcoding"
+                        data-manage--video-transcoding-video-id-value="<%= video.id %>"
+                        data-manage--video-transcoding-status-value="<%= video.upload&.status || 'pending' %>"
+                        data-manage--video-transcoding-progress-value="<%= video.upload&.progress || 0 %>"
+                        data-manage--video-transcoding-moderation-status-value="<%= video.upload&.moderation_status || 'pending' %>">
+                      <td class="py-3 px-4">
+                        <div class="flex items-center">
+                          <%= (@videos.offset_value || 0) + index + 1 %>
+                        </div>
+                      </td>
+
+                      <td class="py-3 px-4">
+                        <div class="flex items-center">
+                          <div class="w-10 h-10 rounded overflow-hidden bg-gray-200 dark:bg-gray-700 mr-3 flex-shrink-0">
+                            <% if video.thumbnail.present? %>
+                              <img src="<%= video.thumbnail %>" alt="<%= video.title %>" class="w-full h-full object-cover">
+                            <% else %>
+                              <div class="w-full h-full flex items-center justify-center bg-blue-500 dark:bg-indigo-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                            <% end %>
+                          </div>
+                          <div>
+                            <p class="font-medium text-gray-800 dark:text-white"><%= video.title %></p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                              <% if video.upload.present? %>
+                                <%= video.upload.filename || "N/A" %> | <%= video.upload.duration ? "#{video.upload.duration}s" : "N/A" %>
+                              <% else %>
+                                N/A
+                              <% end %>
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td class="py-3 px-4">
+                        <% if video.upload&.user.present? %>
+                          <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mr-2">
+                              <% if video.upload.user.avatar.present? %>
+                                <img src="<%= video.upload.user.avatar %>" alt="<%= video.upload.user.name %>" class="w-full h-full object-cover">
+                              <% else %>
+                                <div class="w-full h-full flex items-center justify-center bg-purple-500 dark:bg-purple-700">
+                                  <span class="text-sm font-medium text-white">
+                                    <%= video.upload.user.name&.first&.upcase || video.upload.user.email.first.upcase %>
+                                  </span>
+                                </div>
+                              <% end %>
+                            </div>
+                            <div class="text-gray-800 dark:text-white text-sm font-medium">
+                              <%= video.upload.user.name %>
+                            </div>
+                          </div>
+                        <% else %>
+                          <span class="text-gray-500 dark:text-gray-400">--</span>
+                        <% end %>
+                      </td>
+
+                      <td class="py-3 px-4">
+                        <% if video.lesson&.chapter&.course.present? %>
+                          <div class="text-gray-800 dark:text-white">
+                            <%= video.lesson.chapter.course.title %>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                              <%= video.lesson.chapter.title %> > <%= video.lesson.title %>
+                            </p>
+                          </div>
+                        <% else %>
+                          <span class="text-gray-500 dark:text-gray-400">--</span>
+                        <% end %>
+                      </td>
+
+                      <td class="py-3 px-4">
+                        <% status = video.upload&.status || 'pending' %>
+
+                        <% if video.upload&.moderation_status.present? %>
+                          <div class="mt-1">
+                            <span class="inline-block px-2 py-1 text-xs font-medium rounded-full
+                                  <%= case video.upload.moderation_status
+                                      when 'approved'
+                                        'bg-green-100 text-green-600 border border-green-200 dark:bg-green-600/20 dark:text-green-400 dark:border-green-600/30'
+                                      when 'rejected'
+                                        'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:text-red-400 dark:border-red-600/30'
+                                      else
+                                        'bg-yellow-100 text-yellow-600 border border-yellow-200 dark:bg-yellow-600/20 dark:text-yellow-400 dark:border-yellow-600/30'
+                                      end %>">
+                              <%= video.upload.moderation_status == 'approved' ? 'Đã duyệt' : (video.upload.moderation_status == 'rejected' ? 'Bị từ chối' : 'Chờ duyệt') %>
+                            </span>
+                          </div>
+                        <% end %>
+
+                        <% if video.upload&.status == 'processing' %>
+                          <div class="mt-2 w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                            <div data-manage--video-transcoding-target="progressBar" class="bg-blue-600 h-2 rounded-full" style="width: <%= video.upload.progress || 0 %>%"></div>
+                          </div>
+                          <p data-manage--video-transcoding-target="progressText" class="text-xs mt-1 text-gray-600 dark:text-gray-400"><%= video.upload.progress || 0 %>%</p>
+                        <% end %>
+                      </td>
+
+                      <td class="py-3 px-4">
+                        <div class="w-16 h-9 rounded bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                          <% if video.thumbnail.present? %>
+                            <img src="<%= video.thumbnail %>" alt="Thumbnail" class="w-full h-full object-cover">
+                          <% else %>
+                            <div class="w-full h-full flex items-center justify-center bg-gray-300 dark:bg-gray-600">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                          <% end %>
+                        </div>
+                      </td>
+
+                      <td class="py-3 px-4">
+                        <% if video.upload&.status == 'success' && video.upload&.formats.present? %>
+                          <div class="flex flex-wrap gap-1">
+                            <% (video.upload.formats || []).each do |format| %>
+                              <span class="px-2 py-0.5 text-xs rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                                <%= format.upcase %>
+                              </span>
+                            <% end %>
+                          </div>
+                        <% else %>
+                          <span class="text-gray-500 dark:text-gray-400">--</span>
+                        <% end %>
+                      </td>
+
+                      <td class="py-3 px-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                          <%= link_to manage_video_path(video),
+                              class: "btn btn-sm btn-ghost tooltip tooltip-left",
+                              "data-tip": "Xem chi tiết" do %>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                              <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                          <% end %>
+
+                          <%= link_to edit_manage_video_path(video),
+                              class: "btn btn-sm btn-ghost tooltip tooltip-left",
+                              "data-tip": "Chỉnh sửa" do %>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                            </svg>
+                          <% end %>
+
+                          <% if video.upload&.status == 'failed' %>
+                            <div class="dropdown dropdown-left">
+                              <button class="btn btn-sm btn-primary" tabindex="0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M1 4v6h6"></path>
+                                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                                </svg>
+                                Thử lại
+                              </button>
+                              <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                                <li>
+                                  <%= button_to '/',
+                                        method: :post,
+                                        class: "px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left" do %>
+                                    Thử lại xử lý video
+                                  <% end %>
+                                </li>
+                              </ul>
+                            </div>
+                          <% end %>
+
+                          <% if video.upload&.status == 'success' %>
+                            <% if video.upload&.moderation_status == 'pending' %>
+                              <!-- Hiển thị nút duyệt khi video đã xử lý xong và đang chờ duyệt -->
+                              <div class="dropdown dropdown-left">
+                                <button class="btn btn-sm btn-success" tabindex="0">
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                  </svg>
+                                  Duyệt
+                                </button>
+                                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                                  <li>
+                                    <%= button_to '/',
+                                          method: :post,
+                                          class: "px-4 py-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 w-full text-left" do %>
+                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                      </svg>
+                                      Chấp thuận video
+                                    <% end %>
+                                  </li>
+                                  <li>
+                                    <%= button_to'/',
+                                          method: :post,
+                                          class: "px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 w-full text-left" do %>
+                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                      </svg>
+                                      Từ chối video
+                                    <% end %>
+                                  </li>
+                                </ul>
+                              </div>
+                            <% elsif video.upload&.moderation_status == 'approved' %>
+                              <!-- Hiển thị trạng thái đã duyệt -->
+                              <span class="btn btn-sm btn-success btn-outline">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                Đã duyệt
+                              </span>
+                            <% elsif video.upload&.moderation_status == 'rejected' %>
+                              <!-- Hiển thị trạng thái đã từ chối -->
+                              <span class="btn btn-sm btn-error btn-outline">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <circle cx="12" cy="12" r="10"></circle>
+                                  <line x1="15" y1="9" x2="9" y2="15"></line>
+                                  <line x1="9" y1="9" x2="15" y2="15"></line>
+                                </svg>
+                                Đã từ chối
+                              </span>
+                            <% end %>
+                          <% end %>
+
+                          <div class="dropdown dropdown-left">
+                            <button class="btn btn-sm btn-ghost text-red-500 hover:text-red-700 dark:hover:text-red-400" tabindex="0">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                              </svg>
+                            </button>
+                            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                              <li>
+                                <%= button_to manage_video_path(video),
+                                      method: :delete,
+                                      class: "px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 w-full text-left",
+                                      data: { turbo_confirm: "Bạn có chắc chắn muốn xóa video \"#{video.title}\"?" } do %>
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                  </svg>
+                                  Xác nhận xóa video
+                                <% end %>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  <% end %>
+                <% else %>
+                  <tr>
+                    <td colspan="8" class="py-10 text-center text-gray-500 dark:text-gray-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <p>Không tìm thấy video nào</p>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+
+          <%= render partial: 'shared/pagination',
+                    locals: {
+                      collection: @videos,
+                      pagination_label: 'video',
+                      turbo_frame_id: 'videos_data'
+                    } if @videos.any? %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

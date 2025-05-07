@@ -15,6 +15,8 @@ import quiz_timer_controller from "./dashboard/quiz_timer_controller"
 import quiz_index_controller from "./dashboard/quiz_index_controller"
 import drawer_controller from "./shared/drawer_controller"
 import ManageCoursesController from "./manage/courses_controller"
+import VideoFilterController from "./manage/video_filter_controller"
+import PaginationController from "./shared/pagination_controller"
 
 // home
 application.register("home--faq", faq_controller)
@@ -28,6 +30,7 @@ application.register("shared--lazy-loading", lazy_loading_controller)
 application.register("shared--clipboard", clipboard_controller)
 application.register("shared--countdown", countdown_controller)
 application.register("shared--drawer", drawer_controller)
+application.register("shared--pagination", PaginationController)
 
 // dashboard
 application.register("dashboard--course-filter", course_filter_controller)
@@ -37,3 +40,4 @@ application.register("dashboard--quiz-index", quiz_index_controller)
 
 // manage
 application.register("manage--courses", ManageCoursesController)
+application.register("manage--video-filter", VideoFilterController)
