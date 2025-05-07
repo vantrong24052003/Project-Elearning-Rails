@@ -343,12 +343,6 @@
                         class="range range-xs range-secondary absolute w-full"
                         data-dashboard--course-filter-target="maxSlider"
                         data-action="input->dashboard--course-filter#updateSliderValues mousedown->dashboard--course-filter#trackDraggingMax">
-
-                  <div class="range-track mt-2.5">
-                    <div data-dashboard--course-filter-target="range" class="h-2 absolute bg-primary rounded-full"
-                         style="left: <%= (params[:min_price].to_f / 1000000 * 100).round rescue 0 %>%; right: <%= (100 - (params[:max_price].to_f / 1000000 * 100)).round rescue 0 %>%;">
-                    </div>
-                  </div>
                 </div>
 
                 <div class="flex justify-between mt-8 text-xs text-gray-600 dark:text-gray-400">
