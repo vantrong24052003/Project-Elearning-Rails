@@ -77,19 +77,80 @@ category3 = Category.create!(name: 'Business', description: 'Business and manage
 category4 = Category.create!(name: 'Data Analysis', description: 'Data analysis and visualization.')
 puts '✅ Created categories.'
 
-demo_videos = [
-  ActionController::Base.helpers.asset_path('video1.mp4'),
-  ActionController::Base.helpers.asset_path('video2.mp4'),
-  ActionController::Base.helpers.asset_path('video3.mp4'),
-  ActionController::Base.helpers.asset_path('video4.mp4')
+uploads = [
+  Upload.create!(
+    id: '3499d245-c563-44ab-8d2e-1420ffc79813',
+    file_type: 'mp4',
+    cdn_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/3499d245-c563-44ab-8d2e-1420ffc79813/hls/master.m3u8',
+    thumbnail_path: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/3499d245-c563-44ab-8d2e-1420ffc79813/thumbnail.jpg',
+    duration: 34,
+    status: 'success',
+    user_id: instructor.id,
+    created_at: '2025-05-07 04:35:49.450872',
+    updated_at: '2025-05-07 04:36:26.943297',
+    formats: %w[mp4 hls],
+    progress: 100,
+    processing_log: 'Vẽ tranh tặng Crush siêu đơn giản- Lê Công Duy Tính #shorts.mp4',
+    quality_360p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/3499d245-c563-44ab-8d2e-1420ffc79813/hls/360p/playlist.m3u8',
+    quality_480p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/3499d245-c563-44ab-8d2e-1420ffc79813/hls/480p/playlist.m3u8',
+    quality_720p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/3499d245-c563-44ab-8d2e-1420ffc79813/hls/720p/playlist.m3u8'
+  ),
+  Upload.create!(
+    id: '7c43af26-b9e8-4295-a2c1-d311247a9980',
+    file_type: 'mp4',
+    cdn_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c43af26-b9e8-4295-a2c1-d311247a9980/hls/master.m3u8',
+    thumbnail_path: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c43af26-b9e8-4295-a2c1-d311247a9980/thumbnail.jpg',
+    duration: 30,
+    status: 'success',
+    user_id: instructor.id,
+    created_at: '2025-05-07 04:35:49.445987',
+    updated_at: '2025-05-07 04:36:29.976609',
+    formats: %w[mp4 hls],
+    progress: 100,
+    processing_log: 'Một biệt đội phản anh hùng _bất thường_.mp4',
+    quality_360p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c43af26-b9e8-4295-a2c1-d311247a9980/hls/360p/playlist.m3u8',
+    quality_480p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c43af26-b9e8-4295-a2c1-d311247a9980/hls/480p/playlist.m3u8',
+    quality_720p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c43af26-b9e8-4295-a2c1-d311247a9980/hls/720p/playlist.m3u8'
+  ),
+  Upload.create!(
+    id: '9d3df3e6-32cc-4c85-a1d5-2a419c301030',
+    file_type: 'mp4',
+    cdn_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/9d3df3e6-32cc-4c85-a1d5-2a419c301030/hls/master.m3u8',
+    thumbnail_path: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/9d3df3e6-32cc-4c85-a1d5-2a419c301030/thumbnail.jpg',
+    duration: 24,
+    status: 'success',
+    user_id: instructor.id,
+    created_at: '2025-05-07 04:35:49.664633',
+    updated_at: '2025-05-07 04:36:30.74805',
+    formats: %w[mp4 hls],
+    progress: 100,
+    processing_log: 'Mất chất luôn 🙃 #takhongngu.mp4',
+    quality_360p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/9d3df3e6-32cc-4c85-a1d5-2a419c301030/hls/360p/playlist.m3u8',
+    quality_480p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/9d3df3e6-32cc-4c85-a1d5-2a419c301030/hls/480p/playlist.m3u8',
+    quality_720p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/9d3df3e6-32cc-4c85-a1d5-2a419c301030/hls/720p/playlist.m3u8'
+  ),
+  Upload.create!(
+    id: 'e2756ae3-95df-4a16-8323-f6278feae728',
+    file_type: 'mp4',
+    cdn_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/e2756ae3-95df-4a16-8323-f6278feae728/hls/master.m3u8',
+    thumbnail_path: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/e2756ae3-95df-4a16-8323-f6278feae728/thumbnail.jpg',
+    duration: 12,
+    status: 'success',
+    user_id: instructor.id,
+    created_at: '2025-05-07 04:35:49.323788',
+    updated_at: '2025-05-07 04:36:12.065124',
+    formats: %w[mp4 hls],
+    progress: 100,
+    processing_log: 'đém ngược 10 giây.mp4',
+    quality_360p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/e2756ae3-95df-4a16-8323-f6278feae728/hls/360p/playlist.m3u8',
+    quality_480p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/e2756ae3-95df-4a16-8323-f6278feae728/hls/480p/playlist.m3u8',
+    quality_720p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/e2756ae3-95df-4a16-8323-f6278feae728/hls/720p/playlist.m3u8'
+  )
 ]
 
-course_thumbnails = [
-  'https://i.ytimg.com/vi/jWj0sodsWog/maxresdefault.jpg',
-  'https://trungtamtinhocdanang.com/wp-content/uploads/2021/11/khoa-hoc-excel-cap-toc-tu-co-ban-den-nang-cao.jpg',
-  'https://tse3.mm.bing.net/th?id=OIP.YckuMgINHv97aN7G4AEogwHaFj&pid=Api&P=0&h=180',
-  'https://codestar.vn/wp-content/uploads/2023/03/MicrosoftTeams-image-39.png'
-]
+demo_videos = uploads.map(&:cdn_url)
+
+course_thumbnails = uploads.map(&:thumbnail_path)
 
 course_titles = [
   'Data Analysis Mastery',
@@ -116,43 +177,6 @@ course_descriptions = [
   'Create beautiful user interfaces.',
   'Master project management skills.'
 ]
-
-uploads = demo_videos.map do |video_path|
-  upload_status = %i[pending processing success failed].sample
-  progress = case upload_status
-             when :pending then 0
-             when :processing then rand(10..90)
-             when :success then 100
-             when :failed then rand(10..90)
-             end
-
-  formats = if upload_status == :success
-              ['mp4'].concat(%i[webm hls].sample(rand(0..2)))
-            else
-              []
-            end
-
-  processing_log = if upload_status == :failed
-                     ['Error processing video: codec not supported.',
-                      'Failed to transcode: invalid bitrate.',
-                      'Processing timeout after 30 minutes.',
-                      'Failed to generate thumbnails: corrupt file.',
-                      'Network error during file upload.'].sample
-                   end
-
-  Upload.create!(
-    file_type: 'video',
-    cdn_url: video_path,
-    thumbnail_path: course_thumbnails.sample,
-    duration: rand(200..500),
-    user_id: instructor.id,
-    status: upload_status,
-    progress: progress,
-    formats: formats,
-    processing_log: processing_log,
-    created_at: rand(1..30).days.ago
-  )
-end
 
 categories = [category1, category2, category3, category4]
 languages = %w[English Vietnamese Japanese]

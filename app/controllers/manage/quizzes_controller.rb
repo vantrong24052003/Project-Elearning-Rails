@@ -45,9 +45,7 @@ class Manage::QuizzesController < Manage::BaseController
               user_id: current_user.id
             )
 
-            if question.save
-              QuizQuestion.create(quiz: @quiz, question: question)
-            end
+            QuizQuestion.create(quiz: @quiz, question: question) if question.save
           end
 
           redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully created with AI generated questions.'
@@ -60,13 +58,11 @@ class Manage::QuizzesController < Manage::BaseController
         @quiz.errors.add(:base, 'Invalid questions data format')
         render :new, status: :unprocessable_entity
       end
+    elsif @quiz.save
+      redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully created.'
     else
-      if @quiz.save
-        redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully created.'
-      else
-        set_courses
-        render :new, status: :unprocessable_entity
-      end
+      set_courses
+      render :new, status: :unprocessable_entity
     end
   end
 
