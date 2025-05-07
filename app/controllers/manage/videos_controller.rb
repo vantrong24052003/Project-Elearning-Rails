@@ -41,29 +41,15 @@ class Manage::VideosController < Manage::BaseController
   private
 
   def filter_videos
-    videos = Video.joins(:upload)
-                  .includes(:lesson, upload: :user)
-                  .where(uploads: { status: :success })
+    videos = Video.includes(:lesson, upload: :user)
                   .order(created_at: :desc)
 
-    if params[:status].present? && params[:status].to_sym != :success
-      videos = Video.includes(:lesson, upload: :user)
-                    .joins(:upload)
-                    .where(uploads: { status: params[:status] })
-                    .order(created_at: :desc)
-    end
+    videos = videos.joins(:upload).where(uploads: { status: params[:status] }) if params[:status].present?
 
-    videos = videos.where(uploads: { user_id: params[:instructor_id] }) if params[:instructor_id].present?
-    if params[:moderation_status].present?
-      videos = videos.where(uploads: { moderation_status: params[:moderation_status].to_sym })
-    end
+    videos = videos.where(moderation_status: params[:moderation_status]) if params[:moderation_status].present?
+
     if params[:course_id].present?
       videos = videos.joins(lesson: { chapter: :course }).where(chapters: { course_id: params[:course_id] })
-    end
-
-    if params[:filename].present?
-      search_term = "%#{params[:filename]}%"
-      videos = videos.where('uploads.filename ILIKE ? OR videos.title ILIKE ?', search_term, search_term)
     end
 
     if params[:created_from].present?
@@ -80,10 +66,9 @@ class Manage::VideosController < Manage::BaseController
 
   def set_video
     @video = Video.includes(:lesson, upload: :user).find_by(id: params[:id])
-    redirect_to manage_videos_path, alert: 'Video not found.' unless @video
   end
 
   def video_params
-    params.require(:video).permit(:title, :lesson_id, :is_locked, :position, :thumbnail, :upload_id)
+    params.require(:video).permit(:title, :lesson_id, :is_locked, :position, :thumbnail, :upload_id, :moderation_status)
   end
 end

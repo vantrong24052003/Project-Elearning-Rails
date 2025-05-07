@@ -19,6 +19,7 @@
 !/tmp/storage/.keep
 
 /public/assets
+/public/uploads
 
 /config/master.key
 /config/credentials/*.key

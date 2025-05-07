@@ -169,8 +169,6 @@ ActiveRecord::Schema[8.0].define(version: 20_250_430_000_003) do
     t.datetime 'updated_at', null: false
     t.string 'formats', default: [], array: true
     t.integer 'progress', default: 0
-    t.string 'filename'
-    t.string 'moderation_status', default: 'pending'
     t.text 'processing_log'
     t.index ['user_id'], name: 'index_uploads_on_user_id'
   end
@@ -233,6 +231,7 @@ ActiveRecord::Schema[8.0].define(version: 20_250_430_000_003) do
     t.date 'is_locked'
     t.uuid 'lesson_id', null: false
     t.uuid 'upload_id', null: false
+    t.string 'moderation_status', default: 'pending'
     t.datetime 'created_at', null: false
     t.datetime 'updated_at', null: false
     t.string 'thumbnail'
