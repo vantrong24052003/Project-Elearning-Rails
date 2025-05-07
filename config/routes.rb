@@ -25,7 +25,9 @@ Rails.application.routes.draw do
   end
 
   namespace :manage do
-    root to: 'courses#index'
+    root to: 'overviews#index'
+
+    resources :overviews, only: %i[index]
 
     resources :courses do
       member do
