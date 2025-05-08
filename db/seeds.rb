@@ -522,12 +522,11 @@ end
 
 puts '✅ Created progress records.'
 
-puts "Seeding course ratings..."
 Course.find_each do |course|
   random_rating = rand(3.0..5.0).round(2)
   course.update!(rating: random_rating)
 end
 
-puts "✅ Created course ratings!"
+puts '✅ Created course ratings!'
 
 puts "\n🎉 Seed data completed successfully!"

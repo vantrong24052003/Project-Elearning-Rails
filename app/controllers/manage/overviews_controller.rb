@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Manage::OverviewsController < Manage::BaseController
   def index
     @courses = current_user.courses.order(created_at: :desc)
@@ -27,14 +29,14 @@ class Manage::OverviewsController < Manage::BaseController
 
   def get_total_students
     query = Enrollment.joins(:course)
-                     .where(courses: { user_id: current_user.id })
+                      .where(courses: { user_id: current_user.id })
     query = query.where(course_id: @selected_course_id) if @selected_course_id.present?
     query.distinct.count(:user_id)
   end
 
   def calculate_completion_rate
     query = Enrollment.joins(:course)
-                     .where(courses: { user_id: current_user.id })
+                      .where(courses: { user_id: current_user.id })
     query = query.where(course_id: @selected_course_id) if @selected_course_id.present?
 
     total_enrollments = query.count
@@ -51,8 +53,8 @@ class Manage::OverviewsController < Manage::BaseController
 
   def get_new_students
     query = Enrollment.joins(:course)
-                     .where(courses: { user_id: current_user.id })
-                     .where('enrollments.created_at >= ?', 30.days.ago)
+                      .where(courses: { user_id: current_user.id })
+                      .where('enrollments.created_at >= ?', 30.days.ago)
     query = query.where(course_id: @selected_course_id) if @selected_course_id.present?
     query.distinct.count(:user_id)
   end
@@ -66,9 +68,9 @@ class Manage::OverviewsController < Manage::BaseController
       total_students = enrollments.distinct.count(:user_id)
 
       new_students = enrollments
-                    .where('enrollments.created_at >= ?', 30.days.ago)
-                    .distinct
-                    .count(:user_id)
+                     .where('enrollments.created_at >= ?', 30.days.ago)
+                     .distinct
+                     .count(:user_id)
 
       completed = enrollments.where.not(completed_at: nil).count
       completion_rate = total_students.positive? ? (completed.to_f / total_students * 100).round : 0
@@ -84,23 +86,23 @@ class Manage::OverviewsController < Manage::BaseController
 
   def get_total_videos
     query = Video.joins(lesson: { chapter: :course })
-                .where(courses: { user_id: current_user.id })
+                 .where(courses: { user_id: current_user.id })
     query = query.where(courses: { id: @selected_course_id }) if @selected_course_id.present?
     query.count
   end
 
   def get_pending_videos
     query = Video.joins(lesson: { chapter: :course })
-                .where(courses: { user_id: current_user.id })
-                .where(moderation_status: 'pending')
+                 .where(courses: { user_id: current_user.id })
+                 .where(moderation_status: 'pending')
     query = query.where(courses: { id: @selected_course_id }) if @selected_course_id.present?
     query.count
   end
 
   def get_rejected_videos
     query = Video.joins(lesson: { chapter: :course })
-                .where(courses: { user_id: current_user.id })
-                .where(moderation_status: 'rejected')
+                 .where(courses: { user_id: current_user.id })
+                 .where(moderation_status: 'rejected')
     query = query.where(courses: { id: @selected_course_id }) if @selected_course_id.present?
     query.count
   end
@@ -114,7 +116,7 @@ class Manage::OverviewsController < Manage::BaseController
 
   def get_average_quiz_score
     query = QuizAttempt.joins(quiz: :course)
-                      .where(courses: { user_id: current_user.id })
+                       .where(courses: { user_id: current_user.id })
     query = query.where(courses: { id: @selected_course_id }) if @selected_course_id.present?
     query.average(:score)&.round(1) || 0
   end
@@ -128,7 +130,7 @@ class Manage::OverviewsController < Manage::BaseController
     return 0 if total_quizzes.zero?
 
     completed_quizzes = QuizAttempt.joins(quiz: :course)
-                                  .where(courses: { user_id: current_user.id })
+                                   .where(courses: { user_id: current_user.id })
     completed_quizzes = completed_quizzes.where(courses: { id: @selected_course_id }) if @selected_course_id.present?
     completed_quizzes = completed_quizzes.distinct.count(:quiz_id)
 
