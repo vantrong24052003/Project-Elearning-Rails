@@ -51,8 +51,6 @@
             <select id="sort" class="appearance-none w-full md:w-44 pl-4 pr-10 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-white cursor-pointer"
                     data-dashboard--course-filter-target="sortSelect"
                     data-action="change->dashboard--course-filter#applySortFilter">
-              <option value="newest" <%= params[:sort_by] == 'newest' ? 'selected' : '' %>>Newest First</option>
-              <option value="rating" <%= params[:sort_by] == 'rating' ? 'selected' : '' %>>Highest Rated</option>
               <option value="price_low" <%= params[:sort_by] == 'price_low' ? 'selected' : '' %>>Price: Low to High</option>
               <option value="price_high" <%= params[:sort_by] == 'price_high' ? 'selected' : '' %>>Price: High to Low</option>
             </select>
@@ -222,8 +220,9 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-500 fill-current" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M12 2l2.2 6.6h7.1l-5.7 4.1 2.2 6.6-5.7-4.1-5.7 4.1 2.2-6.6-5.7-4.1h7.1z"/>
                     </svg>
-                    <span class="text-yellow-500 font-medium">N/A</span>
-                    <span class="text-gray-500 dark:text-gray-400">(0)</span>
+                    <span class="text-yellow-500 font-medium">
+                      <%= course.rating > 0 ? course.rating.round(1) : 'N/A' %>
+                    </span>
                   </div>
                 </div>
 
