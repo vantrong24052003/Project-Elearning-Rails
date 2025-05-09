@@ -1,107 +1,79 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["chapter", "lesson", "video"]
+  static targets = ["chapter", "lesson", "video", "progress", "progressText"]
 
   connect() {
-    this.highlightActiveItems()
+    this.updateProgress()
+    this.highlightCurrentVideo()
   }
 
   toggleChapter(event) {
-    const chapterElement = event.currentTarget.closest('[data-dashboard--course-viewer-target="chapter"]')
+    const chapter = event.target.closest('[data-dashboard--course-viewer-target="chapter"]')
+    const lessons = chapter.querySelectorAll('[data-dashboard--course-viewer-target="lesson"]')
 
-    if (event.currentTarget.checked) {
-      chapterElement.classList.add('active-chapter')
-      chapterElement.style.borderColor = 'rgba(168, 85, 247, 0.3)'
+    if (event.target.checked) {
+      lessons.forEach(lesson => {
+        lesson.classList.add('border-blue-200', 'dark:border-purple-700/30', 'shadow-sm')
+      })
     } else {
-      chapterElement.classList.remove('active-chapter')
-      chapterElement.style.borderColor = ''
+      lessons.forEach(lesson => {
+        lesson.classList.remove('border-blue-200', 'dark:border-purple-700/30', 'shadow-sm')
+      })
+    }
+  }
+
+  toggleLesson(event) {
+    const lesson = event.target.closest('[data-dashboard--course-viewer-target="lesson"]')
+    const videos = lesson.querySelectorAll('[data-dashboard--course-viewer-target="video"]')
+
+    if (event.target.checked) {
+      videos.forEach(video => {
+        video.classList.add('bg-blue-50', 'dark:bg-purple-900/40', 'text-blue-700', 'dark:text-white', 'shadow-sm')
+      })
+    } else {
+      videos.forEach(video => {
+        video.classList.remove('bg-blue-50', 'dark:bg-purple-900/40', 'text-blue-700', 'dark:text-white', 'shadow-sm')
+      })
     }
   }
 
   markVideoActive(event) {
-    if (this.hasVideoTarget) {
-      this.videoTargets.forEach(video => {
-        video.classList.remove('bg-purple-900/40', 'text-white', 'font-medium')
-        video.classList.add('text-gray-300')
+    this.videoTargets.forEach(video => {
+      video.classList.remove('bg-blue-50', 'dark:bg-purple-900/40', 'text-blue-700', 'dark:text-white', 'shadow-sm')
+    })
 
-        const icon = video.querySelector('svg')
-        if (icon) {
-          icon.classList.remove('text-purple-400')
-          icon.classList.add('text-gray-400')
-        }
+    const video = event.currentTarget
+    video.classList.add('bg-blue-50', 'dark:bg-purple-900/40', 'text-blue-700', 'dark:text-white', 'shadow-sm')
 
-        const badge = video.querySelector('.rounded-full')
-        if (badge) {
-          badge.classList.remove('text-purple-200')
-          badge.classList.add('text-gray-400')
-        }
-      })
-    }
-
-    const currentVideo = event.currentTarget
-    currentVideo.classList.add('bg-purple-900/40', 'text-white', 'font-medium')
-    currentVideo.classList.remove('text-gray-300')
-
-    const icon = currentVideo.querySelector('svg')
-    if (icon) {
-      icon.classList.add('text-purple-400')
-      icon.classList.remove('text-gray-400')
-    }
-
-    const badge = currentVideo.querySelector('.rounded-full')
-    if (badge) {
-      badge.classList.add('text-purple-200')
-      badge.classList.remove('text-gray-400')
-    }
-
-    this.openParentAccordions(currentVideo)
+    this.updateProgress()
   }
 
+  updateProgress() {
+    const totalVideos = this.videoTargets.length
+    const completedVideos = this.videoTargets.filter(video =>
+      video.classList.contains('bg-blue-50') || video.classList.contains('dark:bg-purple-900/40')
+    ).length
 
-  highlightActiveItems() {
-    const url = new URL(window.location.href)
-    const lessonId = url.searchParams.get('lesson_id')
-    const videoId = url.searchParams.get('video_id')
+    const progress = (completedVideos / totalVideos) * 100
+    this.progressTarget.style.width = `${progress}%`
+    this.progressTextTarget.textContent = `${completedVideos} / ${totalVideos}`
+  }
 
-    if (lessonId && this.hasLessonTarget) {
-      const activeLesson = this.lessonTargets.find(lesson =>
-        lesson.dataset.lessonId === lessonId
-      )
+  highlightCurrentVideo() {
+    const currentVideo = this.videoTargets.find(video =>
+      video.classList.contains('bg-blue-50') || video.classList.contains('dark:bg-purple-900/40')
+    )
 
-    }
+    if (currentVideo) {
+      const lesson = currentVideo.closest('[data-dashboard--course-viewer-target="lesson"]')
+      const chapter = lesson.closest('[data-dashboard--course-viewer-target="chapter"]')
 
-    if (videoId && this.hasVideoTarget) {
-      const activeVideo = this.videoTargets.find(video =>
-        video.dataset.videoId === videoId
-      )
+      chapter.querySelector('input[type="checkbox"]').checked = true
+      lesson.querySelector('input[type="checkbox"]').checked = true
 
-      if (activeVideo) {
-        activeVideo.classList.add('bg-purple-900/40', 'text-white', 'font-medium')
-        activeVideo.classList.remove('text-gray-300')
-
-        const icon = activeVideo.querySelector('svg')
-        if (icon) {
-          icon.classList.add('text-purple-400')
-          icon.classList.remove('text-gray-400')
-        }
-
-        const badge = activeVideo.querySelector('.rounded-full')
-        if (badge) {
-          badge.classList.add('text-purple-200')
-          badge.classList.remove('text-gray-400')
-        }
-
-        this.openParentAccordions(activeVideo)
-      }
-    }
-
-    if (!lessonId && !videoId && this.hasChapterTarget) {
-      const firstChapter = this.chapterTargets[0]
-      if (firstChapter) {
-        const checkbox = firstChapter.querySelector('input[type="checkbox"]')
-        if (checkbox) checkbox.checked = true
-      }
+      chapter.classList.add('bg-blue-50/50', 'dark:bg-gray-700/20', 'border-blue-300', 'dark:border-purple-500/30', 'shadow-md')
+      lesson.classList.add('border-blue-200', 'dark:border-purple-700/30', 'shadow-sm')
     }
   }
 }

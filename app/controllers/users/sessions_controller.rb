@@ -14,7 +14,7 @@ class Users::SessionsController < Devise::SessionsController
     if resource.has_role?(:admin)
       manage_root_path
     elsif resource.has_role?(:instructor)
-      dashboard_instructor_courses_path
+      manage_root_path
     else
       root_path
     end
