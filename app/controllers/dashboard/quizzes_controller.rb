@@ -18,23 +18,19 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
     @questions = @quiz.questions
     @mode = @quiz.is_exam ? 'exam' : 'practice'
 
-    # Thêm headers để ngăn caching trang làm bài
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
 
-    # Thêm metadata cho JS controller
     response.headers['X-Quiz-Mode'] = @mode
     response.headers['X-Quiz-Id'] = @quiz.id
     response.headers['X-Quiz-Time-Limit'] = @quiz.time_limit.to_s
 
-    # Cho phép bắt đầu làm bài mới hoặc tiếp tục làm bài
     start_param = params[:start] == 'true'
     continue_param = params[:continue] == 'true'
 
-    # Kiểm tra thêm lần nữa nếu đã nộp bài (bảo vệ phía server)
     if !params[:force] && !continue_param && !start_param && QuizAttempt.exists?(quiz: @quiz, user: current_user)
-      flash[:notice] = 'Bạn đã hoàn thành bài kiểm tra này. Sử dụng nút "Làm lại bài" để làm lại hoặc "Tiếp tục làm" nếu còn tiến trình dang dở.'
+      flash[:notice] = 'You have already completed this quiz. Use the "Retry" button to take it again or "Continue" if you have an ongoing attempt.'
       redirect_to dashboard_course_quizzes_path(@course)
     end
   end
@@ -86,19 +82,17 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   end
 
   def check_if_exam_already_taken
-  return unless @quiz.is_exam?
-  return if params[:force] == 'true' # Cho phép làm lại bài thi nếu có force=true
-  return if params[:continue] == 'true' # Cho phép tiếp tục làm bài thi nếu có continue=true
-  return if params[:start] == 'true' # Cho phép bắt đầu làm bài thi mới nếu có start=true
+    return unless @quiz.is_exam?
+    return if params[:force] == 'true'
+    return if params[:continue] == 'true'
+    return if params[:start] == 'true'
 
-  # Đối với bài thi, nếu đã làm thì không được làm lại trừ khi có force=true hoặc continue=true
-  if QuizAttempt.exists?(quiz: @quiz, user: current_user)
-    latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
-    redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, latest_attempt),
-                notice: 'Bạn đã hoàn thành bài thi này. Sử dụng nút "Làm lại bài" nếu muốn làm lại hoặc "Tiếp tục làm" nếu còn tiến trình dang dở.'
+    if QuizAttempt.exists?(quiz: @quiz, user: current_user)
+      latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
+      redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, latest_attempt),
+                  notice: 'You have already completed this exam. Use the "Retry" button to take it again or "Continue" if you have an ongoing attempt.'
+    end
   end
-end
-
 
   def check_if_quiz_already_submitted
     return if params[:force] == 'true' && !@quiz.is_exam?

@@ -17,13 +17,10 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
     )
 
     if @attempt.save
-      # Thêm header để yêu cầu client xóa dữ liệu làm bài
       response.headers['X-Clear-Quiz-Storage'] = "quiz_#{@quiz.id}"
 
-      # Nếu là bài thi, thêm header để đánh dấu
       response.headers['X-Quiz-Is-Exam'] = @quiz.is_exam?.to_s
 
-      # Đánh dấu là đã nộp bài
       response.headers['X-Quiz-Submitted'] = 'true'
 
       redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, @attempt), notice: 'Bài làm đã được ghi nhận.'
