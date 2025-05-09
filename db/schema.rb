@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 20_250_430_000_003) do
+ActiveRecord::Schema[8.0].define(version: 20_250_507_085_911) do
   # These are extensions that must be enabled in order to support this database
   enable_extension 'pg_catalog.plpgsql'
   enable_extension 'pgcrypto'
@@ -55,6 +55,7 @@ ActiveRecord::Schema[8.0].define(version: 20_250_430_000_003) do
     t.boolean 'is_free', default: false
     t.datetime 'created_at', null: false
     t.datetime 'updated_at', null: false
+    t.decimal 'rating', precision: 3, scale: 2, default: '0.0'
     t.index ['category_id'], name: 'index_courses_on_category_id'
     t.index ['user_id'], name: 'index_courses_on_user_id'
   end
@@ -162,7 +163,6 @@ ActiveRecord::Schema[8.0].define(version: 20_250_430_000_003) do
     t.string 'cdn_url'
     t.string 'thumbnail_path'
     t.integer 'duration'
-    t.string 'resolution'
     t.string 'status'
     t.uuid 'user_id', null: false
     t.datetime 'created_at', null: false
@@ -170,6 +170,9 @@ ActiveRecord::Schema[8.0].define(version: 20_250_430_000_003) do
     t.string 'formats', default: [], array: true
     t.integer 'progress', default: 0
     t.text 'processing_log'
+    t.string 'quality_360p_url'
+    t.string 'quality_480p_url'
+    t.string 'quality_720p_url'
     t.index ['user_id'], name: 'index_uploads_on_user_id'
   end
 

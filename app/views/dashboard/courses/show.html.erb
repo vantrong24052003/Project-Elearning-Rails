@@ -1,7 +1,7 @@
 <div class="container mx-auto px-4 py-8 bg-white dark:bg-gray-900 text-gray-800 dark:text-white">
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
     <div class="lg:col-span-2">
-      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 h-full border border-gray-200 dark:border-gray-700 shadow-md dark:shadow-none">
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-md dark:shadow-none">
         <div class="flex items-center gap-4 mb-6">
           <div class="flex-1">
             <h1 class="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
@@ -56,15 +56,27 @@
         </p>
 
         <div class="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 mb-6">
-          <video class="w-full aspect-video" controls poster="<%= @course.thumbnail_path %>">
-            <% demo_video = @course.demo_video_path %>
-            <% if demo_video.present? %>
-            <source src="<%= demo_video %>" type="video/mp4">
-            <% else %>
-            <source src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4">
+          <div class="relative" data-controller="shared--video-player">
+            <video class="w-full aspect-video" controls poster="<%= @course.thumbnail_path %>" data-shared--video-player-target="player">
+              <% demo_video = @course.demo_video_path %>
+              <% if demo_video.present? %>
+                <% if demo_video.include?('.m3u8') %>
+                  <source src="<%= demo_video %>" type="application/x-mpegURL">
+                <% else %>
+                  <source src="<%= demo_video %>" type="video/mp4">
+                <% end %>
+              <% else %>
+                <source src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4">
+              <% end %>
+              Trình duyệt của bạn không hỗ trợ video.
+            </video>
+
+            <% if demo_video.present? && demo_video.include?('.m3u8') %>
+              <div class="absolute top-2 right-2 bg-blue-500/80 text-white text-xs px-2 py-1 rounded-lg z-10 font-medium">
+                HLS
+              </div>
             <% end %>
-            Trình duyệt của bạn không hỗ trợ video.
-          </video>
+          </div>
         </div>
       </div>
     </div>
@@ -123,7 +135,7 @@
         </div>
 
         <% if current_user&.has_role?(:admin) %>
-        <%= link_to learning_dashboard_course_path(@course),
+        <%= link_to dashboard_course_viewer_path(@course),
               class: "w-full text-lg py-4 mb-4 bg-blue-500 hover:bg-blue-700 dark:bg-purple-500 dark:hover:bg-purple-700 text-white rounded-lg text-center block transition " do %>
         <svg class="w-6 h-6 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -133,7 +145,7 @@
         <% end %>
 
         <% elsif current_user&.has_role?(:instructor) && @course.user_id == current_user.id %>
-        <%= link_to learning_dashboard_course_path(@course),
+        <%= link_to dashboard_course_viewer_path(@course),
               class: "w-full text-lg py-4 mb-4 bg-blue-500 hover:bg-blue-700 dark:bg-purple-500 dark:hover:bg-purple-700 text-white rounded-lg text-center block transition " do %>
         <svg class="w-6 h-6 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />

@@ -46,3 +46,4 @@ vendor/*
 !/app/assets/builds/.keep
 .github/copilot-instructions.md
 .windsurfrules
+.cursor/*

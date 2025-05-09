@@ -1,152 +1,231 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["player", "qualityButton", "qualitySelector", "qualityOption", "currentQuality", "qualityInfo"]
+  static targets = ["player", "qualityInfo"]
 
   connect() {
-    this.levels = []
-    this.hls = null
-    this.setupVideoPlayer()
+    console.log("VideoPlayer controller kết nối")
+    if (this.hasPlayerTarget) {
+      setTimeout(() => this.initializePlayer(), 100)
+    }
   }
 
   disconnect() {
+    console.log("VideoPlayer controller ngắt kết nối")
     if (this.hls) {
       this.hls.destroy()
     }
+    if (this.debugInterval) {
+      clearInterval(this.debugInterval)
+    }
   }
 
-  toggleQualitySelector(event) {
-    event.preventDefault()
-    event.stopPropagation()
+  initializePlayer() {
+    const video = this.playerTarget
 
-    this.qualitySelectorTarget.classList.toggle('hidden')
-  }
-
-  selectQuality(event) {
-    event.preventDefault()
-    event.stopPropagation()
-
-    if (!this.hls) return
-
-    const quality = event.currentTarget.dataset.quality
-
-    if (quality === 'auto') {
-      this.hls.currentLevel = -1
-      this.currentQualityTarget.textContent = 'Tự động'
-      console.log("Đã chuyển sang chế độ chất lượng tự động")
-    } else {
-      let selectedLevel = -1
-      const targetHeight = parseInt(quality.replace('p', ''))
-
-      for (let i = 0; i < this.levels.length; i++) {
-        if (this.levels[i].height === targetHeight) {
-          selectedLevel = i
-          break
-        }
-      }
-
-      if (selectedLevel === -1) {
-        let closestMatch = { level: -1, diff: 1000 }
-        for (let i = 0; i < this.levels.length; i++) {
-          const diff = Math.abs(this.levels[i].height - targetHeight)
-          if (diff < closestMatch.diff) {
-            closestMatch = { level: i, diff: diff }
-          }
-        }
-        if (closestMatch.level >= 0) {
-          selectedLevel = closestMatch.level
-        }
-      }
-
-      if (selectedLevel !== -1) {
-        this.hls.currentLevel = selectedLevel
-        this.currentQualityTarget.textContent = quality
-        console.log(`Đã chuyển sang chất lượng: ${quality} (Level: ${selectedLevel})`)
-      } else {
-        this.hls.currentLevel = -1
-        this.currentQualityTarget.textContent = 'Tự động'
-      }
+    const videoSource = video.querySelector('source')
+    if (!videoSource) {
+      console.error("Không tìm thấy source element trong video")
+      return
     }
 
-    this.qualitySelectorTarget.classList.add('hidden')
-  }
+    const videoSrc = videoSource.src
 
-  setupVideoPlayer() {
-    const video = this.playerTarget
-    const qualityButton = this.hasQualityButtonTarget ? this.qualityButtonTarget : null
-    const hlsUrl = video.querySelector('source')?.src
+    if (!videoSrc) {
+      console.error("Không tìm thấy nguồn video (src trống)")
+      return
+    }
 
-    document.addEventListener('click', (event) => {
-      if (this.hasQualitySelectorTarget &&
-          !this.qualitySelectorTarget.contains(event.target) &&
-          !this.qualityButtonTarget?.contains(event.target)) {
-        this.qualitySelectorTarget.classList.add('hidden')
-      }
-    })
+    console.log("Nguồn video:", videoSrc)
 
-    if (hlsUrl && hlsUrl.includes('.m3u8') && typeof Hls !== 'undefined') {
-      if (Hls.isSupported()) {
-        this.setupHls(video, hlsUrl)
-      }
-      else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = hlsUrl
-
-        if (qualityButton) {
-          qualityButton.classList.remove('hidden')
-          qualityButton.addEventListener('click', () => {
-            alert('Trình duyệt của bạn tự động điều chỉnh chất lượng video.')
-          })
-        }
-      }
+    // HLS (m3u8) format
+    if (videoSrc.includes('.m3u8')) {
+      console.log("Đã phát hiện định dạng HLS (.m3u8)")
+      this.setupHls(video, videoSrc)
+    } else {
+      console.log("Không phải định dạng HLS, sử dụng video player mặc định")
     }
   }
 
   setupHls(video, hlsUrl) {
+    if (typeof Hls === 'undefined') {
+      console.log("HLS.js chưa được tải, đang tải thư viện...")
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest'
+      script.async = true
+      script.onload = () => {
+        console.log("HLS.js đã được tải thành công")
+        this._initHls(video, hlsUrl)
+      }
+      document.head.appendChild(script)
+    } else {
+      console.log("HLS.js đã được tải sẵn, khởi tạo player")
+      this._initHls(video, hlsUrl)
+    }
+  }
+
+  _initHls(video, hlsUrl) {
+    if (!Hls.isSupported()) {
+      console.error("Trình duyệt không hỗ trợ HLS.js")
+      return
+    }
+
+    if (this.hls) {
+      console.log("Hủy instance HLS hiện tại")
+      this.hls.destroy()
+    }
+
+    console.log("Khởi tạo HLS.js với URL:", hlsUrl)
+
     this.hls = new Hls({
-      maxBufferLength: 30,  // Buffer tối đa 30 giây video
-      maxMaxBufferLength: 60,
       enableWorker: true,
-      lowLatencyMode: false,
-      startLevel: -1, // Auto quality
-      debug: true     // Bật debug để log nhiều thông tin hơn
-    })
-
-
-    this.hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
-      this.levels = data.levels
-
-      this.levels.forEach((level, index) => {
-        console.log(`Chất lượng ${index}: ${level.width}x${level.height}, bitrate: ${(level.bitrate/1000000).toFixed(2)}Mbps`)
-      })
-
-      if (this.levels.length > 1 && this.hasQualityButtonTarget) {
-        this.qualityButtonTarget.classList.remove('hidden')
-      }
-    })
-
-    this.hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-      const level = data.level
-
-      if (this.hasCurrentQualityTarget) {
-        if (this.hls.autoLevelEnabled) {
-          this.currentQualityTarget.textContent = 'Tự động'
-          console.log('Chế độ chất lượng: Tự động')
-        } else if (this.levels[level]) {
-          const height = this.levels[level].height
-          if (height >= 720) {
-            this.currentQualityTarget.textContent = 'HD (720p)'
-          } else if (height >= 480) {
-            this.currentQualityTarget.textContent = 'SD (480p)'
-          } else if (height >= 360) {
-            this.currentQualityTarget.textContent = 'Thấp (360p)'
-          } else {
-            this.currentQualityTarget.textContent = `${height}p`
-          }
-        }
-      }
+      startLevel: -1,
+      debug: false,
+      autoStartLoad: true,
+      capLevelToPlayerSize: true,
+      abrEwmaDefaultEstimate: 500000,
+      abrEwmaFastLive: 3.0,
+      abrEwmaFastVoD: 3.0,
+      abrBandWidthFactor: 0.95,
+      abrBandWidthUpFactor: 0.7,
+      abrMaxWithRealBitrate: true,
     })
 
     this.hls.loadSource(hlsUrl)
     this.hls.attachMedia(video)
+
+    this.hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+      this.levels = data.levels
+
+      data.levels.forEach((level, index) => {
+        const height = level.height
+        const width = level.width
+        const bitrate = Math.round(level.bitrate / 1000)
+        console.log(`Chất lượng ${index}: ${width}x${height}, ${bitrate} Kbps`)
+      })
+
+      const mainBadge = document.querySelector('.video-quality-badge')
+      if (mainBadge && data.levels.length > 0) {
+        const maxHeightLevel = data.levels.reduce((prev, current) =>
+          (prev.height > current.height) ? prev : current
+        )
+
+        let qualityLabel = "HLS"
+        if (maxHeightLevel.height >= 720) {
+          qualityLabel = "HLS-720"
+        } else if (maxHeightLevel.height >= 480) {
+          qualityLabel = "HLS-480"
+        } else if (maxHeightLevel.height >= 360) {
+          qualityLabel = "HLS-360"
+        }
+
+        mainBadge.textContent = qualityLabel
+      }
+
+      video.play().catch(e => console.error("Không thể tự động phát video:", e))
+    })
+
+    this.hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
+      const levelIndex = data.level
+
+      if (this.levels && this.levels[levelIndex]) {
+        const level = this.levels[levelIndex]
+        const height = level.height
+        const width = level.width
+        const bitrate = Math.round(level.bitrate / 1000)
+
+        let qualityLabel, badgeClass
+        if (height >= 720) {
+          qualityLabel = "HLS-720"
+          badgeClass = "bg-green-500/80"
+        } else if (height >= 480) {
+          qualityLabel = "HLS-480"
+          badgeClass = "bg-blue-500/80"
+        } else if (height >= 360) {
+          qualityLabel = "HLS-360"
+          badgeClass = "bg-yellow-500/80"
+        } else {
+          qualityLabel = `HLS-${height}`
+          badgeClass = "bg-gray-500/80"
+        }
+
+        console.log(`=== ĐANG PHÁT: ${qualityLabel} ===`)
+        console.log(`Độ phân giải: ${width}x${height}, Bitrate: ${bitrate} Kbps`)
+
+        if (this.hasQualityInfoTarget) {
+          this.qualityInfoTarget.textContent = `${qualityLabel} - ${bitrate} Kbps`
+          this.qualityInfoTarget.className = `absolute top-2 left-2 ${badgeClass} text-white text-xs px-2 py-1 rounded-lg z-10`
+          this.qualityInfoTarget.classList.remove('hidden')
+
+          clearTimeout(this.qualityInfoTimeout)
+          this.qualityInfoTimeout = setTimeout(() => {
+            this.qualityInfoTarget.classList.add('hidden')
+          }, 3000)
+        }
+
+        const mainBadge = document.querySelector('.video-quality-badge')
+        if (mainBadge) {
+          mainBadge.textContent = qualityLabel
+
+          mainBadge.className = `absolute top-2 right-2 ${badgeClass} text-white text-xs px-2 py-1 rounded-lg z-10 font-medium video-quality-badge`
+        }
+      }
+    })
+
+    this.hls.on(Hls.Events.ERROR, (event, data) => {
+      console.error("Lỗi HLS:", data.type, data.details, data)
+
+      if (data.fatal) {
+        switch(data.type) {
+          case Hls.ErrorTypes.NETWORK_ERROR:
+            console.warn("Lỗi mạng, đang thử lại...", data)
+            this.hls.startLoad()
+            break
+          case Hls.ErrorTypes.MEDIA_ERROR:
+            console.warn("Lỗi media, đang thử khôi phục...", data)
+            this.hls.recoverMediaError()
+            break
+          default:
+            console.error("Lỗi HLS không khắc phục được:", data)
+            break
+        }
+      }
+    })
+
+    this.hls.on(Hls.Events.FRAG_BUFFERED, (event, data) => {
+      const bandwidth = Math.round(this.hls.bandwidthEstimate / 1000)
+      console.log(`Băng thông hiện tại: ${bandwidth} Kbps`)
+    })
+
+    this.debugInterval = setInterval(() => {
+      if (this.hls) {
+        try {
+          const currentLevel = this.hls.currentLevel
+          const bandwidth = Math.round(this.hls.bandwidthEstimate / 1000)
+
+          let qualityInfo = "Đang tải..."
+
+          if (currentLevel >= 0 && this.levels && this.levels[currentLevel]) {
+            const level = this.levels[currentLevel]
+            const height = level.height
+            const bitrate = Math.round(level.bitrate / 1000)
+
+            if (height >= 720) {
+              qualityInfo = `HLS-720 (${bitrate} Kbps)`
+            } else if (height >= 480) {
+              qualityInfo = `HLS-480 (${bitrate} Kbps)`
+            } else if (height >= 360) {
+              qualityInfo = `HLS-360 (${bitrate} Kbps)`
+            } else {
+              qualityInfo = `HLS-${height} (${bitrate} Kbps)`
+            }
+          }
+
+          console.log(`Thống kê HLS: ${qualityInfo}, Băng thông: ${bandwidth} Kbps`)
+        } catch (e) {
+          console.error("Lỗi khi log trạng thái:", e)
+        }
+      }
+    }, 10000)
   }
 }

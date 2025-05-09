@@ -7,7 +7,6 @@ class CreateUploads < ActiveRecord::Migration[8.0]
       t.string :cdn_url
       t.string :thumbnail_path
       t.integer :duration
-      t.string :resolution
       t.string :status
       t.references :user, null: false, foreign_key: true, type: :uuid
 
