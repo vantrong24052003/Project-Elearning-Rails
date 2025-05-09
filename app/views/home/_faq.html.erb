@@ -1,6 +1,6 @@
 <section class="py-24 bg-white dark:bg-gray-800" id="faq">
   <div class="container mx-auto px-4">
-    <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 dark:text-white">Frequently Asked Questions</h2>
     <div class="max-w-3xl mx-auto">
       <% faqs = [
         {
@@ -25,26 +25,13 @@
         }
       ] %>
 
-      <div class="space-y-4" id="faq-accordion" data-controller="home--faq">
+      <div class="join join-vertical bg-base-100 dark:bg-gray-800">
         <% faqs.each_with_index do |faq, index| %>
-        <div class="border border-gray-200 dark:border-gray-700 rounded-md">
-          <button
-            class="flex justify-between items-center w-full px-4 py-3 text-left font-medium focus:outline-none"
-            id="faq-button-<%= index %>"
-            aria-expanded="false"
-            aria-controls="faq-content-<%= index %>"
-            data-action="click->home--faq#toggle"
-            data-index="<%= index %>"
-            data-home--faq-target="button">
-            <%= faq[:question] %>
-            <svg class="h-5 w-5 transform transition-transform duration-200" data-home--faq-target="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          <div id="faq-content-<%= index %>" class="hidden px-4 pb-4" aria-labelledby="faq-button-<%= index %>" data-home--faq-target="content">
-            <p class="text-gray-600 dark:text-gray-400"><%= faq[:answer] %></p>
+          <div class="collapse collapse-arrow join-item border-base-300 dark:border-gray-700 border">
+            <input type="radio" name="my-accordion-faq" <%= 'checked="checked"' if index == 0 %> />
+            <div class="collapse-title font-semibold dark:text-white"><%= faq[:question] %></div>
+            <div class="collapse-content text-sm dark:text-gray-300"><%= faq[:answer] %></div>
           </div>
-        </div>
         <% end %>
       </div>
     </div>

@@ -5,5 +5,6 @@ class Progress < ApplicationRecord
   belongs_to :course
   belongs_to :lesson
 
-  validates :status, presence: true
+  validates :user_id, uniqueness: { scope: %i[course_id lesson_id] }
+  enumerize :status, in: %i[pending inprogress done], default: :pending, predicates: true, scope: true
 end

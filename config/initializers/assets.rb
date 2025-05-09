@@ -11,5 +11,11 @@ Rails.application.config.assets.version = '1.0'
 # Add audio files to the asset path - for Propshaft
 Rails.application.config.assets.paths << Rails.root.join('app/assets/audios')
 
+# Add video files to the asset path - for Propshaft
+Rails.application.config.assets.paths << Rails.root.join('app/assets/videos')
+
+# Precompile additional assets.
+Rails.application.config.assets.precompile += %w[videos/video.mp4]
+
 # The config.assets.precompile setting is not used by Propshaft
 # Instead, all assets in the app/assets folder are included automatically

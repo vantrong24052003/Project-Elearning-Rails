@@ -1,43 +1,157 @@
-<h2>Edit <%= resource_name.to_s.humanize %></h2>
-
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
-  <%= render "users/shared/error_messages", resource: resource %>
-
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+<div class="min-h-screen bg-gray-900 py-12 my-8 px-4 sm:px-6 lg:px-8" data-controller="dashboard--profile">
+  <!-- Hiệu ứng background -->
+  <div class="absolute right-0 bottom-0 opacity-10">
+    <svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round" class="text-purple-500">
+      <circle cx="12" cy="12" r="10"></circle>
+      <circle cx="12" cy="12" r="6"></circle>
+      <circle cx="12" cy="12" r="2"></circle>
+    </svg>
   </div>
 
-  <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-    <div>Currently waiting confirmation for: <%= resource.unconfirmed_email %></div>
+  <% if resource.errors.any? %>
+  <div class="mb-6 bg-red-900/50 border border-red-700 text-red-200 px-4 py-3 rounded-lg">
+    <h2 class="font-medium mb-2">
+      <%= I18n.t("errors.messages.not_saved", count: resource.errors.count, resource: resource.class.model_name.human.downcase) %>
+    </h2>
+    <ul class="list-disc list-inside text-sm">
+      <% resource.errors.full_messages.each do |message| %>
+      <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
   <% end %>
 
-  <div class="field">
-    <%= f.label :password %> <i>(leave blank if you don't want to change it)</i><br />
-    <%= f.password_field :password, autocomplete: "new-password" %>
-    <% if @minimum_password_length %>
-      <br />
-      <em><%= @minimum_password_length %> characters minimum</em>
-    <% end %>
+  <!-- Main Container -->
+  <div class="max-w-3xl mx-auto">
+    <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden shadow-lg">
+      <!-- Header Section -->
+      <div class="px-6 py-5 border-b border-gray-700">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold text-white flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Đổi mật khẩu
+          </h2>
+        </div>
+      </div>
+
+      <!-- Form Section -->
+      <div class="px-6 py-6">
+        <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put, class: "space-y-6" }) do |f| %>
+        <!-- Email -->
+        <div class="space-y-2">
+          <%= f.label :email, "Email", class: "block text-sm font-medium text-gray-300" %>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </svg>
+            </div>
+            <%= f.email_field :email, autofocus: true, autocomplete: "email", disabled: true,class: "w-full pl-10 pr-3 py-3 border border-gray-700 rounded-md bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-700 focus:border-transparent" %>
+          </div>
+
+          <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+          <div class="text-sm text-yellow-400 bg-yellow-900/30 rounded-md p-2 mt-2 flex items-start">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>Đang chờ xác nhận email: <strong><%= resource.unconfirmed_email %></strong></span>
+          </div>
+          <% end %>
+        </div>
+
+        <!-- New Password -->
+        <div class="space-y-2">
+          <%= f.label :password, "Mật khẩu mới", class: "block text-sm font-medium text-gray-300" %>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <%= f.password_field :password, autocomplete: "new-password", placeholder: "Để trống nếu không muốn thay đổi", class: "w-full pl-10 pr-10 py-3 border border-gray-700 rounded-md bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" %>
+            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" data-action="click->dashboard--profile#togglePasswordVisibility" data-target="new-password">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+          <% if @minimum_password_length %>
+          <p class="text-xs text-gray-500 mt-1">Tối thiểu <%= @minimum_password_length %> ký tự</p>
+          <% end %>
+        </div>
+
+        <!-- Password Confirmation -->
+        <div class="space-y-2">
+          <%= f.label :password_confirmation, "Xác nhận mật khẩu mới", class: "block text-sm font-medium text-gray-300" %>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+            <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "Xác nhận mật khẩu mới", class: "w-full pl-10 pr-10 py-3 border border-gray-700 rounded-md bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" %>
+            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" data-action="click->dashboard--profile#togglePasswordVisibility" data-target="confirm-password">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Current Password -->
+        <div class="space-y-2">
+          <%= f.label :current_password, "Mật khẩu hiện tại", class: "block text-sm font-medium text-gray-300" %>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+              </svg>
+            </div>
+            <%= f.password_field :current_password, autocomplete: "current-password", placeholder: "Nhập mật khẩu hiện tại để xác nhận thay đổi", class: "w-full pl-10 pr-10 py-3 border border-gray-700 rounded-md bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" %>
+            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" data-action="click->dashboard--profile#togglePasswordVisibility" data-target="current-password">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">Cần nhập mật khẩu hiện tại để xác nhận thay đổi</p>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-4">
+          <%= f.submit "Cập nhật tài khoản", class: "w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-md  font-medium" %>
+        </div>
+        <% end %>
+      </div>
+
+      <!-- Delete Account Section -->
+      <div class="px-6 py-5 border-t border-gray-700">
+        <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+          <div>
+            <h3 class="text-lg font-medium text-white">Xóa tài khoản</h3>
+            <p class="text-sm text-gray-400">Tất cả dữ liệu bạn sẽ bị xóa vĩnh viễn</p>
+          </div>
+          <%= button_to registration_path(resource_name), data: { turbo_confirm: "Bạn có chắc chắn muốn xóa tài khoản không? Hành động này không thể hoàn tác." }, method: :delete, class: "bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 py-2 px-4 text-sm rounded-md " do %>
+          Xóa tài khoản của tôi
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Back Button -->
+      <div class="px-6 py-4 border-t border-gray-700 bg-gray-800/50">
+
+      </div>
+    </div>
   </div>
-
-  <div class="field">
-    <%= f.label :password_confirmation %><br />
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
-  </div>
-
-  <div class="field">
-    <%= f.label :current_password %> <i>(we need your current password to confirm your changes)</i><br />
-    <%= f.password_field :current_password, autocomplete: "current-password" %>
-  </div>
-
-  <div class="actions">
-    <%= f.submit "Update" %>
-  </div>
-<% end %>
-
-<h3>Cancel my account</h3>
-
-<div>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, method: :delete %></div>
-
-<%= link_to "Back", :back %>
+</div>

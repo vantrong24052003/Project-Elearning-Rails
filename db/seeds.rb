@@ -1,23 +1,26 @@
 # frozen_string_literal: true
 
 Progress.destroy_all
+VideoProgress.destroy_all
 Video.destroy_all
 Upload.destroy_all
 QuizQuestion.destroy_all
+QuizAttempt.destroy_all
 Question.destroy_all
 Quiz.destroy_all
 Lesson.destroy_all
 Chapter.destroy_all
-CourseCategory.destroy_all
-Category.destroy_all
 Enrollment.destroy_all
+CourseCategory.destroy_all
 Course.destroy_all
+Category.destroy_all
 Role.destroy_all
 User.destroy_all
 
 %w[
-  videos uploads progresses quiz_questions questions quizzes
-  lessons chapters course_categories categories enrollments courses roles users
+  progresses video_progresses videos uploads quiz_questions quiz_attempts
+  questions quizzes lessons chapters enrollments course_categories
+  courses categories users_roles roles users
 ].each do |table_name|
   ActiveRecord::Base.connection.reset_pk_sequence!(table_name)
 end
@@ -70,117 +73,429 @@ puts '✅ Assigned roles.'
 
 category1 = Category.create!(name: 'Programming', description: 'All about programming languages.')
 category2 = Category.create!(name: 'Design', description: 'Design and creative skills.')
+category3 = Category.create!(name: 'Business', description: 'Business and management skills.')
+category4 = Category.create!(name: 'Data Analysis', description: 'Data analysis and visualization.')
 puts '✅ Created categories.'
 
-course1 = Course.create!(
-  title: 'Ruby on Rails for Beginners',
-  description: 'Learn Ruby on Rails from scratch.',
-  price: 50.0, language: 'English', status: 'published', user_id: admin.id,
-  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-)
+demo_videos = [
+  ActionController::Base.helpers.asset_path('video1.mp4'),
+  ActionController::Base.helpers.asset_path('video2.mp4'),
+  ActionController::Base.helpers.asset_path('video3.mp4'),
+  ActionController::Base.helpers.asset_path('video4.mp4')
+]
 
-course2 = Course.create!(
-  title: 'Design Principles',
-  description: 'Understand design principles for web and mobile.',
-  price: 30.0, language: 'English', status: 'published', user_id: instructor.id,
-  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-)
+course_thumbnails = [
+  'https://i.ytimg.com/vi/jWj0sodsWog/maxresdefault.jpg',
+  'https://trungtamtinhocdanang.com/wp-content/uploads/2021/11/khoa-hoc-excel-cap-toc-tu-co-ban-den-nang-cao.jpg',
+  'https://tse3.mm.bing.net/th?id=OIP.YckuMgINHv97aN7G4AEogwHaFj&pid=Api&P=0&h=180',
+  'https://codestar.vn/wp-content/uploads/2023/03/MicrosoftTeams-image-39.png'
+]
 
-CourseCategory.create!(course: course1, category: category1)
-CourseCategory.create!(course: course2, category: category2)
-puts '✅ Created courses and assigned categories.'
+course_titles = [
+  'Data Analysis Mastery',
+  'Advanced Excel Skills',
+  'Business Law Fundamentals',
+  'Agile Project Management',
+  'Python Programming',
+  'Web Development',
+  'Digital Marketing',
+  'Machine Learning',
+  'UI/UX Design',
+  'Project Management'
+]
 
-Enrollment.create!(
-  user: student,
-  course: course1,
-  status: :active,
-  enrolled_at: Time.current,
-  price_paid: 50.0
-)
+course_descriptions = [
+  'Master data analysis techniques and tools.',
+  'Learn advanced Excel techniques for business.',
+  'Learn essential business law concepts.',
+  'Master Agile methodologies and practices.',
+  'Learn Python programming from scratch.',
+  'Build modern web applications.',
+  'Learn digital marketing strategies.',
+  'Understand machine learning concepts.',
+  'Create beautiful user interfaces.',
+  'Master project management skills.'
+]
 
-Enrollment.create!(
-  user: student,
-  course: course2,
-  status: :pending,
-  enrolled_at: Time.current,
-  price_paid: 30.0
-)
+uploads = demo_videos.map do |video_path|
+  upload_status = %i[pending processing success failed].sample
+  progress = case upload_status
+             when :pending then 0
+             when :processing then rand(10..90)
+             when :success then 100
+             when :failed then rand(10..90)
+             end
 
-Enrollment.create!(
-  user: instructor,
-  course: course1,
-  status: :completed,
-  enrolled_at: 1.month.ago,
-  completed_at: 1.week.ago,
-  price_paid: 50.0
-)
-puts '✅ Created enrollments.'
+  formats = if upload_status == :success
+              ['mp4'].concat(%i[webm hls].sample(rand(0..2)))
+            else
+              []
+            end
 
-chapter1 = Chapter.create!(title: 'Introduction to Ruby', position: 1, course: course1)
-chapter2 = Chapter.create!(title: 'Basic Design Concepts', position: 1, course: course2)
+  processing_log = if upload_status == :failed
+                     ['Error processing video: codec not supported.',
+                      'Failed to transcode: invalid bitrate.',
+                      'Processing timeout after 30 minutes.',
+                      'Failed to generate thumbnails: corrupt file.',
+                      'Network error during file upload.'].sample
+                   end
 
-lesson1 = Lesson.create!(title: 'Getting Started with Ruby', description: 'Intro to Ruby', position: 1,
-                         chapter: chapter1)
-lesson2 = Lesson.create!(title: 'Understanding UI', description: 'UI Basics', position: 1, chapter: chapter2)
-puts '✅ Created chapters and lessons.'
+  Upload.create!(
+    file_type: 'video',
+    cdn_url: video_path,
+    thumbnail_path: course_thumbnails.sample,
+    duration: rand(200..500),
+    user_id: instructor.id,
+    status: upload_status,
+    progress: progress,
+    formats: formats,
+    processing_log: processing_log,
+    created_at: rand(1..30).days.ago
+  )
+end
 
-video_path = Rails.root.join('app/assets/videos/video.mp4')
+categories = [category1, category2, category3, category4]
+languages = %w[English Vietnamese Japanese]
+prices = [29.99, 49.99, 99.99, 149.99, 199.99]
 
-upload1 = Upload.create!(
-  file_type: 'video',
-  cdn_url: video_path.to_s,
-  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg',
-  duration: 300,
-  resolution: '1080p',
-  user_id: admin.id,
-  status: 'active'
-)
+100.times do |i|
+  title_index = rand(0..course_titles.length - 1)
+  course = Course.create!(
+    title: "#{course_titles[title_index]} #{i + 1}",
+    description: course_descriptions[title_index],
+    price: prices.sample,
+    language: languages.sample,
+    status: 'published',
+    user_id: instructor.id,
+    category_id: categories.sample.id,
+    thumbnail_path: course_thumbnails.sample,
+    demo_video_path: demo_videos.sample,
+    is_free: rand < 0.1
+  )
 
-upload2 = Upload.create!(
-  file_type: 'video',
-  cdn_url: video_path.to_s,
-  thumbnail_path: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg',
-  duration: 250,
-  resolution: '720p',
-  user_id: instructor.id,
-  status: 'active'
-)
-puts '✅ Created uploads from local video files.'
+  CourseCategory.create!(
+    course: course,
+    category: Category.find(course.category_id)
+  )
 
-Video.create!(title: 'Ruby Basics', lesson: lesson1, upload: upload1, is_locked: '1985-05-10')
-Video.create!(title: 'UI Design Basics', lesson: lesson2, upload: upload2)
-puts '✅ Created videos.'
+  (2..4).to_a.sample.times do |j|
+    chapter = Chapter.create!(
+      title: "Chapter #{j + 1}: #{course_titles[title_index]}",
+      position: j + 1,
+      course: course
+    )
 
-question1 = Question.create!(
-  content: 'What is Ruby?',
-  options: { 'A' => 'A language', 'B' => 'A framework' },
-  correct_option: 1,
-  explanation: 'Ruby is a programming language.',
-  difficulty: 'easy',
-  course: course1,
-  user: admin
-)
+    (3..5).to_a.sample.times do |k|
+      lesson = Lesson.create!(
+        title: "Lesson #{k + 1}: #{course_descriptions[title_index]}",
+        description: "Detailed lesson about #{course_titles[title_index]}",
+        position: k + 1,
+        chapter: chapter
+      )
 
-question2 = Question.create!(
-  content: 'What is UX?',
-  options: { 'A' => 'User Experience', 'B' => 'User Experience Design' },
-  correct_option: 1,
-  explanation: 'UX stands for User Experience.',
-  difficulty: 'easy',
-  course: course2,
-  user: instructor
-)
-puts '✅ Created questions.'
+      (2..3).to_a.sample.times do |l|
+        success_uploads = uploads.select { |upload| upload.status == 'success' }
+        available_upload = success_uploads.any? ? success_uploads.sample : uploads.sample
 
-quiz1 = Quiz.create!(title: 'Ruby Basics Quiz', is_exam: false, time_limit: 20, course: course1)
-quiz2 = Quiz.create!(title: 'UI Design Principles', is_exam: true, time_limit: 30, course: course2)
+        Video.create!(
+          title: "Video #{l + 1}: #{lesson.title}",
+          lesson: lesson,
+          upload: available_upload,
+          thumbnail: available_upload.thumbnail_path,
+          position: l + 1,
+          is_locked: l.zero? ? nil : '1985-05-10',
+          moderation_status: %i[pending approved rejected locked].sample
+        )
+      end
+    end
+  end
 
-QuizQuestion.create!(quiz: quiz1, question: question1)
-QuizQuestion.create!(quiz: quiz2, question: question2)
+  next unless rand < 0.3
 
-puts '✅ Created quizzes and linked questions.'
+  Enrollment.create!(
+    user: student,
+    course: course,
+    status: %i[active pending].sample,
+    payment_code: SecureRandom.hex(4).upcase,
+    payment_method: ['payment', nil].sample,
+    amount: course.price,
+    paid_at: Time.current - rand(1..30).days,
+    enrolled_at: Time.current - rand(1..30).days,
+    completed_at: rand < 0.5 ? Time.current : nil,
+    note: ['Completed payment successfully', 'Payment pending', nil].sample
+  )
+end
 
-Progress.create!(user: student, course: course1, lesson: lesson1, status: 'in_progress')
-puts '✅ Created progress.'
+puts '✅ Created 100 courses with chapters, lessons, videos and enrollments.'
+
+QUIZ_TOPICS = {
+  'Programming' => [
+    'Cơ bản về ngôn ngữ lập trình', 'Cấu trúc dữ liệu và thuật toán',
+    'Lập trình hướng đối tượng', 'Framework và thư viện', 'Phát triển ứng dụng web'
+  ],
+  'Design' => [
+    'Nguyên tắc thiết kế cơ bản', 'Màu sắc và bố cục',
+    'UX/UI Design', 'Thiết kế đáp ứng', 'Công cụ thiết kế chuyên nghiệp'
+  ],
+  'Business' => [
+    'Quản lý dự án', 'Marketing và bán hàng',
+    'Tài chính cơ bản', 'Chiến lược kinh doanh', 'Quản lý nhân sự'
+  ],
+  'Data Analysis' => [
+    'Phân tích dữ liệu cơ bản', 'Thống kê ứng dụng',
+    'Trực quan hóa dữ liệu', 'Machine Learning cơ bản', 'Công cụ phân tích dữ liệu'
+  ]
+}.freeze
+
+QUESTION_TEMPLATES = {
+  'Programming' => [
+    'Phương pháp nào được sử dụng để tối ưu hóa TOPIC?',
+    'Nguyên tắc quan trọng nhất trong TOPIC là gì?',
+    'Công cụ nào phổ biến nhất để phát triển TOPIC?',
+    'Cách giải quyết vấn đề TOPIC hiệu quả nhất?'
+  ],
+  'Design' => [
+    'Nguyên tắc thiết kế nào quan trọng nhất trong TOPIC?',
+    'Xu hướng mới nhất trong lĩnh vực TOPIC?',
+    'Công cụ nào tốt nhất cho TOPIC?',
+    'Cách áp dụng TOPIC vào dự án thực tế?'
+  ],
+  'Business' => [
+    'Chiến lược TOPIC nào hiệu quả nhất cho startup?',
+    'Yếu tố quyết định thành công trong TOPIC?',
+    'Phương pháp đo lường hiệu quả của TOPIC?',
+    'Xu hướng mới trong TOPIC năm nay?'
+  ],
+  'Data Analysis' => [
+    'Kỹ thuật nào tốt nhất cho TOPIC?',
+    'Công cụ phân tích nào phù hợp nhất với TOPIC?',
+    'Cách xử lý missing data trong TOPIC?',
+    'Mô hình nào cho độ chính xác cao nhất trong TOPIC?'
+  ]
+}.freeze
+
+ANSWER_OPTIONS = {
+  'Programming' => [
+    'Sử dụng thuật toán tối ưu hóa và cấu trúc dữ liệu phù hợp',
+    'Áp dụng mẫu thiết kế và kiến trúc phân lớp',
+    'Sử dụng các thư viện và framework hiện đại',
+    'Áp dụng các kỹ thuật lập trình song song'
+  ],
+  'Design' => [
+    'Sử dụng nguyên tắc thiết kế tối giản và tương phản',
+    'Áp dụng lý thuyết màu sắc và bố cục cân đối',
+    'Tối ưu hóa trải nghiệm người dùng và khả năng tiếp cận',
+    'Thiết kế dựa trên nghiên cứu người dùng và phản hồi'
+  ],
+  'Business' => [
+    'Phân tích thị trường và đối thủ cạnh tranh',
+    'Xây dựng kế hoạch kinh doanh và chiến lược marketing',
+    'Tối ưu hóa quy trình và nguồn lực',
+    'Áp dụng các mô hình kinh doanh đổi mới'
+  ],
+  'Data Analysis' => [
+    'Áp dụng phương pháp thống kê và mô hình dự đoán',
+    'Sử dụng công cụ phân tích dữ liệu và trực quan hóa',
+    'Xử lý dữ liệu lớn và phân tích theo thời gian thực',
+    'Kết hợp nhiều nguồn dữ liệu và kỹ thuật phân tích'
+  ]
+}.freeze
+
+EXAM_QUESTIONS = {
+  'Programming' => [
+    {
+      content_prefix: 'Với ngôn ngữ lập trình ',
+      content_subjects: ['Python', 'JavaScript', 'Java', 'C++', 'Ruby'],
+      content_suffix: ', đâu là cách tốt nhất để ',
+      content_tasks: ['xử lý bất đồng bộ', 'tối ưu hóa hiệu suất', 'triển khai mô hình MVC', 'quản lý bộ nhớ'],
+      options: [
+        'Sử dụng Promise và async/await để quản lý luồng xử lý',
+        'Áp dụng đa luồng và xử lý song song khi thích hợp',
+        'Tận dụng các thư viện chuyên dụng và framework tối ưu',
+        'Sử dụng mẫu thiết kế Singleton để quản lý tài nguyên'
+      ]
+    }
+  ],
+  'Design' => [
+    {
+      content_prefix: 'Trong lĩnh vực ',
+      content_subjects: ['UI/UX Design', 'Web Design', 'Mobile Design', 'Graphic Design'],
+      content_suffix: ', làm thế nào để ',
+      content_tasks: ['tạo trải nghiệm người dùng tốt nhất', 'thiết kế giao diện hiệu quả',
+                      'áp dụng nguyên tắc accessibility', 'cân bằng thẩm mỹ và chức năng'],
+      options: [
+        'Áp dụng nguyên tắc thiết kế tối giản và nhất quán',
+        'Sử dụng prototyping và testing với người dùng thật',
+        'Tuân thủ các hướng dẫn thiết kế của nền tảng',
+        'Tập trung vào trải nghiệm người dùng và khả năng sử dụng'
+      ]
+    }
+  ],
+  'Business' => [
+    {
+      content_prefix: 'Trong phát triển chiến lược ',
+      content_subjects: ['marketing', 'kinh doanh', 'quản lý nhân sự', 'tài chính'],
+      content_suffix: ', yếu tố nào quan trọng nhất để ',
+      content_tasks: ['tăng doanh thu', 'giảm chi phí', 'tối ưu hóa quy trình', 'nâng cao hiệu suất'],
+      options: [
+        'Phân tích dữ liệu và KPI để đưa ra quyết định dựa trên số liệu',
+        'Xây dựng đội ngũ chuyên nghiệp và văn hóa công ty mạnh mẽ',
+        'Áp dụng các chiến lược đổi mới và phương pháp tiếp cận mới',
+        'Tối ưu hóa quy trình và tự động hóa các nhiệm vụ lặp lại'
+      ]
+    }
+  ],
+  'Data Analysis' => [
+    {
+      content_prefix: 'Trong phân tích dữ liệu ',
+      content_subjects: ['lớn', 'thời gian thực', 'dự đoán', 'hành vi người dùng'],
+      content_suffix: ', phương pháp nào hiệu quả nhất để ',
+      content_tasks: ['xử lý dữ liệu thiếu', 'trực quan hóa kết quả', 'dự đoán xu hướng', 'phát hiện bất thường'],
+      options: [
+        'Sử dụng thuật toán học máy và phân tích dự đoán',
+        'Áp dụng thống kê nâng cao và phân tích hồi quy',
+        'Kết hợp nhiều nguồn dữ liệu và phương pháp phân tích',
+        'Sử dụng công cụ trực quan hóa và dashboard tương tác'
+      ]
+    }
+  ]
+}.freeze
+
+puts 'Tạo bài kiểm tra cho các khóa học...'
+
+def create_quiz_for_course(course, is_exam = false)
+  category = course.categories.first
+  category_name = category ? category.name : 'Programming'
+
+  if is_exam
+    create_exam_for_course(course, category_name)
+  else
+    create_practice_quiz_for_course(course, category_name)
+  end
+end
+
+def create_practice_quiz_for_course(course, category_name)
+  topics = QUIZ_TOPICS[category_name]
+  question_templates = QUESTION_TEMPLATES[category_name]
+  answers = ANSWER_OPTIONS[category_name]
+  topic = topics.sample
+  title = "#{topic} - #{course.title.split.first(2).join(' ')}"
+
+  quiz = Quiz.create!(
+    title: title,
+    is_exam: false,
+    time_limit: [10, 15, 20, 25, 30].sample,
+    course: course
+  )
+
+  rand(3..7).times do |j|
+    template = question_templates.sample
+    content = template.gsub('TOPIC', topic.downcase) + " (##{j + 1})"
+
+    question = Question.create!(
+      content: content,
+      options: answers.shuffle,
+      correct_option: rand(0..3),
+      explanation: "Giải thích chi tiết: #{answers.sample} là phương pháp hiệu quả nhất cho #{topic.downcase}.",
+      difficulty: %w[easy medium hard].sample,
+      course: course,
+      user: course.user
+    )
+
+    QuizQuestion.create!(quiz: quiz, question: question)
+  end
+
+  create_quiz_attempts(quiz, course)
+
+  quiz
+end
+
+def create_exam_for_course(course, category_name)
+  exam = Quiz.create!(
+    title: "Bài thi cuối khóa - #{course.title.truncate(30)}",
+    is_exam: true,
+    time_limit: [30, 45, 60].sample,
+    course: course
+  )
+
+  exam_templates = EXAM_QUESTIONS[category_name] || EXAM_QUESTIONS['Programming']
+
+  rand(10..15).times do |_j|
+    template = exam_templates.sample
+
+    subject = template[:content_subjects].sample
+    task = template[:content_tasks].sample
+    content = "#{template[:content_prefix]}#{subject}#{template[:content_suffix]}#{task}?"
+
+    question = Question.create!(
+      content: content,
+      options: template[:options].shuffle,
+      correct_option: rand(0..3),
+      explanation: "Lý giải chi tiết: #{template[:options].sample} là phương pháp tối ưu cho nhiều trường hợp.",
+      difficulty: %w[medium hard].sample,
+      course: course,
+      user: course.user
+    )
+
+    QuizQuestion.create!(quiz: exam, question: question)
+  end
+
+  exam
+end
+
+def create_quiz_attempts(quiz, course)
+  return unless course.enrolled_users.any? && rand < 0.7
+
+  students = course.enrolled_users.sample(rand(1..3))
+
+  students.each do |student|
+    answers = {}
+    correct_count = 0
+
+    quiz.questions.each do |q|
+      user_answer = rand(0..3)
+      answers[q.id.to_s] = user_answer
+      correct_count += 1 if user_answer == q.correct_option
+    end
+
+    score = quiz.questions.any? ? (correct_count.to_f / quiz.questions.count * 100).round : 0
+
+    time_spent = rand((quiz.time_limit * 30)..(quiz.time_limit * 60))
+
+    QuizAttempt.create!(
+      quiz: quiz,
+      user: student,
+      score: score,
+      time_spent: time_spent,
+      answers: answers
+    )
+  end
+end
+
+10.times do
+  course = Course.all.sample
+  create_quiz_for_course(course, false)
+end
+
+10.times do
+  course = Course.all.sample
+  create_quiz_for_course(course, true)
+end
+
+puts "✅ Đã tạo #{Quiz.count} bài kiểm tra với #{Question.count} câu hỏi và #{QuizAttempt.count} lần làm bài."
+
+Course.all.sample(20).each do |course|
+  random_lesson = course.chapters.sample&.lessons&.sample
+  next unless random_lesson
+
+  Progress.create!(
+    user: student,
+    course: course,
+    lesson: random_lesson,
+    status: %i[pending inprogress done].sample
+  )
+end
+
+puts '✅ Created progress records.'
 
 puts "\n🎉 Seed data completed successfully!"

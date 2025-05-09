@@ -1,122 +1,235 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["searchForm", "searchInput", "categoryInput", "minPriceInput", "maxPriceInput",
-                   "categorySelect", "sortSelect", "activeFilters", "searchFilter", "categoryFilter",
-                   "priceFilter", "sortFilter", "searchTerm", "categoryName", "priceFilterText",
-                   "sortText", "filterModal", "modalCategorySelect", "modalPriceMin", "modalPriceMax"]
-
-  initialize() {
-    this.debounceTimer = null
-  }
+  static targets = [
+    "searchForm", "searchInput", "categoryInput", "minPriceInput", "maxPriceInput",
+    "categorySelect", "sortSelect", "minSlider", "maxSlider", "range",
+    "modalCategorySelect", "modalPriceMin", "modalPriceMax"
+  ]
 
   connect() {
     console.log("Course filter controller connected")
+    this.updateSliderValues()
   }
 
-  submit(event) {
-    // Debounce the form submission to prevent multiple rapid submissions
-    clearTimeout(this.debounceTimer)
-    this.debounceTimer = setTimeout(() => {
-      // Use Turbo to submit the form and update only the courses list frame
-      const formData = new FormData(this.element)
-      const url = new URL(this.element.action)
+  searchWithDebounce() {
+    if (this._searchTimeout) {
+      clearTimeout(this._searchTimeout)
+    }
 
-      // Append form data to URL
-      for (let [key, value] of formData.entries()) {
-        if (value) url.searchParams.append(key, value)
-      }
-
-      // Use Turbo.visit to update only the courses list frame
-      Turbo.visit(url.toString(), {
-        frame: this.element.dataset.turboFrame,
-        action: 'replace'
-      })
+    this._searchTimeout = setTimeout(() => {
+      this.updateURL()
+      this.submitForm()
     }, 300)
   }
 
-  searchWithDebounce(event) {
-    clearTimeout(this.debounceTimer)
-    this.debounceTimer = setTimeout(() => {
-      this.searchFormTarget.requestSubmit()
-    }, 500)
-  }
-
   updateCategoryFilter(event) {
-    const selectedCategoryId = event.target.value
-    this.categoryInputTarget.value = selectedCategoryId
-    this.searchFormTarget.requestSubmit()
-  }
-
-  applySortFilter(event) {
-    const selectedSort = event.target.value
-    const sortByInput = this.searchFormTarget.querySelector('input[name="sort_by"]')
-    if (sortByInput) {
-      sortByInput.value = selectedSort
-      this.searchFormTarget.requestSubmit()
+    if (this.hasCategoryInputTarget) {
+      this.categoryInputTarget.value = event.target.value
     }
+    this.updateURL()
+    this.submitForm()
   }
 
-  toggleFilterModal() {
-    this.filterModalTarget.classList.toggle('hidden')
+  applySortFilter() {
+    if (this.hasSortSelectTarget) {
+      let sortByInput = this.searchFormTarget.querySelector('input[name="sort_by"]')
+      if (!sortByInput) {
+        sortByInput = document.createElement('input')
+        sortByInput.type = 'hidden'
+        sortByInput.name = 'sort_by'
+        this.searchFormTarget.appendChild(sortByInput)
+      }
+
+      sortByInput.value = this.sortSelectTarget.value
+    }
+
+    this.updateURL()
+    this.submitForm()
   }
 
-  updateModalPriceRange(event) {
-    const { min, max } = event.detail
-    this.modalPriceMinTarget.textContent = new Intl.NumberFormat().format(min)
-    this.modalPriceMaxTarget.textContent = new Intl.NumberFormat().format(max)
+  updateSliderValues() {
+    if (!this.hasMinSliderTarget || !this.hasMaxSliderTarget) return
+
+    let minValue = parseInt(this.minSliderTarget.value)
+    let maxValue = parseInt(this.maxSliderTarget.value)
+
+    if (minValue >= maxValue) {
+      if (this.isDraggingMin) {
+        minValue = maxValue - 50000
+        this.minSliderTarget.value = minValue
+      } else {
+        maxValue = minValue + 50000
+        this.maxSliderTarget.value = maxValue
+      }
+    }
+
+    if (this.hasModalPriceMinTarget) {
+      this.modalPriceMinTarget.textContent = this.formatPrice(minValue)
+    }
+
+    if (this.hasModalPriceMaxTarget) {
+      this.modalPriceMaxTarget.textContent = this.formatPrice(maxValue)
+    }
+
+    this.updateSliderRangeUI(minValue, maxValue)
+  }
+
+  updateSliderRangeUI(min, max) {
+    if (!this.hasRangeTarget) return
+
+    const minRange = 0
+    const maxRange = 1000000
+
+    const leftPercent = ((min - minRange) / (maxRange - minRange)) * 100
+    const rightPercent = 100 - ((max - minRange) / (maxRange - minRange)) * 100
+
+    this.rangeTarget.style.left = `${leftPercent}%`
+    this.rangeTarget.style.right = `${rightPercent}%`
+  }
+
+  trackDraggingMin() {
+    this.isDraggingMin = true
+    this.isDraggingMax = false
+  }
+
+  trackDraggingMax() {
+    this.isDraggingMin = false
+    this.isDraggingMax = true
   }
 
   applyModalFilters() {
-    const categoryId = this.modalCategorySelectTarget.value
-    const minPrice = parseInt(document.querySelector('[data-dashboard--price-slider-target="minSlider"]').value)
-    const maxPrice = parseInt(document.querySelector('[data-dashboard--price-slider-target="maxSlider"]').value)
-
-    this.categoryInputTarget.value = categoryId
-    this.minPriceInputTarget.value = minPrice
-    this.maxPriceInputTarget.value = maxPrice
-
-    this.searchFormTarget.requestSubmit()
-    this.toggleFilterModal()
-  }
-
-  clearSearch() {
-    this.searchInputTarget.value = ''
-    this.searchFormTarget.requestSubmit()
-  }
-
-  clearCategoryFilter() {
-    this.categoryInputTarget.value = ''
-    this.searchFormTarget.requestSubmit()
-  }
-
-  clearPriceFilter() {
-    this.minPriceInputTarget.value = ''
-    this.maxPriceInputTarget.value = ''
-    this.searchFormTarget.requestSubmit()
-  }
-
-  clearSortFilter() {
-    const sortByInput = this.searchFormTarget.querySelector('input[name="sort_by"]')
-    if (sortByInput) {
-      sortByInput.value = ''
-      this.searchFormTarget.requestSubmit()
+    if (this.hasModalCategorySelectTarget && this.hasCategoryInputTarget) {
+      this.categoryInputTarget.value = this.modalCategorySelectTarget.value
     }
+
+    if (this.hasMinSliderTarget && this.hasMaxSliderTarget &&
+        this.hasMinPriceInputTarget && this.hasMaxPriceInputTarget) {
+      this.minPriceInputTarget.value = this.minSliderTarget.value
+      this.maxPriceInputTarget.value = this.maxSliderTarget.value
+    }
+
+    const modal = document.getElementById('filter_modal')
+    if (modal) {
+      modal.close()
+    }
+
+    this.updateURL()
+    this.submitForm()
   }
 
   resetFilters() {
-    this.categoryInputTarget.value = ''
-    this.minPriceInputTarget.value = ''
-    this.maxPriceInputTarget.value = ''
-    this.searchInputTarget.value = ''
-    const sortByInput = this.searchFormTarget.querySelector('input[name="sort_by"]')
-    if (sortByInput) sortByInput.value = ''
+    if (this.hasModalCategorySelectTarget) {
+      this.modalCategorySelectTarget.value = ''
+    }
 
-    this.modalCategorySelectTarget.value = ''
-    document.querySelector('[data-dashboard--price-slider-target="minSlider"]').value = 0
-    document.querySelector('[data-dashboard--price-slider-target="maxSlider"]').value = 1000000
+    if (this.hasCategoryInputTarget) {
+      this.categoryInputTarget.value = ''
+    }
+
+    if (this.hasMinPriceInputTarget) {
+      this.minPriceInputTarget.value = ''
+    }
+
+    if (this.hasMaxPriceInputTarget) {
+      this.maxPriceInputTarget.value = ''
+    }
+
+    if (this.hasMinSliderTarget) {
+      this.minSliderTarget.value = 0
+    }
+
+    if (this.hasMaxSliderTarget) {
+      this.maxSliderTarget.value = 1000000
+    }
+
+    this.updateSliderValues()
+
+    const modal = document.getElementById('filter_modal')
+    if (modal) {
+      modal.close()
+    }
+
+    this.updateURL()
+    this.submitForm()
+  }
+
+  toggleFilterModal() {
+    const modal = document.getElementById('filter_modal')
+    if (modal) {
+      modal.showModal ? modal.showModal() : modal.close()
+    }
+  }
+
+  clearSearch() {
+    const searchInput = this.searchFormTarget.querySelector('input[name="search"]')
+    if (searchInput) {
+      searchInput.value = ''
+      this.updateURL()
+      this.submitForm()
+    }
+  }
+
+  clearCategoryFilter() {
+    if (this.hasCategoryInputTarget) {
+      this.categoryInputTarget.value = ''
+      this.updateURL()
+      this.submitForm()
+    }
+  }
+
+  clearPriceFilter() {
+    if (this.hasMinPriceInputTarget && this.hasMaxPriceInputTarget) {
+      this.minPriceInputTarget.value = ''
+      this.maxPriceInputTarget.value = ''
+      this.updateURL()
+      this.submitForm()
+    }
+  }
+
+  clearSortFilter() {
+    if (this.hasSortSelectTarget) {
+      this.sortSelectTarget.value = 'newest'
+
+      const sortByInput = this.searchFormTarget.querySelector('input[name="sort_by"]')
+      if (sortByInput) {
+        sortByInput.value = 'newest'
+      }
+
+      this.updateURL()
+      this.submitForm()
+    }
+  }
+
+  updateURL() {
+    const formData = new FormData(this.searchFormTarget)
+    const url = new URL(window.location.href)
+    const params = url.searchParams
+
+    Array.from(params.keys()).forEach(key => {
+      if (key !== 'authenticity_token') {
+        params.delete(key)
+      }
+    })
+
+    for (const [key, value] of formData.entries()) {
+      if (key !== 'authenticity_token' && value) {
+        params.set(key, value)
+      }
+    }
+
+    window.history.pushState({}, '', url.toString())
+  }
+
+  submitForm(event) {
+    if (event) {
+      event.preventDefault()
+    }
 
     this.searchFormTarget.requestSubmit()
-    this.toggleFilterModal()
+  }
+
+  formatPrice(value) {
+    return new Intl.NumberFormat('vi-VN').format(value)
   }
 }

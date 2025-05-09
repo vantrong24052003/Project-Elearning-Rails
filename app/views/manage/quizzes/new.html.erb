@@ -1,0 +1,293 @@
+<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <div class="flex flex-col gap-4">
+    <div class="flex items-center gap-3 mb-4">
+      <%= link_to manage_quizzes_path, class: "flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        <span class="ml-1">Quay lại</span>
+      <% end %>
+
+      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
+        <%= params[:ai] ? "Tạo bài kiểm tra với AI" : "Tạo bài kiểm tra mới" %>
+      </h1>
+    </div>
+
+    <% if params[:ai] %>
+      <!-- Giao diện tạo bài kiểm tra bằng AI -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" data-controller="manage--quiz-ai-generator">
+        <!-- Phần 1: Thiết lập bài kiểm tra -->
+        <div class="lg:col-span-1 space-y-6">
+          <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Thiết lập bài kiểm tra</h2>
+
+            <%= form_with model: @quiz, url: manage_quizzes_path, method: :post, data: { manage__quiz_ai_generator_target: "form" } do |f| %>
+              <%= hidden_field_tag :source_type, 'ai_generated' %>
+              <%= hidden_field_tag :questions_data, '', data: { manage__quiz_ai_generator_target: "questionsData" } %>
+
+              <div class="mb-4">
+                <%= f.label :title, 'Tiêu đề bài kiểm tra', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= f.text_field :title, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', placeholder: 'Nhập tiêu đề bài kiểm tra', required: true %>
+              </div>
+
+              <div class="mb-4">
+                <%= f.label :course_id, 'Khóa học', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= f.select :course_id,
+                  @courses.map { |c| [c.title, c.id] },
+                  { include_blank: 'Chọn khóa học' },
+                  {
+                    class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
+                    required: true,
+                    data: {
+                      manage__quiz_ai_generator_target: "courseSelect"
+                    }
+                  }
+                %>
+              </div>
+
+              <div class="mb-4">
+                <div class="flex justify-between items-center mb-1">
+                  <%= f.label :is_exam, 'Loại bài kiểm tra', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300' %>
+                </div>
+                <div class="flex gap-4">
+                  <div class="flex items-center">
+                    <%= f.radio_button :is_exam, false, class: 'h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800', checked: true %>
+                    <%= f.label :is_exam_false, 'Bài tập thực hành', class: 'ml-2 text-sm text-gray-700 dark:text-gray-300' %>
+                  </div>
+                  <div class="flex items-center">
+                    <%= f.radio_button :is_exam, true, class: 'h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800' %>
+                    <%= f.label :is_exam_true, 'Bài thi', class: 'ml-2 text-sm text-gray-700 dark:text-gray-300' %>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <%= f.label :time_limit, 'Thời gian làm bài (phút)', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= f.number_field :time_limit, min: 1, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', value: 15 %>
+              </div>
+
+              <div class="mb-4">
+                <%= label_tag :num_questions, 'Số lượng câu hỏi', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= number_field_tag :num_questions, 5, min: 1, max: 20, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white' %>
+              </div>
+
+              <div class="mb-4">
+                <%= label_tag :difficulty, 'Độ khó', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= select_tag :difficulty,
+                  options_for_select([
+                    ['Dễ (cơ bản)', 'easy'],
+                    ['Trung bình', 'medium'],
+                    ['Khó (nâng cao)', 'hard']
+                  ], 'medium'),
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
+                %>
+              </div>
+
+              <div class="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-700/30 rounded-lg p-4 mb-4">
+                <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">Các kiểu câu hỏi muốn tạo:</h3>
+                <div class="space-y-2">
+                  <div class="flex items-center">
+                    <%= check_box_tag 'question_types[]', 'knowledge', true, class: 'h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-700 focus:ring-blue-500' %>
+                    <label for="question_types_knowledge" class="ml-2 text-sm text-blue-700 dark:text-blue-300">Câu hỏi kiến thức (kiểm tra hiểu biết và ghi nhớ)</label>
+                  </div>
+                  <div class="flex items-center">
+                    <%= check_box_tag 'question_types[]', 'application', true, class: 'h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-700 focus:ring-blue-500' %>
+                    <label for="question_types_application" class="ml-2 text-sm text-blue-700 dark:text-blue-300">Câu hỏi áp dụng (vận dụng kiến thức vào tình huống)</label>
+                  </div>
+                  <div class="flex items-center">
+                    <%= check_box_tag 'question_types[]', 'analysis', true, class: 'h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-700 focus:ring-blue-500' %>
+                    <label for="question_types_analysis" class="ml-2 text-sm text-blue-700 dark:text-blue-300">Câu hỏi phân tích (phân tích quan hệ giữa các khái niệm)</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-gray-200 dark:border-gray-700">
+                <button type="button" class="w-full btn btn-primary" data-action="manage--quiz-ai-generator#generateQuestions">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.05 4.03a9 9 0 0 0-4.17 2.44 8 8 0 1 0 2.83 13.93"></path>
+                    <path d="M18 2v4h-4"></path>
+                    <path d="M4 11a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"></path>
+                    <path d="M14 10h4"></path>
+                    <path d="M14 14h4"></path>
+                    <path d="M14 18h4"></path>
+                  </svg>
+                  Tạo câu hỏi với AI
+                </button>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Phân tích nội dung</h3>
+
+            <div data-manage--quiz-ai-generator-target="analysis" class="hidden">
+              <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <div class="space-y-3">
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Số lượng khái niệm chính:</h4>
+                    <p class="text-gray-900 dark:text-white" data-manage--quiz-ai-generator-target="conceptCount">-</p>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Mức độ bao phủ nội dung:</h4>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                      <div class="bg-blue-600 h-2.5 rounded-full dark:bg-blue-500" data-manage--quiz-ai-generator-target="coverageBar" style="width: 0%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" data-manage--quiz-ai-generator-target="coverageText">0%</p>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Đề xuất cải thiện:</h4>
+                    <ul class="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1 mt-1" data-manage--quiz-ai-generator-target="suggestions">
+                      <li>Đang phân tích...</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div data-manage--quiz-ai-generator-target="analysisLoading" class="text-center py-4">
+              <p class="text-gray-500 dark:text-gray-400 text-sm">Chọn khóa học và nhấn "Tạo câu hỏi với AI" để phân tích nội dung</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phần 2: Xem trước câu hỏi được sinh -->
+        <div class="lg:col-span-2">
+          <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Câu hỏi được tạo ra</h2>
+
+              <div class="flex items-center gap-3 hidden" data-manage--quiz-ai-generator-target="controls">
+                <button type="button" class="btn btn-sm btn-outline" data-action="manage--quiz-ai-generator#regenerateQuestions">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12a9 9 0 1 1 18 0 9 9 0 0 1-18 0Z"></path>
+                    <path d="M12 7v5l2.5 2.5"></path>
+                  </svg>
+                  Tạo lại
+                </button>
+
+                <button type="button" class="btn btn-sm btn-primary" data-action="manage--quiz-ai-generator#saveQuiz">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                  </svg>
+                  Lưu bài kiểm tra
+                </button>
+              </div>
+            </div>
+
+            <div data-manage--quiz-ai-generator-target="loading" class="text-center py-12 hidden">
+              <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 dark:border-blue-500"></div>
+              <p class="mt-4 text-gray-600 dark:text-gray-400">Đang tạo câu hỏi...</p>
+            </div>
+
+            <div data-manage--quiz-ai-generator-target="questionsContainer" class="hidden space-y-8 max-h-[calc(100vh-220px)] overflow-y-auto pr-2">
+              <!-- Nội dung câu hỏi sẽ được thêm vào bằng Stimulus -->
+            </div>
+
+            <!-- Template cho câu hỏi -->
+            <template data-manage--quiz-ai-generator-target="questionTemplate">
+              <div class="question-item border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                <div class="bg-gray-50 dark:bg-gray-800 px-4 py-3 flex justify-between items-center">
+                  <h3 class="font-medium text-gray-800 dark:text-white">Câu hỏi <span class="question-number"></span></h3>
+                  <div class="flex items-center gap-2">
+                    <select class="question-difficulty select select-sm select-bordered">
+                      <option value="easy">Dễ</option>
+                      <option value="medium" selected>Trung bình</option>
+                      <option value="hard">Khó</option>
+                    </select>
+                    <button type="button" class="btn btn-sm btn-ghost text-gray-500 regenerate-btn" title="Tạo lại câu hỏi này">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 1 18 0 9 9 0 0 1-18 0Z"></path>
+                        <path d="M12 7v5l2.5 2.5"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="p-4">
+                  <div class="mb-4">
+                    <textarea class="question-content w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" rows="2"></textarea>
+                  </div>
+
+                  <div class="space-y-2 mb-4 options-container">
+                    <!-- Đáp án sẽ được thêm vào đây -->
+                  </div>
+
+                  <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Giải thích</label>
+                    <textarea class="explanation w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" rows="3"></textarea>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    <% else %>
+      <!-- Form tạo bài kiểm tra thông thường -->
+      <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Thông tin bài kiểm tra</h2>
+
+        <%= form_with model: @quiz, url: manage_quizzes_path, method: :post do |f| %>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="mb-4">
+              <%= f.label :title, 'Tiêu đề bài kiểm tra', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+              <%= f.text_field :title, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', placeholder: 'Nhập tiêu đề bài kiểm tra', required: true %>
+            </div>
+
+            <div class="mb-4">
+              <%= f.label :course_id, 'Khóa học', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+              <%= f.select :course_id,
+                @courses.map { |c| [c.title, c.id] },
+                { include_blank: 'Chọn khóa học' },
+                {
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
+                  required: true
+                }
+              %>
+            </div>
+
+            <div class="mb-4">
+              <%= f.label :time_limit, 'Thời gian làm bài (phút)', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+              <%= f.number_field :time_limit, min: 1, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', value: 15 %>
+            </div>
+
+            <div class="mb-4">
+              <div class="flex justify-between items-center mb-1">
+                <%= f.label :is_exam, 'Loại bài kiểm tra', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300' %>
+              </div>
+              <div class="flex gap-4">
+                <div class="flex items-center">
+                  <%= f.radio_button :is_exam, false, class: 'h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800', checked: true %>
+                  <%= f.label :is_exam_false, 'Bài tập thực hành', class: 'ml-2 text-sm text-gray-700 dark:text-gray-300' %>
+                </div>
+                <div class="flex items-center">
+                  <%= f.radio_button :is_exam, true, class: 'h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800' %>
+                  <%= f.label :is_exam_true, 'Bài thi', class: 'ml-2 text-sm text-gray-700 dark:text-gray-300' %>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-lg p-4 mt-2 mb-6">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-sm text-blue-700 dark:text-blue-300">
+                Sau khi tạo bài kiểm tra, bạn sẽ thêm các câu hỏi vào bài kiểm tra này. Bạn cũng có thể
+                <%= link_to "tạo bài kiểm tra với AI", new_manage_quiz_path(ai: true), class: "underline font-medium" %>
+                để tự động sinh câu hỏi dựa trên nội dung bài giảng.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <%= link_to "Hủy", manage_quizzes_path, class: "btn btn-ghost" %>
+            <%= f.submit "Tạo bài kiểm tra", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

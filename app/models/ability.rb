@@ -4,54 +4,49 @@ class Ability
   include CanCan::Ability
 
   def initialize(user)
-    # All users
-    can :read, Course, status: :published
-
     return if user.blank?
 
-    # All logged in
-    can :read, Course, status: :published
-    can :read, Course, user_id: user.id
-    can :read, Course, enrollments: { user_id: user.id }
+    can :read, Course
 
-    # Student
-    can :read, Chapter, course: { enrollments: { user_id: user.id } }
-    can :read, Lesson, chapter: { course: { enrollments: { user_id: user.id } } }
-    can :read, Video, lesson: { chapter: { course: { enrollments: { user_id: user.id } } } }
+    can [:create, :index], :payment do |_, course_id|
+      course = Course.find_by(id: course_id)
+      course && !user.enrollments.where(course: course, status: :active).exists?
+    end
 
-    can :read, Quiz, course: { enrollments: { user_id: user.id } }
-    can :attempt, Quiz, course: { enrollments: { user_id: user.id } }
-    can :create, QuizAttempt, user_id: user.id
-    can :read, QuizAttempt, user_id: user.id
+    can :payment, Course do |course|
+      !user.enrollments.where(course: course, status: :active).exists?
+    end
 
-    # Enrollment
-    can :create, Enrollment, user_id: user.id
-    can :read, Enrollment, user_id: user.id
+    can :create_payment, Course do |course|
+      !user.enrollments.where(course: course, status: :active).exists?
+    end
 
-    # Instructor
+    can :view_payment, Course do |course|
+      !user.enrollments.where(course: course, status: :active).exists?
+    end
+
+    can :course_viewer, Course do |course|
+      course.enrollments.exists?(user: user, status: :active)
+    end
+
+    can :read, Quiz do |quiz|
+      quiz.course.enrollments.exists?(user: user, status: :active)
+    end
+
     if user.has_role?(:instructor)
-      can :manage, Course, user_id: user.id
-      can :publish, Course, user_id: user.id
-      can :unpublish, Course, user_id: user.id
+      can %i[read create update destroy], Course, user_id: user.id
+      can :read, Quiz, course: { user_id: user.id }
 
+      can :access, :manage_dashboard
       can :manage, Chapter, course: { user_id: user.id }
       can :manage, Lesson, chapter: { course: { user_id: user.id } }
       can :manage, Video, lesson: { chapter: { course: { user_id: user.id } } }
-
       can :manage, Quiz, course: { user_id: user.id }
-      can :manage, Question, course: { user_id: user.id }
-
-      can :manage, Upload, user_id: user.id
-
-      can :read, QuizAttempt, quiz: { course: { user_id: user.id } }
-
-      # Enrollment
-      can :read, Enrollment, course: { user_id: user.id }
-      can :update, Enrollment, course: { user_id: user.id }
     end
 
-    return unless user.has_role?(:admin)
-
-    can :manage, :all
+    if user.has_role?(:admin)
+      can :manage, :all
+      can :access, :manage_dashboard
+    end
   end
 end
