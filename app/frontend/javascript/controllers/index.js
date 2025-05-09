@@ -21,6 +21,7 @@ import UploadFormController from "./manage/upload_form_controller"
 import UploadTranscodingController from "./manage/upload_transcoding_controller"
 import ManageUploadFormController from "./manage/upload_form_controller"
 import VideoPlayerController from "./shared/video_player_controller"
+import QuizAiGeneratorController from "./manage/quiz_ai_generator_controller"
 
 // home
 application.register("home--faq", faq_controller)
@@ -50,3 +51,4 @@ application.register("manage--video-filter", VideoFilterController)
 application.register("manage--upload-form", UploadFormController)
 application.register("manage--upload-transcoding", UploadTranscodingController)
 application.register("manage--upload-form", ManageUploadFormController)
+application.register("manage--quiz-ai-generator", QuizAiGeneratorController)
