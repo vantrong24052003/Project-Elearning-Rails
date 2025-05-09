@@ -20,14 +20,11 @@ Rails.application.routes.draw do
     end
 
     resources :enrollments, only: %i[index]
-    resources :profiles, only: %i[show update]
-    resources :passwords, only: %i[edit update]
+    resources :profile, only: %i[show update]
   end
 
   namespace :manage do
-    root to: 'overviews#index'
-
-    resources :overviews, only: %i[index]
+    root to: 'courses#index'
 
     resources :courses do
       member do
@@ -41,7 +38,14 @@ Rails.application.routes.draw do
     resources :videos do
       resource :moderation, only: [:update]
     end
-    resources :quizzes
+    resources :quizzes do
+      collection do
+        get 'course_chapters/:course_id', to: 'quizzes#course_chapters', as: :course_chapters
+        get 'chapter_lessons/:chapter_id', to: 'quizzes#chapter_lessons', as: :chapter_lessons
+        get 'lesson_videos/:lesson_id', to: 'quizzes#lesson_videos', as: :lesson_videos
+        get 'video_details/:video_id', to: 'quizzes#video_details', as: :video_details
+      end
+    end
     resources :questions
     resources :quiz_attempts
     resources :uploads do

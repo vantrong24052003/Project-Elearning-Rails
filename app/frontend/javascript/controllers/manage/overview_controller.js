@@ -26,7 +26,7 @@ export default class extends Controller {
     })
 
     for (const [key, value] of formData.entries()) {
-      if (key !== 'authenticity_token' && value) {
+      if (key !== 'authenticity_token') {
         params.set(key, value)
       }
     }

@@ -2,38 +2,105 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   connect() {
-    this.checkInProgressQuizzes();
+    this.updateContinueButtons();
+    this.updateStartButtons();
+
+    this.updateInterval = setInterval(() => {
+      this.updateContinueButtons();
+      this.updateStartButtons();
+    }, 2000);
   }
 
-  checkInProgressQuizzes() {
-    const quizLinks = document.querySelectorAll('a[data-quiz-id]');
+  disconnect() {
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+    }
+  }
 
-    quizLinks.forEach(link => {
-      const quizId = link.dataset.quizId;
-      const storageKey = `quiz_${quizId}`;
-      const quizType = link.dataset.quizType || '';
+  updateContinueButtons() {
+    const continueButtons = document.querySelectorAll('.quiz-continue-btn');
 
-      const isSubmitted = localStorage.getItem(`${storageKey}_submitted`) === 'true';
+    continueButtons.forEach(button => {
+      const quizId = button.dataset.quizId;
+      if (!quizId) return;
 
-      const savedData = sessionStorage.getItem(storageKey);
-
-      const textElement = link.querySelector('.quiz-action-text');
-      if (!textElement) return;
+      const isSubmitted = localStorage.getItem(`quiz_${quizId}_submitted`) === 'true';
+      const quizState = localStorage.getItem(`quiz_state_${quizId}`);
 
       if (isSubmitted) {
-        if (quizType !== 'exam') {
-          textElement.textContent = 'Làm lại bài';
-
-          const currentHref = link.getAttribute('href');
-          if (currentHref && !currentHref.includes('force=true')) {
-            link.setAttribute('href', `${currentHref}?force=true`);
-          }
+        button.querySelector('span').textContent = 'Làm lại bài';
+        const currentHref = button.getAttribute('href');
+        if (currentHref) {
+          const baseUrl = currentHref.split('?')[0];
+          button.setAttribute('href', `${baseUrl}?force=true`);
         }
-      } else if (savedData) {
+      } else if (quizState) {
+        button.querySelector('span').textContent = 'Tiếp tục làm';
+        const currentHref = button.getAttribute('href');
+        if (currentHref) {
+          const baseUrl = currentHref.split('?')[0];
+          button.setAttribute('href', `${baseUrl}?continue=true`);
+        }
+      } else {
+        button.querySelector('span').textContent = 'Làm lại bài';
+        const currentHref = button.getAttribute('href');
+        if (currentHref) {
+          const baseUrl = currentHref.split('?')[0];
+          button.setAttribute('href', `${baseUrl}?force=true`);
+        }
+      }
+    });
+
+    const startButtons = document.querySelectorAll('.quiz-action-text');
+    startButtons.forEach(textElement => {
+      if (!textElement) return;
+
+      const link = textElement.closest('a');
+      if (!link) return;
+
+      const quizId = link.dataset.quizId;
+      if (!quizId) return;
+
+      const storageKey = `quiz_state_${quizId}`;
+      const savedData = localStorage.getItem(storageKey);
+
+      if (savedData) {
         textElement.textContent = 'Tiếp tục làm bài';
         const currentHref = link.getAttribute('href');
-        if (currentHref && currentHref.includes('force=true')) {
-          link.setAttribute('href', currentHref.replace('?force=true', ''));
+        if (currentHref) {
+          const baseUrl = currentHref.split('?')[0];
+          link.setAttribute('href', `${baseUrl}?continue=true`);
+        }
+      }
+    });
+  }
+
+  updateStartButtons() {
+    const startButtons = document.querySelectorAll('.quiz-start-btn');
+
+    startButtons.forEach(link => {
+      const quizId = link.dataset.quizId;
+      if (!quizId) return;
+
+      const storageKey = `quiz_state_${quizId}`;
+      const savedData = localStorage.getItem(storageKey);
+
+      if (savedData) {
+        const textElement = link.querySelector('.quiz-action-text');
+        if (textElement) {
+          textElement.textContent = 'Tiếp tục làm bài';
+        }
+
+        const currentHref = link.getAttribute('href');
+        if (currentHref) {
+          const baseUrl = currentHref.split('?')[0];
+          link.setAttribute('href', `${baseUrl}?continue=true`);
+        }
+      } else {
+        const currentHref = link.getAttribute('href');
+        if (currentHref) {
+          const baseUrl = currentHref.split('?')[0];
+          link.setAttribute('href', `${baseUrl}?start=true`);
         }
       }
     });

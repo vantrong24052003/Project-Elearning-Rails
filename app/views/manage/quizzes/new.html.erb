@@ -15,14 +15,13 @@
 
     <% if params[:ai] %>
       <!-- Giao diện tạo bài kiểm tra bằng AI -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" data-controller="manage--quiz-ai-generator">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" data-controller="manage--quiz-ai-generator manage--course-content-select">
         <!-- Phần 1: Thiết lập bài kiểm tra -->
         <div class="lg:col-span-1 space-y-6">
           <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Thiết lập bài kiểm tra</h2>
 
             <%= form_with model: @quiz, url: manage_quizzes_path, method: :post, data: { manage__quiz_ai_generator_target: "form" } do |f| %>
-              <%= hidden_field_tag :source_type, 'ai_generated' %>
               <%= hidden_field_tag :questions_data, '', data: { manage__quiz_ai_generator_target: "questionsData" } %>
 
               <div class="mb-4">
@@ -39,10 +38,70 @@
                     class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
                     required: true,
                     data: {
-                      manage__quiz_ai_generator_target: "courseSelect"
+                      manage__quiz_ai_generator_target: "courseSelect",
+                      action: "change->manage--course-content-select#loadChapters"
                     }
                   }
                 %>
+              </div>
+
+              <!-- Chọn Chapter -->
+              <div class="mb-4">
+                <label for="chapter_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Chương</label>
+                <select id="chapter_id" name="chapter_id"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  data-manage--course-content-select-target="chapterSelect"
+                  data-action="change->manage--course-content-select#loadLessons">
+                  <option value="">Chọn chương</option>
+                </select>
+              </div>
+
+              <!-- Chọn Lesson -->
+              <div class="mb-4">
+                <label for="lesson_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bài học</label>
+                <select id="lesson_id" name="lesson_id"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  data-manage--course-content-select-target="lessonSelect"
+                  data-action="change->manage--course-content-select#loadVideos">
+                  <option value="">Chọn bài học</option>
+                </select>
+              </div>
+
+              <!-- Chọn Video -->
+              <div class="mb-4">
+                <label for="video_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Video</label>
+                <select id="video_id" name="video_id"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  data-manage--course-content-select-target="videoSelect"
+                  data-action="change->manage--course-content-select#showVideoPreview">
+                  <option value="">Chọn video</option>
+                </select>
+              </div>
+
+              <!-- Video Preview -->
+              <div class="mb-6 hidden" data-manage--course-content-select-target="videoPreview">
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                  <div class="relative" style="padding-top: 56.25%;">
+                    <div id="video-player-container" class="absolute inset-0 w-full h-full bg-gray-800">
+                      <!-- Video player sẽ được thêm tại đây -->
+                    </div>
+                  </div>
+                  <div class="p-3 bg-gray-50 dark:bg-gray-800">
+                    <div class="flex justify-between items-center">
+                      <h4 class="text-sm font-medium text-gray-800 dark:text-white truncate mr-2" data-manage--course-content-select-target="videoTitle"></h4>
+                      <button type="button"
+                              class="btn btn-sm btn-primary"
+                              data-action="manage--course-content-select#extractVideoContent">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M14 3v4a1 1 0 0 0 1 1h4"></path>
+                          <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path>
+                          <path d="M9 9l1 6l3 -4l3 4l1 -6"></path>
+                        </svg>
+                        Lấy nội dung từ video
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div class="mb-4">
@@ -66,6 +125,16 @@
                 <%= f.number_field :time_limit, min: 1, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', value: 15 %>
               </div>
 
+              <!-- Mô tả người dùng - phần quan trọng nhất cho AI -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Mô tả của bạn
+                  <span class="text-green-600 dark:text-green-400">(Ưu tiên sử dụng)</span>
+                </label>
+                <textarea name="user_description" rows="4" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="Mô tả chi tiết nội dung, khái niệm chính, hoặc điều bạn muốn kiểm tra"></textarea>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">AI sẽ ưu tiên sử dụng mô tả này để tạo câu hỏi. Hãy cung cấp thông tin càng chi tiết càng tốt.</p>
+              </div>
+
               <div class="mb-4">
                 <%= label_tag :num_questions, 'Số lượng câu hỏi', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
                 <%= number_field_tag :num_questions, 5, min: 1, max: 20, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white' %>
@@ -77,7 +146,8 @@
                   options_for_select([
                     ['Dễ (cơ bản)', 'easy'],
                     ['Trung bình', 'medium'],
-                    ['Khó (nâng cao)', 'hard']
+                    ['Khó (nâng cao)', 'hard'],
+                    ['Kết hợp các mức độ', 'mixed']
                   ], 'medium'),
                   class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
                 %>

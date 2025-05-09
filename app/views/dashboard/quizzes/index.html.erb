@@ -62,14 +62,22 @@
                     <% already_attempted = QuizAttempt.exists?(quiz: quiz, user: current_user) %>
                     <% if already_attempted %>
                       <% latest_attempt = QuizAttempt.where(quiz: quiz, user: current_user).order(created_at: :desc).first %>
-                      <%= link_to dashboard_course_quiz_attempt_path(@course, quiz, latest_attempt),
-                          class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-600 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white text-sm md:text-base rounded-lg transition block font-medium" do %>
-                        Xem kết quả (<%= latest_attempt.score %>%)
-                      <% end %>
+                      <div class="grid grid-cols-2 gap-2">
+                        <%= link_to dashboard_course_quiz_attempt_path(@course, quiz, latest_attempt),
+                            class: "text-center px-3 py-2 md:px-4 md:py-2 bg-gray-600 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white text-sm md:text-base rounded-lg transition block font-medium" do %>
+                          <%= latest_attempt.score %>%
+                        <% end %>
+                        
+                        <%= link_to dashboard_course_quiz_path(@course, quiz),
+                            class: "text-center px-3 py-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white text-sm md:text-base rounded-lg transition block font-medium quiz-continue-btn",
+                            data: { quiz_id: quiz.id } do %>
+                          <span>Tiếp tục làm</span>
+                        <% end %>
+                      </div>
                     <% else %>
                       <%= link_to dashboard_course_quiz_path(@course, quiz),
-                          class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white text-sm md:text-base rounded-lg transition block font-medium",
-                          data: { quiz_id: quiz.id, quiz_type: 'practice' } do %>
+                          class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white text-sm md:text-base rounded-lg transition block font-medium quiz-start-btn",
+                          data: { quiz_id: quiz.id } do %>
                         <span class="quiz-action-text">Bắt đầu làm bài</span>
                       <% end %>
                     <% end %>
@@ -122,17 +130,24 @@
                     <% already_attempted = QuizAttempt.exists?(quiz: quiz, user: current_user) %>
                     <% if already_attempted %>
                       <% latest_attempt = QuizAttempt.where(quiz: quiz, user: current_user).order(created_at: :desc).first %>
-                      <%= link_to dashboard_course_quiz_attempt_path(@course, quiz, latest_attempt),
-                          class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-600 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white text-sm md:text-base rounded-lg transition block font-medium" do %>
-                        Xem kết quả (<%= latest_attempt.score %>%)
-                      <% end %>
+                      <div class="grid grid-cols-2 gap-2">
+                        <%= link_to dashboard_course_quiz_attempt_path(@course, quiz, latest_attempt),
+                            class: "text-center px-3 py-2 md:px-4 md:py-2 bg-gray-600 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white text-sm md:text-base rounded-lg transition block font-medium" do %>
+                          <%= latest_attempt.score %>%
+                        <% end %>
+                        
+                        <%= link_to dashboard_course_quiz_path(@course, quiz),
+                            class: "text-center px-3 py-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white text-sm md:text-base rounded-lg transition block font-medium quiz-continue-btn",
+                            data: { quiz_id: quiz.id } do %>
+                          <span>Tiếp tục làm</span>
+                        <% end %>
+                      </div>
                     <% else %>
                       <%= link_to dashboard_course_quiz_path(@course, quiz),
-                            class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-red-600 hover:bg-red-700 text-white text-sm md:text-base rounded-lg transition block font-medium",
-                            data: { quiz_id: quiz.id, quiz_type: 'exam' } do %>
+                            class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-red-600 hover:bg-red-700 text-white text-sm md:text-base rounded-lg transition block font-medium quiz-start-btn",
+                            data: { quiz_id: quiz.id } do %>
                         <span class="quiz-action-text">Làm bài thi</span>
                       <% end %>
-                      <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">Bài thi chỉ được làm một lần</p>
                     <% end %>
                   <% else %>
                     <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">

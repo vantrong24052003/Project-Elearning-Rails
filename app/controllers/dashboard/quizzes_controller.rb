@@ -17,6 +17,22 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   def show
     @questions = @quiz.questions
     @mode = @quiz.is_exam ? 'exam' : 'practice'
+
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+
+    response.headers['X-Quiz-Mode'] = @mode
+    response.headers['X-Quiz-Id'] = @quiz.id
+    response.headers['X-Quiz-Time-Limit'] = @quiz.time_limit.to_s
+
+    start_param = params[:start] == 'true'
+    continue_param = params[:continue] == 'true'
+
+    if !params[:force] && !continue_param && !start_param && QuizAttempt.exists?(quiz: @quiz, user: current_user)
+      flash[:notice] = 'You have already completed this quiz. Use the "Retry" button to take it again or "Continue" if you have an ongoing attempt.'
+      redirect_to dashboard_course_quizzes_path(@course)
+    end
   end
 
   def new
@@ -66,21 +82,27 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   end
 
   def check_if_exam_already_taken
-    return unless @quiz.is_exam? && QuizAttempt.exists?(quiz: @quiz, user: current_user)
+    return unless @quiz.is_exam?
+    return if params[:force] == 'true'
+    return if params[:continue] == 'true'
+    return if params[:start] == 'true'
 
-    latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
-    redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, latest_attempt),
-                notice: 'You have already completed this exam. Here are your results.'
+    if QuizAttempt.exists?(quiz: @quiz, user: current_user)
+      latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
+      redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, latest_attempt),
+                  notice: 'You have already completed this exam. Use the "Retry" button to take it again or "Continue" if you have an ongoing attempt.'
+    end
   end
 
   def check_if_quiz_already_submitted
     return if params[:force] == 'true' && !@quiz.is_exam?
 
-    return unless @quiz.is_exam? && QuizAttempt.exists?(quiz: @quiz, user: current_user)
+    if QuizAttempt.exists?(quiz: @quiz, user: current_user)
+      latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
 
-    latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
-    redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, latest_attempt),
-                notice: 'You have already completed this exam. Here are your results.'
+      redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, latest_attempt),
+                  notice: 'You have already completed this quiz. Here are your results.'
+    end
   end
 
   def load_stats_data
