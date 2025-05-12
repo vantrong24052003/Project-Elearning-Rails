@@ -498,16 +498,40 @@ export default class extends Controller {
       console.log("Tổng số hành vi gian lận:", totalCheatingCount);
       console.log("DevTools mở:", this.devtoolsOpenCount, "lần");
       console.log("Screenshot:", this.screenshotCount, "lần");
+      console.log("Chuột phải:", this.rightClickCount, "lần");
+      console.log("Chuyển tab:", this.tabSwitchCount, "lần");
+      console.log("Copy/Paste:", this.copyPasteCount, "lần");
 
       if (this.modeValue === 'exam') {
+        let autoSubmitReason = null;
+        
         if (this.devtoolsOpenCount >= 5) {
-          this.showCheatingAlert("Nộp bài tự động", "Do phát hiện mở DevTools nhiều lần, bài thi của bạn sẽ bị nộp tự động");
+          autoSubmitReason = "mở DevTools nhiều lần";
+        }
+        else if (this.screenshotCount >= 3) {
+          autoSubmitReason = "chụp màn hình nhiều lần";
+        }
+        else if (this.rightClickCount >= 8) {
+          autoSubmitReason = "click chuột phải nhiều lần";
+        }
+        else if (this.copyPasteCount >= 5) {
+          autoSubmitReason = "sao chép hoặc dán nhiều lần";
+        }
+        else if (this.tabSwitchCount >= 10) {
+          autoSubmitReason = "chuyển tab nhiều lần";
+        }
+        else if (totalCheatingCount >= 15) {
+          autoSubmitReason = "nhiều hành vi gian lận";
+        }
+        
+        if (autoSubmitReason) {
+          this.showCheatingAlert("Nộp bài tự động", `Do phát hiện ${autoSubmitReason}, bài thi của bạn sẽ bị nộp tự động`);
           this.syncBehaviorCounts();
           this.notifyAutoSubmit();
 
           setTimeout(() => {
             const event = new CustomEvent('quiz:auto-submit', {
-              detail: { reason: 'Phát hiện mở DevTools nhiều lần' }
+              detail: { reason: `Phát hiện ${autoSubmitReason}` }
             });
             document.dispatchEvent(event);
           }, 3000);
@@ -515,24 +539,9 @@ export default class extends Controller {
           return;
         }
 
-        if (totalCheatingCount >= 15 && !this.warningShown) {
+        if (totalCheatingCount >= 10 && !this.warningShown) {
           this.warningShown = true;
           this.showCheatingAlert("Cảnh báo", "Hệ thống đã phát hiện nhiều hành vi bất thường. Tiếp tục có thể dẫn đến việc tự động nộp bài!");
-        }
-        else if (totalCheatingCount >= 25) {
-          this.showCheatingAlert("Nộp bài tự động", "Do phát hiện nhiều hành vi gian lận, bài thi của bạn sẽ bị nộp tự động");
-          this.syncBehaviorCounts();
-
-          this.notifyAutoSubmit();
-
-          setTimeout(() => {
-            const event = new CustomEvent('quiz:auto-submit', {
-              detail: { reason: 'Phát hiện hành vi gian lận' }
-            });
-            document.dispatchEvent(event);
-          }, 3000);
-
-          return;
         }
       }
 
