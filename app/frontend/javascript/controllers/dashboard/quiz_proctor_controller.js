@@ -21,6 +21,7 @@ export default class extends Controller {
     this.devtoolsOpenCount = 0;
     this.otherUnusualCount = 0;
     this.lastDevToolsDetection = 0;
+    this.lastVisibilityChangeTime = 0;
 
     const hasAttemptId = this.attemptIdValue && this.attemptIdValue.trim() !== '';
     if (!hasAttemptId) {
@@ -30,6 +31,7 @@ export default class extends Controller {
 
     this.createToasterContainer();
     this.setupEventListeners();
+    this.setupGlobalScreenshotDetection();
   }
 
   disconnect() {
@@ -41,6 +43,10 @@ export default class extends Controller {
 
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
+    }
+    
+    if (this.clipboardMonitorInterval) {
+      clearInterval(this.clipboardMonitorInterval);
     }
 
     this.syncBehaviorCounts();
@@ -72,13 +78,12 @@ export default class extends Controller {
       'document:copy': this.handleCopy.bind(this),
       'document:paste': this.handlePaste.bind(this),
       'document:cut': this.handleCut.bind(this),
-      'document:keydown:screenshot': this.handleScreenshot.bind(this),
+      'document:keydown': this.handleAllKeyDown.bind(this),
+      'document:keyup': this.handleAllKeyUp.bind(this),
       'document:contextmenu': this.handleRightClick.bind(this),
-      'document:keydown:general': this.handleKeyDown.bind(this),
       'document:dragstart': this.handleDragStart.bind(this),
       'document:drop': this.handleDrop.bind(this),
-      'document:mousedown': this.handleMouseDown.bind(this),
-      'document:keydown:f12': this.handleF12.bind(this)
+      'document:mousedown': this.handleMouseDown.bind(this)
     };
 
     document.addEventListener("visibilitychange", this.eventHandlers['document:visibilitychange']);
@@ -87,19 +92,25 @@ export default class extends Controller {
     document.addEventListener("copy", this.eventHandlers['document:copy']);
     document.addEventListener("paste", this.eventHandlers['document:paste']);
     document.addEventListener("cut", this.eventHandlers['document:cut']);
-    document.addEventListener("keydown", this.eventHandlers['document:keydown:screenshot']);
+    document.addEventListener("keydown", this.eventHandlers['document:keydown']);
+    document.addEventListener("keyup", this.eventHandlers['document:keyup']);
     document.addEventListener("contextmenu", this.eventHandlers['document:contextmenu']);
-    document.addEventListener("keydown", this.eventHandlers['document:keydown:general']);
     document.addEventListener("dragstart", this.eventHandlers['document:dragstart']);
     document.addEventListener("drop", this.eventHandlers['document:drop']);
     document.addEventListener("mousedown", this.eventHandlers['document:mousedown']);
-    document.addEventListener("keydown", this.eventHandlers['document:keydown:f12']);
 
     if (this.modeValue === 'exam') {
       this.initialWindowWidth = window.innerWidth;
       this.initialWindowHeight = window.innerHeight;
       this.eventHandlers['window:resize'] = this.handleWindowResize.bind(this);
       window.addEventListener("resize", this.eventHandlers['window:resize']);
+      
+      window.addEventListener("beforeprint", () => {
+        console.log("Print attempt detected");
+        this.screenshotCount++;
+        this.logAction("screenshot");
+        this.showCheatingAlert("In màn hình", "không được phép khi làm bài thi");
+      });
 
       this.devtoolsCheckInterval = setInterval(() => {
         this.checkDevTools();
@@ -121,6 +132,29 @@ export default class extends Controller {
         this.syncBehaviorCounts();
       }, 30000);
     }
+  }
+
+  setupGlobalScreenshotDetection() {
+    if (this.modeValue !== 'exam') return;
+    
+    this.clipboardMonitorInterval = setInterval(() => {
+      if (navigator.clipboard && navigator.clipboard.read) {
+        navigator.clipboard.read()
+          .then(clipboardItems => {
+            for (const item of clipboardItems) {
+              if (item.types && (item.types.includes('image/png') || item.types.includes('image/jpeg'))) {
+                console.log("Image in clipboard detected, likely screenshot");
+                this.screenshotCount++;
+                this.logAction("screenshot");
+                this.showCheatingAlert("Chụp màn hình phát hiện qua clipboard", "không được phép khi làm bài thi");
+              }
+            }
+          })
+          .catch(err => {
+            console.log("Clipboard access error:", err);
+          });
+      }
+    }, 10000);
   }
 
   checkDevTools() {
@@ -146,6 +180,17 @@ export default class extends Controller {
       if (console.profileEnd.toString().indexOf('native code') === -1) {
         isDevToolsOpen = true;
       }
+
+      const element = document.createElement('div');
+      Object.defineProperty(element, 'id', {
+        get: function() {
+          isDevToolsOpen = true;
+          return 'detection';
+        }
+      });
+      console.log(element);
+      console.clear();
+
     } catch (e) {
       isDevToolsOpen = true;
     }
@@ -161,13 +206,21 @@ export default class extends Controller {
 
   handleScreenshot(e) {
     if (
-      (e.key === "PrintScreen") ||
+      e.key === "PrintScreen" ||
+      e.code === "PrintScreen" ||
       ((e.ctrlKey || e.metaKey) && e.key === "PrintScreen") ||
-      ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "3") ||
-      ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "4") ||
-      ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "5")
+      (e.metaKey && e.shiftKey && e.key === "5") || 
+      (e.metaKey && e.shiftKey && e.key === "4") || 
+      (e.metaKey && e.shiftKey && e.key === "3") || 
+      (e.key === "s" && e.shiftKey && e.metaKey) || 
+      (e.key === "S" && e.shiftKey && e.metaKey) || 
+      (e.key === "s" && e.shiftKey && e.ctrlKey) || 
+      (e.key === "S" && e.shiftKey && e.ctrlKey) || 
+      (e.key === "s" && e.shiftKey && e.getModifierState("Meta")) || 
+      (e.key === "S" && e.shiftKey && e.getModifierState("Meta")) ||
+      (e.shiftKey && e.key === "s")
     ) {
-      console.log("Screenshot detected");
+      console.log("Screenshot key combination detected:", e.key, e.code);
       this.screenshotCount++;
       this.logAction("screenshot");
       this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi");
@@ -176,7 +229,7 @@ export default class extends Controller {
     }
   }
 
-  handleRightClick(e) {
+  handleRightClick(e)  {
     console.log("Right click detected");
     this.rightClickCount++;
     this.logAction("right_click");
@@ -214,15 +267,27 @@ export default class extends Controller {
 
   handleVisibilityChange() {
     console.log("Visibility changed:", document.hidden);
+    const now = Date.now();
+    
     if (document.hidden) {
       this.tabSwitchCount++;
       this.logAction("tab_switch");
       this.tabSwitchTime = new Date();
+      this.lastVisibilityChangeTime = now;
+      
     } else if (this.tabSwitchTime) {
       const timeAway = new Date() - this.tabSwitchTime;
-      if (timeAway > 2000) {
+      
+      const visibilityDuration = now - this.lastVisibilityChangeTime;
+      if (this.lastVisibilityChangeTime && visibilityDuration < 300) {
+        console.log("Quick visibility change detected, possible screenshot, duration:", visibilityDuration);
+        this.screenshotCount++;
+        this.logAction("screenshot");
+        this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi");
+      } else if (timeAway > 2000) {
         this.showCheatingAlert("Chuyển tab", `trong ${Math.round(timeAway/1000)} giây`);
       }
+      
       this.tabSwitchTime = null;
     }
   }
@@ -245,7 +310,52 @@ export default class extends Controller {
     }
   }
 
-  handleKeyDown(e) {
+  handleAllKeyDown(e) {
+    console.log("Key pressed:", e.key, e.code, e.ctrlKey, e.altKey, e.shiftKey, e.metaKey);
+    
+    if (
+      e.key === "PrintScreen" ||
+      e.code === "PrintScreen" ||
+      ((e.ctrlKey || e.metaKey) && e.key === "PrintScreen") ||
+      (e.metaKey && e.shiftKey && e.key === "5") || 
+      (e.metaKey && e.shiftKey && e.key === "4") || 
+      (e.metaKey && e.shiftKey && e.key === "3") || 
+      (e.key === "s" && e.shiftKey && e.metaKey) || 
+      (e.key === "S" && e.shiftKey && e.metaKey) || 
+      (e.key === "s" && e.shiftKey && e.ctrlKey) || 
+      (e.key === "S" && e.shiftKey && e.ctrlKey) || 
+      (e.key === "s" && e.shiftKey) ||
+      (e.key === "S" && e.shiftKey) ||
+      (e.code === "KeyS" && e.shiftKey) ||
+      (e.key === "PrtScn") ||
+      (e.code === "NumpadAdd" && e.ctrlKey) ||
+      (e.shiftKey && e.key === "Snapshot") ||
+      (e.code === "Snapshot")
+    ) {
+      console.log("Screenshot key combination detected:", e.key, e.code);
+      this.screenshotCount++;
+      this.logAction("screenshot");
+      this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi");
+      e.preventDefault();
+      return false;
+    }
+    
+    if (this.modeValue === 'exam' && e.key === 'F12') {
+      e.preventDefault();
+
+      const now = Date.now();
+      if (now - this.lastDevToolsDetection < 3000) {
+        return false;
+      }
+
+      this.lastDevToolsDetection = now;
+      this.devtoolsOpenCount++;
+      console.log("DevTools mở bằng F12 lần thứ:", this.devtoolsOpenCount);
+      this.logAction("devtools_key");
+      this.showCheatingAlert("Phím F12", "không được phép khi làm bài thi");
+      return false;
+    }
+    
     if ((e.ctrlKey || e.metaKey) && (e.key === "c" || e.key === "v" || e.key === "x")) {
       console.log("Copy/Paste/Cut shortcut detected");
       const action = e.key === "c" ? "copy" : (e.key === "v" ? "paste" : "cut");
@@ -254,9 +364,22 @@ export default class extends Controller {
       e.preventDefault();
       return false;
     }
-
+    
     if (e.altKey && e.key === "Tab") {
       this.logAction("tab_switch");
+      e.preventDefault();
+      return false;
+    }
+  }
+
+  handleAllKeyUp(e) {
+    console.log("Key released:", e.key, e.code);
+    
+    if (e.key === "PrintScreen" || e.code === "PrintScreen") {
+      console.log("PrintScreen key released");
+      this.screenshotCount++;
+      this.logAction("screenshot");
+      this.showCheatingAlert("Chụp màn hình (PrtSc)", "không được phép khi làm bài thi");
       e.preventDefault();
       return false;
     }
@@ -374,10 +497,11 @@ export default class extends Controller {
 
       console.log("Tổng số hành vi gian lận:", totalCheatingCount);
       console.log("DevTools mở:", this.devtoolsOpenCount, "lần");
+      console.log("Screenshot:", this.screenshotCount, "lần");
 
       if (this.modeValue === 'exam') {
         if (this.devtoolsOpenCount >= 5) {
-          this.showCheatingAlert("Nộp bài tự động", "Do phát hiện hành vi mở DevTools nhiều lần, bài thi của bạn sẽ bị nộp tự động");
+          this.showCheatingAlert("Nộp bài tự động", "Do phát hiện mở DevTools nhiều lần, bài thi của bạn sẽ bị nộp tự động");
           this.syncBehaviorCounts();
           this.notifyAutoSubmit();
 
@@ -445,25 +569,6 @@ export default class extends Controller {
   handleMouseDown(e) {
     if (this.modeValue === 'exam' && e.button === 2) {
       e.preventDefault();
-      return false;
-    }
-  }
-
-  handleF12(e) {
-    if (this.modeValue === 'exam' && e.key === 'F12') {
-      e.preventDefault();
-      
-      // Kiểm tra thời gian giữa các lần phát hiện
-      const now = Date.now();
-      if (now - this.lastDevToolsDetection < 3000) { // 3 giây giữa các lần phát hiện
-        return false;
-      }
-      
-      this.lastDevToolsDetection = now; // Cập nhật thời gian phát hiện
-      this.devtoolsOpenCount++;
-      console.log("DevTools mở bằng F12 lần thứ:", this.devtoolsOpenCount);
-      this.logAction("devtools_key");
-      this.showCheatingAlert("Phím F12", "không được phép khi làm bài thi");
       return false;
     }
   }
