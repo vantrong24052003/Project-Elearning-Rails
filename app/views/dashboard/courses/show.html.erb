@@ -302,7 +302,7 @@
                     <% already_attempted = QuizAttempt.exists?(quiz: quiz, user: current_user) %>
                     <% if already_attempted %>
                       <% latest_attempt = QuizAttempt.where(quiz: quiz, user: current_user).order(created_at: :desc).first %>
-                      <%= link_to dashboard_course_quiz_attempt_path(@course, quiz, latest_attempt), class: "px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white font-medium text-sm whitespace-nowrap" do %>
+                      <%= link_to dashboard_course_quiz_quiz_attempt_path(@course, quiz, latest_attempt), class: "px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white font-medium text-sm whitespace-nowrap" do %>
                         Xem kết quả (<%= latest_attempt.score %>%)
                       <% end %>
                     <% else %>

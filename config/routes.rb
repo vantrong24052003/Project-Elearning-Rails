@@ -14,7 +14,6 @@ Rails.application.routes.draw do
     resources :courses, only: %i[index show new edit create update destroy] do
       get 'quiz_attempts/in_progress', to: 'quiz_attempts#in_progress'
       resources :quizzes do
-        resources :attempts
         resources :quiz_attempts do
           member do
             post :log_action

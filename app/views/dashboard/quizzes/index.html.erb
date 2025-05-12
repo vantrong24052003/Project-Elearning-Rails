@@ -62,7 +62,7 @@
                     <% already_attempted = QuizAttempt.exists?(quiz: quiz, user: current_user) %>
                     <% if already_attempted %>
                       <% latest_attempt = QuizAttempt.where(quiz: quiz, user: current_user).order(created_at: :desc).first %>
-                      <%= link_to dashboard_course_quiz_attempt_path(@course, quiz, latest_attempt),
+                      <%= link_to dashboard_course_quiz_quiz_attempt_path(@course, quiz, latest_attempt),
                           class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-600 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white text-sm md:text-base rounded-lg transition block font-medium" do %>
                         Xem kết quả (<%= latest_attempt.score %>%)
                       <% end %>
@@ -122,7 +122,7 @@
                     <% already_attempted = QuizAttempt.exists?(quiz: quiz, user: current_user) %>
                     <% if already_attempted %>
                       <% latest_attempt = QuizAttempt.where(quiz: quiz, user: current_user).order(created_at: :desc).first %>
-                      <%= link_to dashboard_course_quiz_attempt_path(@course, quiz, latest_attempt),
+                      <%= link_to dashboard_course_quiz_quiz_attempt_path(@course, quiz, latest_attempt),
                           class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-600 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white text-sm md:text-base rounded-lg transition block font-medium" do %>
                         Xem kết quả (<%= latest_attempt.score %>%)
                       <% end %>
@@ -359,7 +359,7 @@
                         <td><%= Time.at(attempt.time_spent).utc.strftime("%H:%M:%S") %></td>
                         <td><%= attempt.created_at.strftime("%d/%m/%Y %H:%M") %></td>
                         <td>
-                          <%= link_to dashboard_course_quiz_attempt_path(@course, attempt.quiz, attempt), class: "btn btn-xs btn-primary" do %>
+                          <%= link_to dashboard_course_quiz_quiz_attempt_path(@course, attempt.quiz, attempt), class: "btn btn-xs btn-primary" do %>
                             Xem chi tiết
                           <% end %>
                         </td>
@@ -483,7 +483,7 @@
                         <td><%= Time.at(attempt.time_spent).utc.strftime("%H:%M:%S") %></td>
                         <td><%= attempt.created_at.strftime("%d/%m/%Y %H:%M") %></td>
                         <td>
-                          <%= link_to dashboard_course_quiz_attempt_path(@course, attempt.quiz, attempt), class: "btn btn-xs btn-primary" do %>
+                          <%= link_to dashboard_course_quiz_quiz_attempt_path(@course, attempt.quiz, attempt), class: "btn btn-xs btn-primary" do %>
                             Xem chi tiết
                           <% end %>
                         </td>

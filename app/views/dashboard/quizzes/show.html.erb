@@ -143,10 +143,10 @@
           </div>
         </div>
 
-        <%= form_with url: @quiz_attempt && @quiz_attempt.persisted? ? 
-                      dashboard_course_quiz_attempt_path(@course, @quiz, @quiz_attempt) : 
-                      dashboard_course_quiz_attempts_path(@course, @quiz), 
-                    method: @quiz_attempt && @quiz_attempt.persisted? ? :patch : :post, 
+        <%= form_with url: @quiz_attempt && @quiz_attempt.persisted? ?
+                      dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt) :
+                      dashboard_course_quiz_quiz_attempts_path(@course, @quiz),
+                    method: @quiz_attempt && @quiz_attempt.persisted? ? :patch : :post,
                     data: { dashboard__quiz_timer_target: "form" } do |f| %>
           <%= f.hidden_field :time_spent, data: { dashboard__quiz_timer_target: "timeSpent" } %>
           <%= f.hidden_field :mode, value: @mode %>

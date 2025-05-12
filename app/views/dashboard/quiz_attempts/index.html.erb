@@ -22,7 +22,7 @@
   </div>
 
   <div class="bg-gray-800 rounded-lg overflow-hidden">
-    <% if @attempts.any? %>
+    <% if @quiz_attempts.any? %>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-gray-300">
           <thead class="bg-gray-700 text-gray-200 uppercase text-sm">
@@ -35,30 +35,30 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-700">
-            <% @attempts.each_with_index do |attempt, index| %>
+            <% @quiz_attempts.each_with_index do |quiz_attempt, index| %>
               <tr class="hover:bg-gray-700">
-                <td class="px-6 py-4">Lần #<%= @attempts.count - index %></td>
+                <td class="px-6 py-4">Lần #<%= @quiz_attempts.count - index %></td>
                 <td class="px-6 py-4">
                   <span class="px-2 py-1 rounded-full text-sm font-medium
-                    <%= if attempt.score >= 70
+                    <%= if quiz_attempt.score >= 70
                           'bg-green-900/50 text-green-300'
-                        elsif attempt.score >= 40
+                        elsif quiz_attempt.score >= 40
                           'bg-yellow-900/50 text-yellow-300'
                         else
                           'bg-red-900/50 text-red-300'
                         end
                     %>">
-                    <%= attempt.score %>%
+                    <%= quiz_attempt.score %>%
                   </span>
                 </td>
                 <td class="px-6 py-4">
-                  <%= Time.at(attempt.time_spent).utc.strftime("%H:%M:%S") %>
+                  <%= Time.at(quiz_attempt.time_spent).utc.strftime("%H:%M:%S") %>
                 </td>
                 <td class="px-6 py-4">
-                  <%= attempt.created_at.strftime("%d/%m/%Y %H:%M") %>
+                  <%= quiz_attempt.created_at.strftime("%d/%m/%Y %H:%M") %>
                 </td>
                 <td class="px-6 py-4">
-                  <%= link_to dashboard_course_quiz_attempt_path(@course, @quiz, attempt), class: "text-purple-400 hover:text-purple-300 font-medium mr-4" do %>
+                  <%= link_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, quiz_attempt), class: "text-purple-400 hover:text-purple-300 font-medium mr-4" do %>
                     Xem chi tiết
                   <% end %>
                 </td>
