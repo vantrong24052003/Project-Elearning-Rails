@@ -7,7 +7,8 @@ class CourseMailer < ApplicationMailer
 
     mail(
       to: @user.email,
-      subject: "Cảnh báo gian lận - #{@course.title} - #{@quiz_attempt.quiz.title}"
+      subject: "Cảnh báo gian lận - #{@course.title} - #{@quiz_attempt.quiz.title}",
+      template_path: "mailers"
     )
   end
 end

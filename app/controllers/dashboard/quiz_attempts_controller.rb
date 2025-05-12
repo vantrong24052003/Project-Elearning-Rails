@@ -244,16 +244,8 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
   end
 
   def notify_instructor_of_cheating
-    return if @quiz_attempt.is_notified
-
-    @quiz_attempt.update(
-      is_notified: true,
-      notified_at: Time.current
-    )
-
-    CourseMailer.cheating_notification(
-      @course.user,
-      @quiz_attempt
-    ).deliver_later
+    if @quiz.notify_cheating
+      CourseMailer.cheating_notification(@course.user,@quiz_attempt).deliver_later
+    end
   end
 end

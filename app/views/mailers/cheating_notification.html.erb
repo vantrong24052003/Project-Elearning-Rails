@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cảnh báo gian lận</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f0f2f5; color: #333333;">
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
+    <tr>
+      <td style="padding: 15px 0;">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(90deg, #ff416c 0%, #ff4b2b 100%); padding: 20px; text-align: center; color: white;">
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
+                <tr>
+                  <td style="text-align: center;">
+                    <h1 style="margin: 0; font-size: 22px; font-weight: 700;">⚠️ CẢNH BÁO GIAN LẬN</h1>
+                    <p style="margin: 5px 0 0; font-size: 13px; opacity: 0.9;">Phát hiện ngày: <%= Time.now.strftime("%d/%m/%Y") %></p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Main Content -->
+          <tr>
+            <td style="padding: 20px 25px;">
+              <p style="margin-top: 0; margin-bottom: 15px; font-size: 15px; line-height: 1.5;">Kính gửi <strong><%= @user.name %></strong>,</p>
+
+              <p style="font-size: 15px; line-height: 1.5; margin-bottom: 20px; background-color: #fff9e6; border-left: 4px solid #ffc107; padding: 10px; border-radius: 4px;">
+                Hệ thống đã phát hiện <strong style="color: #d32f2f;">hành vi bất thường</strong> trong bài làm của học viên <strong><%= @student.name %></strong> trong bài thi <strong><%= @quiz_attempt.quiz.title %></strong>.
+              </p>
+
+              <!-- Combined Info Section -->
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; margin-bottom: 20px; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                <tr>
+                  <td style="padding: 0;">
+                    <!-- Student Info -->
+                    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
+                      <tr>
+                        <td colspan="2" style="padding: 12px 15px; background-color: #f8f9fa; border-bottom: 1px solid #e0e0e0;">
+                          <h2 style="margin: 0; color: #333; font-size: 16px;">
+                            👤 Chi tiết bài làm
+                          </h2>
+                        </td>
+                      </tr>
+
+                      <!-- Student Info - 2 columns per row -->
+                      <tr>
+                        <td style="width: 50%; padding: 0;">
+                          <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
+                            <tr>
+                              <td style="padding: 10px 15px; font-size: 14px; border-bottom: 1px solid #f0f0f0; background-color: #ffffff;">
+                                <span style="color: #666;">Học viên:</span><br>
+                                <strong style="color: #333;"><%= @student.name %></strong>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 10px 15px; font-size: 14px; border-bottom: 1px solid #f0f0f0; background-color: #f9f9f9;">
+                                <span style="color: #666;">Bài thi:</span><br>
+                                <strong style="color: #333;"><%= @quiz_attempt.quiz.title %></strong>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 10px 15px; font-size: 14px; background-color: #ffffff;">
+                                <span style="color: #666;">Thời gian bắt đầu:</span><br>
+                                <strong style="color: #333;"><%= @quiz_attempt.start_time.strftime("%d/%m/%Y %H:%M:%S") %></strong>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td style="width: 50%; padding: 0;">
+                          <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
+                            <tr>
+                              <td style="padding: 10px 15px; font-size: 14px; border-bottom: 1px solid #f0f0f0; background-color: #ffffff; border-left: 1px solid #f0f0f0;">
+                                <span style="color: #666;">Khóa học:</span><br>
+                                <strong style="color: #333;"><%= @course.title %></strong>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 10px 15px; font-size: 14px; border-bottom: 1px solid #f0f0f0; background-color: #f9f9f9; border-left: 1px solid #f0f0f0;">
+                                <span style="color: #666;">Điểm số:</span><br>
+                                <strong style="display: inline-block; background-color: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 4px; font-size: 13px;"><%= @quiz_attempt.score %>%</strong>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 10px 15px; font-size: 14px; background-color: #ffffff; border-left: 1px solid #f0f0f0;">
+                                <span style="color: #666;">Thời gian hoàn thành:</span><br>
+                                <strong style="color: #333;"><%= @quiz_attempt.completed_at.strftime("%d/%m/%Y %H:%M:%S") %></strong>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- Suspicious Activities - Horizontal Layout -->
+                    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; border-top: 1px solid #e0e0e0;">
+                      <tr>
+                        <td colspan="3" style="padding: 12px 15px; background-color: #fef6f6; border-bottom: 1px solid #f8d7da;">
+                          <h2 style="margin: 0; color: #c62828; font-size: 16px;">
+                            🔍 Các hành vi bất thường
+                          </h2>
+                        </td>
+                      </tr>
+                      <tr>
+                        <!-- 3 columns layout for suspicious activities -->
+                        <td style="width: 33.33%; padding: 12px 15px; text-align: center; background-color: #fff5f5; border-right: 1px solid #f0f0f0;">
+                          <div style="font-size: 20px; margin-bottom: 5px;">↗️</div>
+                          <div style="font-size: 13px; color: #666; margin-bottom: 5px;">Chuyển tab/cửa sổ</div>
+                          <div style="font-weight: 700; color: #c62828; font-size: 16px;"><%= @quiz_attempt.tab_switch_count %></div>
+                        </td>
+                        <td style="width: 33.33%; padding: 12px 15px; text-align: center; background-color: #fff5f5; border-right: 1px solid #f0f0f0;">
+                          <div style="font-size: 20px; margin-bottom: 5px;">📋</div>
+                          <div style="font-size: 13px; color: #666; margin-bottom: 5px;">Copy/paste</div>
+                          <div style="font-weight: 700; color: #c62828; font-size: 16px;"><%= @quiz_attempt.copy_paste_count %></div>
+                        </td>
+                        <td style="width: 33.33%; padding: 12px 15px; text-align: center; background-color: #fff5f5;">
+                          <div style="font-size: 20px; margin-bottom: 5px;">📸</div>
+                          <div style="font-size: 13px; color: #666; margin-bottom: 5px;">Chụp màn hình</div>
+                          <div style="font-weight: 700; color: #c62828; font-size: 16px;"><%= @quiz_attempt.screenshot_count %></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colspan="3" style="padding: 12px 15px; background-color: #ffffff; border-top: 1px solid #f0f0f0;">
+                          <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
+                            <tr>
+                              <td style="width: 50%; padding-right: 10px;">
+                                <span style="font-size: 13px; color: #666;">📱 Thiết bị:</span>
+                                <span style="font-size: 13px; color: #333;"><%= @quiz_attempt.device_info %></span>
+                              </td>
+                              <td style="width: 50%; padding-left: 10px;">
+                                <span style="font-size: 13px; color: #666;">🌐 IP:</span>
+                                <span style="font-size: 13px; color: #333;"><%= @quiz_attempt.ip_address %></span>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Action Required -->
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; margin-bottom: 20px; background-color: #e3f2fd; border-radius: 8px; overflow: hidden;">
+                <tr>
+                  <td style="padding: 15px; text-align: center;">
+                    <p style="font-size: 15px; line-height: 1.5; margin: 0 0 15px 0; color: #1565c0;">Vui lòng kiểm tra và xác minh các hành vi này.</p>
+                    <a href="#" style="display: inline-block; background: linear-gradient(90deg, #1976d2 0%, #2196f3 100%); color: white; text-decoration: none; padding: 10px 25px; border-radius: 4px; font-weight: 700; font-size: 14px;">XEM CHI TIẾT BÀI LÀM</a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="font-size: 14px; line-height: 1.5; margin-bottom: 0;">Trân trọng,<br><strong>Ban Quản Trị Hệ Thống E-learning</strong></p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 15px; background-color: #f8f9fa; border-top: 1px solid #e0e0e0;">
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
+                <tr>
+                  <td style="text-align: center; padding-bottom: 15px;">
+                    <!-- Social Media Icons - Horizontal Layout -->
+                    <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin: 0 auto;">
+                      <tr>
+                        <!-- Facebook -->
+                        <td style="padding: 0 5px;">
+                          <a href="#" style="display: inline-block; width: 30px; height: 30px; background-color: #3b5998; border-radius: 50%; color: #ffffff; text-align: center; line-height: 30px; text-decoration: none; font-size: 16px; font-weight: bold;">f</a>
+                        </td>
+                        <!-- Twitter -->
+                        <td style="padding: 0 5px;">
+                          <a href="#" style="display: inline-block; width: 30px; height: 30px; background-color: #1da1f2; border-radius: 50%; color: #ffffff; text-align: center; line-height: 30px; text-decoration: none; font-size: 16px; font-weight: bold;">t</a>
+                        </td>
+                        <!-- LinkedIn -->
+                        <td style="padding: 0 5px;">
+                          <a href="#" style="display: inline-block; width: 30px; height: 30px; background-color: #0077b5; border-radius: 50%; color: #ffffff; text-align: center; line-height: 30px; text-decoration: none; font-size: 14px; font-weight: bold;">in</a>
+                        </td>
+                        <!-- YouTube -->
+                        <td style="padding: 0 5px;">
+                          <a href="#" style="display: inline-block; width: 30px; height: 30px; background-color: #ff0000; border-radius: 50%; color: #ffffff; text-align: center; line-height: 30px; text-decoration: none; font-size: 12px; font-weight: bold;">YT</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">
+                    <p style="margin: 0; font-size: 12px; color: #666; line-height: 1.5;">© 2025 Hệ thống E-learning. Email này được gửi tự động, vui lòng không trả lời.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_12_000001) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_12_084957) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -156,6 +156,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_12_000001) do
     t.datetime "updated_at", null: false
     t.datetime "start_time"
     t.datetime "end_time"
+    t.boolean "notify_cheating", default: true
     t.index ["course_id"], name: "index_quizzes_on_course_id"
   end
 
