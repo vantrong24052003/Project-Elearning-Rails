@@ -18,7 +18,6 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
     @questions = @quiz.questions
     @mode = @quiz.is_exam ? 'exam' : 'practice'
 
-    # Kiểm tra nếu là bài thi và đã làm rồi
     if @quiz.is_exam? && QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).exists?
       latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
       redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, latest_attempt),
@@ -26,25 +25,21 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
       return
     end
 
-    # Kiểm tra xem đã có quiz_attempt chưa hoàn thành chưa
     @quiz_attempt = @quiz.quiz_attempts
-                        .where(user: current_user)
-                        .where(completed_at: nil)
-                        .order(created_at: :desc)
-                        .first
+                         .where(user: current_user)
+                         .where(completed_at: nil)
+                         .order(created_at: :desc)
+                         .first
 
-    # Chỉ tạo attempt mới khi user bấm nút "Bắt đầu làm bài"
-    if params[:start] == 'true'
-      unless @quiz_attempt
-        @quiz_attempt = @quiz.quiz_attempts.create!(
-          user: current_user,
-          start_time: Time.current,
-          device_info: request.user_agent,
-          ip_address: request.remote_ip,
-          score: 0,
-          time_spent: 0
-        )
-      end
+    if (params[:start] == 'true') && !@quiz_attempt
+      @quiz_attempt = @quiz.quiz_attempts.create!(
+        user: current_user,
+        start_time: Time.current,
+        device_info: request.user_agent,
+        ip_address: request.remote_ip,
+        score: 0,
+        time_spent: 0
+      )
     end
   end
 
@@ -96,22 +91,21 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
 
   def check_if_exam_already_taken
     return unless @quiz.is_exam?
-    
-    # Kiểm tra nếu đã hoàn thành bài thi
+
     if QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).exists?
-      latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).order(created_at: :desc).first
+      latest_attempt = QuizAttempt.where(quiz: @quiz,
+                                         user: current_user).where.not(completed_at: nil).order(created_at: :desc).first
       redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, latest_attempt),
                   notice: 'Bạn đã hoàn thành bài thi này. Đây là kết quả của bạn.'
       return
     end
-    
-    # Kiểm tra nếu có bài đang làm (chưa hoàn thành) và không có param start=true hoặc force=true
-    unless params[:start] == 'true' || params[:force] == 'true'
-      if QuizAttempt.where(quiz: @quiz, user: current_user, completed_at: nil).exists?
-        incomplete_attempt = QuizAttempt.where(quiz: @quiz, user: current_user, completed_at: nil).order(created_at: :desc).first
-        redirect_to dashboard_course_quiz_path(@course, @quiz, start: true),
-                    notice: 'Bạn có bài thi đang làm dở. Vui lòng tiếp tục làm bài.'
-      end
+
+    if !(params[:start] == 'true' || params[:force] == 'true') && QuizAttempt.where(quiz: @quiz, user: current_user,
+                                                                                    completed_at: nil).exists?
+      QuizAttempt.where(quiz: @quiz, user: current_user,
+                        completed_at: nil).order(created_at: :desc).first
+      redirect_to dashboard_course_quiz_path(@course, @quiz, start: true),
+                  notice: 'Bạn có bài thi đang làm dở. Vui lòng tiếp tục làm bài.'
     end
   end
 
@@ -120,10 +114,10 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
     @exam_quizzes = @course.quizzes.where(is_exam: true)
 
     @all_quiz_attempts = QuizAttempt.joins(:quiz)
-                                  .where(user: current_user, quizzes: { course_id: @course.id })
-                                  .includes(:quiz)
-                                  .order(created_at: :desc)
-                                  .to_a
+                                    .where(user: current_user, quizzes: { course_id: @course.id })
+                                    .includes(:quiz)
+                                    .order(created_at: :desc)
+                                    .to_a
 
     @practice_attempts = @all_quiz_attempts.select { |a| a.quiz.is_exam == false }
     @exam_attempts = @all_quiz_attempts.select { |a| a.quiz.is_exam == true }
@@ -171,25 +165,23 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
 
     @total_user_attempts = QuizAttempt.joins(:quiz).where(quizzes: { course_id: @course.id }).distinct.count('user_id')
 
-    # Sử dụng joins thay vì includes để tối ưu hóa query
     highest_score_attempt = QuizAttempt.joins(:quiz, :user)
-                                     .where(quizzes: { course_id: @course.id })
-                                     .order(score: :desc)
-                                     .select('quiz_attempts.*, users.id as user_id, users.name as user_name')
-                                     .first
+                                       .where(quizzes: { course_id: @course.id })
+                                       .order(score: :desc)
+                                       .select('quiz_attempts.*, users.id as user_id, users.name as user_name')
+                                       .first
 
     if highest_score_attempt
       @highest_score = highest_score_attempt.score
       @highest_score_user = highest_score_attempt.user
     end
 
-    # Tối ưu truy vấn để lấy top users
     top_users_data = QuizAttempt.joins(:quiz, :user)
-                               .where(quizzes: { course_id: @course.id })
-                               .select('quiz_attempts.user_id, MAX(quiz_attempts.score) as best_score, COUNT(quiz_attempts.id) as attempts_count, MAX(quiz_attempts.created_at) as last_attempt_at, users.name as user_name')
-                               .group('quiz_attempts.user_id, users.name')
-                               .order('best_score DESC')
-                               .limit(50)
+                                .where(quizzes: { course_id: @course.id })
+                                .select('quiz_attempts.user_id, MAX(quiz_attempts.score) as best_score, COUNT(quiz_attempts.id) as attempts_count, MAX(quiz_attempts.created_at) as last_attempt_at, users.name as user_name')
+                                .group('quiz_attempts.user_id, users.name')
+                                .order('best_score DESC')
+                                .limit(50)
 
     @top_users = top_users_data.map do |data|
       {

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CourseMailer < ApplicationMailer
   def cheating_notification(user, quiz_attempt)
     @user = user

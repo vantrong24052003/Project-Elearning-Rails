@@ -3,8 +3,8 @@
 class Dashboard::AttemptsController < Dashboard::DashboardController
   before_action :set_course
   before_action :set_quiz, only: [:create]
-  before_action :set_attempt, only: [:show, :update, :destroy]
-  before_action :check_ownership, only: [:show, :update]
+  before_action :set_attempt, only: %i[show update destroy]
+  before_action :check_ownership, only: %i[show update]
   after_action :clear_session_data, only: [:create]
 
   def show
