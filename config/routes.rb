@@ -12,8 +12,15 @@ Rails.application.routes.draw do
     root to: 'courses#index'
 
     resources :courses, only: %i[index show new edit create update destroy] do
+      get 'quiz_attempts/in_progress', to: 'quiz_attempts#in_progress'
       resources :quizzes do
         resources :attempts
+        resources :quiz_attempts do
+          member do
+            post :log_action
+            post :update_behavior_counts
+          end
+        end
       end
       resources :payments
       resources :viewers
