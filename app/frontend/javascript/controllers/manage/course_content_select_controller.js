@@ -1,4 +1,3 @@
-// Cập nhật phần hiển thị toast message và format content
 
 import { Controller } from '@hotwired/stimulus'
 
@@ -245,13 +244,12 @@ export default class extends Controller {
 
   extractVideoContent(event) {
     event.preventDefault()
-    
+
     const videoId = this.videoSelectTarget.value
     if (!videoId) {
       return
     }
-    
-    // Lấy thông tin transcript từ video đã chọn
+
     fetch(`/manage/quizzes/video_details/${videoId}`)
       .then(response => {
         if (!response.ok) {
@@ -262,11 +260,9 @@ export default class extends Controller {
       .then(video => {
         const userDescriptionField = document.querySelector('textarea[name="user_description"]')
         if (userDescriptionField) {
-          // Cấu trúc nội dung để dễ đọc
           const formattedContent = this.formatVideoContent(video)
           userDescriptionField.value = formattedContent
-          
-          // Hiển thị thông báo thành công
+
           this.showToast('Video content added to description')
         }
       })
@@ -275,10 +271,10 @@ export default class extends Controller {
         this.showToast('Could not get content from video', 'error')
       })
   }
-  
+
   formatVideoContent(video) {
     let content = `📚 Video: ${video.title}\n\n`
-    
+
     if (video.transcript && video.transcript.trim()) {
       content += `📝 Content:\n${video.transcript}`
     } else if (video.processing_log && video.processing_log.trim()) {
@@ -286,7 +282,7 @@ export default class extends Controller {
     } else {
       content += '❗ No transcript available for this video. Please enter description manually.'
     }
-    
+
     return content
   }
 }
