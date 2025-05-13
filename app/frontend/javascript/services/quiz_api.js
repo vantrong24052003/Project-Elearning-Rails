@@ -2,13 +2,14 @@ import { ApiService } from './api_service';
 
 export class QuizApi {
   static async checkQuizStatus(courseId) {
-    return ApiService.get(`/dashboard/courses/${courseId}/quiz_attempts/in_progress`);
+    return ApiService.get(`/dashboard/courses/${courseId}/quiz_statuses`);
   }
 
   static async logAction(courseId, quizId, attemptId, actionType) {
-    return ApiService.post(
-      `/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}/log_action`,
+    return ApiService.put(
+      `/dashboard/courses/${courseId}/quiz_statuses/${attemptId}`,
       {
+        quiz_id: quizId,
         action_type: actionType,
         timestamp: new Date().toISOString()
       }
@@ -16,15 +17,18 @@ export class QuizApi {
   }
 
   static async updateBehaviorCounts(courseId, quizId, attemptId, counts) {
-    return ApiService.post(
-      `/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}/update_behavior_counts`,
+    return ApiService.put(
+      `/dashboard/courses/${courseId}/quiz_statuses/${attemptId}`,
       {
-        tab_switch_count: counts.tabSwitchCount,
-        copy_paste_count: counts.copyPasteCount,
-        screenshot_count: counts.screenshotCount,
-        right_click_count: counts.rightClickCount,
-        devtools_open_count: counts.devtoolsOpenCount,
-        other_unusual_actions: counts.otherUnusualCount
+        quiz_id: quizId,
+        behavior_counts: {
+          tab_switch_count: counts.tabSwitchCount,
+          copy_paste_count: counts.copyPasteCount,
+          screenshot_count: counts.screenshotCount,
+          right_click_count: counts.rightClickCount,
+          devtools_open_count: counts.devtoolsOpenCount,
+          other_unusual_actions: counts.otherUnusualCount
+        }
       }
     );
   }
@@ -46,27 +50,31 @@ export class QuizApi {
   }
 
   static async submitAttempt(courseId, quizId, attemptId, answers, timeSpent) {
-    return ApiService.post(
-      `/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}/submit`,
+    return ApiService.put(
+      `/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}`,
       {
-        answers,
-        time_spent: timeSpent
+        quiz_attempt: {
+          answers,
+          time_spent: timeSpent
+        }
       }
     );
   }
 
   static async saveAttemptState(courseId, quizId, attemptId, data) {
     return ApiService.put(
-      `/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}/save_state`,
-      data
+      `/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}`,
+      {
+        quiz_attempt: data
+      }
     );
   }
 
   static async getInProgressAttempts(courseId) {
-    return ApiService.get(`/dashboard/courses/${courseId}/quiz_attempts/in_progress`);
+    return ApiService.get(`/dashboard/courses/${courseId}/quiz_statuses`);
   }
 
   static async getAttemptState(courseId, quizId, attemptId) {
-    return ApiService.get(`/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}/state`);
+    return ApiService.get(`/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}`);
   }
 }

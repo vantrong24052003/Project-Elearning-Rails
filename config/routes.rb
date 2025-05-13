@@ -12,16 +12,11 @@ Rails.application.routes.draw do
     root to: 'courses#index'
 
     resources :courses, only: %i[index show new edit create update destroy] do
-      get 'quiz_attempts/in_progress', to: 'quiz_attempts#in_progress'
       resources :quizzes do
         resources :attempts
-        resources :quiz_attempts do
-          member do
-            post :log_action
-            post :update_behavior_counts
-          end
-        end
+        resources :quiz_attempts, only: %i[index show new create edit update destroy]
       end
+      resources :quiz_statuses, only: %i[index update]
       resources :payments
       resources :viewers
     end
