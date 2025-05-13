@@ -3,7 +3,7 @@
 class Dashboard::QuizAttemptsController < Dashboard::DashboardController
   before_action :set_course
   before_action :set_quiz
-  before_action :set_quiz_attempt, only: %i[show edit update destroy log_action update_behavior_counts]
+  before_action :set_quiz_attempt, only: %i[show edit update destroy]
   before_action :authenticate_user!
 
   def index
@@ -21,6 +21,7 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
   end
 
   def show; end
+  def show; end
 
   def new
     @quiz_attempt = @quiz.quiz_attempts.build
@@ -28,6 +29,10 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
 
   def create
     @quiz_attempt = @quiz.quiz_attempts
+                         .where(user: current_user)
+                         .where(completed_at: nil)
+                         .order(created_at: :desc)
+                         .first
                          .where(user: current_user)
                          .where(completed_at: nil)
                          .order(created_at: :desc)
@@ -74,6 +79,7 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
   end
 
   def edit; end
+  def edit; end
 
   def update
     if @quiz_attempt.update(quiz_attempt_params)
@@ -86,66 +92,6 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
   def destroy
     @quiz_attempt.destroy
     redirect_to dashboard_course_quiz_attempts_path(@course, @quiz), notice: 'Bài làm đã được xóa.'
-  end
-
-  def log_action
-    action_type = params[:action_type]
-
-    case action_type
-    when 'tab_switch', 'window_blur', 'alt_tab'
-      @quiz_attempt.increment!(:tab_switch_count)
-    when 'copy', 'paste', 'cut'
-      @quiz_attempt.increment!(:copy_paste_count)
-    when 'screenshot'
-      @quiz_attempt.increment!(:screenshot_count)
-    when 'right_click'
-      @quiz_attempt.increment!(:right_click_count)
-    when 'devtools_open', 'devtools_key'
-      @quiz_attempt.increment!(:devtools_open_count)
-    when 'drag_attempt', 'drop_attempt', 'window_resize'
-      @quiz_attempt.increment!(:other_unusual_actions)
-    end
-
-    render json: { success: true }
-  end
-
-  def update_behavior_counts
-    counts = params.permit(
-      :tab_switch_count,
-      :copy_paste_count,
-      :screenshot_count,
-      :right_click_count,
-      :devtools_open_count,
-      :other_unusual_actions
-    )
-
-    if counts[:tab_switch_count].present? && counts[:tab_switch_count].to_i > @quiz_attempt.tab_switch_count.to_i
-      @quiz_attempt.update(tab_switch_count: counts[:tab_switch_count])
-    end
-
-    if counts[:copy_paste_count].present? && counts[:copy_paste_count].to_i > @quiz_attempt.copy_paste_count.to_i
-      @quiz_attempt.update(copy_paste_count: counts[:copy_paste_count])
-    end
-
-    if counts[:screenshot_count].present? && counts[:screenshot_count].to_i > @quiz_attempt.screenshot_count.to_i
-      @quiz_attempt.update(screenshot_count: counts[:screenshot_count])
-    end
-
-    if counts[:right_click_count].present? && counts[:right_click_count].to_i > @quiz_attempt.right_click_count.to_i
-      @quiz_attempt.update(right_click_count: counts[:right_click_count])
-    end
-
-    if counts[:devtools_open_count].present? && counts[:devtools_open_count].to_i > @quiz_attempt.devtools_open_count.to_i
-      @quiz_attempt.update(devtools_open_count: counts[:devtools_open_count])
-    end
-
-    if counts[:other_unusual_actions].present? && counts[:other_unusual_actions].to_i > @quiz_attempt.other_unusual_actions.to_i
-      @quiz_attempt.update(other_unusual_actions: counts[:other_unusual_actions])
-    end
-
-    check_cheating_behavior
-
-    render json: { success: true, updated: true }
   end
 
   private
@@ -167,23 +113,39 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
   end
 
   def check_cheating_behavior
-    return unless @quiz.is_exam?
+    if !@quiz.is_exam?
+      return
+    end
 
     suspicious_behavior = false
 
-    suspicious_behavior = true if @quiz_attempt.tab_switch_count.to_i >= 5
+    if @quiz_attempt.tab_switch_count.to_i >= 5
+      suspicious_behavior = true
+    end
 
-    suspicious_behavior = true if @quiz_attempt.copy_paste_count.to_i >= 3
+    if @quiz_attempt.copy_paste_count.to_i >= 3
+      suspicious_behavior = true
+    end
 
-    suspicious_behavior = true if @quiz_attempt.screenshot_count.to_i >= 2
+    if @quiz_attempt.screenshot_count.to_i >= 2
+      suspicious_behavior = true
+    end
 
-    suspicious_behavior = true if @quiz_attempt.right_click_count.to_i >= 3
+    if @quiz_attempt.right_click_count.to_i >= 3
+      suspicious_behavior = true
+    end
 
-    suspicious_behavior = true if @quiz_attempt.devtools_open_count.to_i >= 2
+    if @quiz_attempt.devtools_open_count.to_i >= 2
+      suspicious_behavior = true
+    end
 
-    suspicious_behavior = true if @quiz_attempt.other_unusual_actions.to_i >= 3
+    if @quiz_attempt.other_unusual_actions.to_i >= 3
+      suspicious_behavior = true
+    end
 
-    notify_instructor_of_cheating if suspicious_behavior
+    if suspicious_behavior
+      notify_instructor_of_cheating
+    end
   end
 
   def notify_instructor_of_cheating
