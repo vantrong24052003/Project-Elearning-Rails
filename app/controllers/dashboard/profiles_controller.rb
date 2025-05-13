@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Dashboard::ProfileController < Dashboard::DashboardController
+class Dashboard::ProfilesController < Dashboard::DashboardController
   before_action :set_user, only: %i[show update]
 
   def show

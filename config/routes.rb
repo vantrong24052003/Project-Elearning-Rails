@@ -20,7 +20,7 @@ Rails.application.routes.draw do
     end
 
     resources :enrollments, only: %i[index]
-    resources :profile, only: %i[show update]
+    resources :profiles, only: %i[show update]
   end
 
   namespace :manage do
