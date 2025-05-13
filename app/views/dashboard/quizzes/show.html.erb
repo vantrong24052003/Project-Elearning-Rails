@@ -62,19 +62,6 @@
         </div>
 
         <div class="mb-6">
-          <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
-            <span>Tiến độ</span>
-            <span>
-              <span data-dashboard--quiz-timer-target="progress">0</span>/<span data-dashboard--quiz-timer-target="questionCount"><%= @questions.size %></span> câu
-            </span>
-          </div>
-          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-            <div class="bg-blue-600 dark:bg-purple-600 h-2.5 rounded-full" style="width: 0%"
-                 data-dashboard--quiz-timer-target="progressBar"></div>
-          </div>
-        </div>
-
-        <div class="mb-6">
           <div class="text-sm text-gray-600 dark:text-gray-300 mb-2">Câu hỏi:</div>
           <div class="grid grid-cols-5 gap-2" data-dashboard--quiz-timer-target="questionNav">
             <% @questions.each_with_index do |question, index| %>

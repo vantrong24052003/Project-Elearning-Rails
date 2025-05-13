@@ -93,7 +93,6 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
     return unless @quiz_attempt.quiz.is_exam?
 
     suspicious_behavior = false
-
     suspicious_behavior = true if @quiz_attempt.tab_switch_count.to_i >= 5
     suspicious_behavior = true if @quiz_attempt.copy_paste_count.to_i >= 3
     suspicious_behavior = true if @quiz_attempt.screenshot_count.to_i >= 2
@@ -101,12 +100,20 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
     suspicious_behavior = true if @quiz_attempt.devtools_open_count.to_i >= 2
     suspicious_behavior = true if @quiz_attempt.other_unusual_actions.to_i >= 3
 
-    notify_instructor_of_cheating if suspicious_behavior
+    @quiz_attempt.update(suspicious_behavior: suspicious_behavior) if @quiz_attempt.suspicious_behavior != suspicious_behavior
   end
 
-  def notify_instructor_of_cheating
-    # if @quiz.notify_cheating
-    CourseMailer.cheating_notification(@course.user, @quiz_attempt).deliver_later
-    # end
+  def check_and_notify_cheating
+    return unless @quiz_attempt.quiz.is_exam?
+    return if @quiz_attempt.is_notified
+    return unless @quiz_attempt.suspicious_behavior
+    return unless @quiz_attempt.completed_at.present?
+
+    CourseMailer.cheating_notification(
+      @course.user,
+      @quiz_attempt
+    ).deliver_later
+
+    @quiz_attempt.update(is_notified: true, notified_at: Time.current)
   end
 end

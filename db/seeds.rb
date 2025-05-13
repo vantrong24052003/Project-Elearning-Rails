@@ -482,7 +482,7 @@ def create_quiz_attempts(quiz, course)
       correct_count += 1 if user_answer == q.correct_option
     end
 
-    score = quiz.questions.any? ? (correct_count.to_f / quiz.questions.count * 100).round : 0
+    score = quiz.questions.any? ? (correct_count.to_f / quiz.questions.count * 10).round : 0
 
     time_spent = rand((quiz.time_limit * 30)..(quiz.time_limit * 60))
 

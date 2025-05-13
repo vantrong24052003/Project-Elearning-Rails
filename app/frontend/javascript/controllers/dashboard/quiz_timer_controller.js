@@ -244,10 +244,15 @@ export default class extends Controller {
   }
 
   updateAnsweredQuestions() {
-    if (!this.hasFormTarget || !this.hasProgressTarget) return;
+    if (!this.hasFormTarget) return;
 
     const radioGroups = this.getAnsweredQuestions();
-    this.progressTarget.textContent = radioGroups.length;
+    
+    // Kiểm tra và cập nhật progressTarget nếu có
+    if (this.hasProgressTarget) {
+      this.progressTarget.textContent = radioGroups.length;
+    }
+    
     this.updateNavigation();
   }
 
@@ -273,11 +278,12 @@ export default class extends Controller {
       return;
     }
 
-    if (!this.hasFormTarget || !this.hasTimeSpentTarget || !this.hasTotalQuestionsValue) return;
+    if (!this.hasFormTarget || !this.hasTimeSpentTarget) return;
 
     this.timeSpentTarget.value = this.elapsedTime;
 
-    const answeredQuestions = parseInt(this.progressTarget.textContent, 10);
+    // Sửa lại logic để không phụ thuộc vào progressTarget
+    const answeredQuestions = this.getAnsweredQuestions().length;
 
     if (answeredQuestions < this.totalQuestionsValue) {
       if (this.modeValue === 'exam') {
