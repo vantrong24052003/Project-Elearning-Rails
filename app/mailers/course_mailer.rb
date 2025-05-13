@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CourseMailer < ApplicationMailer
   def cheating_notification(user, quiz_attempt)
     @user = user
@@ -8,7 +10,7 @@ class CourseMailer < ApplicationMailer
     mail(
       to: @user.email,
       subject: "Cảnh báo gian lận - #{@course.title} - #{@quiz_attempt.quiz.title}",
-      template_path: "mailers"
+      template_path: 'mailers'
     )
   end
 end
