@@ -14,7 +14,9 @@ Rails.application.routes.draw do
     resources :courses, only: %i[index show new edit create update destroy] do
       resources :quizzes do
         resources :attempts
+        resources :quiz_attempts, only: %i[index show new create edit update destroy]
       end
+      resources :quiz_statuses, only: %i[index update]
       resources :payments
       resources :viewers
     end

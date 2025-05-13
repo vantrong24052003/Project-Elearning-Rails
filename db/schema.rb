@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 20_250_507_085_911) do
+ActiveRecord::Schema[8.0].define(version: 20_250_512_000_001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension 'pg_catalog.plpgsql'
   enable_extension 'pgcrypto'
@@ -123,6 +123,19 @@ ActiveRecord::Schema[8.0].define(version: 20_250_507_085_911) do
     t.datetime 'updated_at', null: false
     t.text 'answers'
     t.integer 'time_spent'
+    t.datetime 'start_time'
+    t.datetime 'completed_at'
+    t.string 'device_info'
+    t.string 'ip_address'
+    t.integer 'tab_switch_count', default: 0
+    t.integer 'copy_paste_count', default: 0
+    t.integer 'screenshot_count', default: 0
+    t.integer 'right_click_count', default: 0
+    t.integer 'devtools_open_count', default: 0
+    t.integer 'other_unusual_actions', default: 0
+    t.integer 'device_count', default: 1
+    t.boolean 'is_notified', default: false
+    t.datetime 'notified_at'
     t.index ['quiz_id'], name: 'index_quiz_attempts_on_quiz_id'
     t.index ['user_id'], name: 'index_quiz_attempts_on_user_id'
   end
@@ -143,6 +156,8 @@ ActiveRecord::Schema[8.0].define(version: 20_250_507_085_911) do
     t.uuid 'course_id', null: false
     t.datetime 'created_at', null: false
     t.datetime 'updated_at', null: false
+    t.datetime 'start_time'
+    t.datetime 'end_time'
     t.index ['course_id'], name: 'index_quizzes_on_course_id'
   end
 

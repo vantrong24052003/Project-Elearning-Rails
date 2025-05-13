@@ -2,36 +2,69 @@
 
 class Dashboard::QuizAttemptsController < Dashboard::DashboardController
   before_action :set_course
-  before_action :set_quiz, only: [:create, :show]
-  before_action :set_attempt, only: [:show]
-  before_action :check_enrollment, only: [:create]
-  before_action :check_if_exam_already_attempted, only: [:create], if: -> { @quiz.is_exam? }
+  before_action :set_quiz
+  before_action :set_quiz_attempt, only: %i[show edit update destroy]
+  before_action :authenticate_user!
+
+  def index
+    @quiz_attempts = @quiz.quiz_attempts.where(user: current_user).order(created_at: :desc)
+  end
+
+  def show; end
+
+  def new
+    @quiz_attempt = @quiz.quiz_attempts.build
+  end
 
   def create
-    @attempt = QuizAttempt.new(
-      quiz: @quiz,
-      user: current_user,
-      score: calculate_score,
-      answers: params[:answers] || {},
-      time_spent: params[:time_spent]
-    )
+    @quiz_attempt = @quiz.quiz_attempts
+                         .where(user: current_user)
+                         .where(completed_at: nil)
+                         .order(created_at: :desc)
+                         .first
 
-    if @attempt.save
-      response.headers['X-Clear-Quiz-Storage'] = "quiz_#{@quiz.id}"
+    unless @quiz_attempt
+      @quiz_attempt = @quiz.quiz_attempts.build
+      @quiz_attempt.user = current_user
+      @quiz_attempt.start_time = Time.current
+      @quiz_attempt.device_info = request.user_agent
+      @quiz_attempt.ip_address = request.remote_ip
+    end
 
-      response.headers['X-Quiz-Is-Exam'] = @quiz.is_exam?.to_s
+    correct_answers = 0
+    total_questions = @quiz.questions.count
 
-      response.headers['X-Quiz-Submitted'] = 'true'
+    params[:answers]&.each do |question_id, selected_option|
+      question = @quiz.questions.find(question_id)
+      correct_answers += 1 if question.correct_option.to_i == selected_option.to_i
+    end
 
-      redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, @attempt), notice: 'Bài làm đã được ghi nhận.'
+    @quiz_attempt.answers = params[:answers].to_json
+    @quiz_attempt.score = (correct_answers.to_f / total_questions * 100).round(1)
+    @quiz_attempt.completed_at = Time.current
+    @quiz_attempt.time_spent = params[:time_spent].to_i
+
+    if @quiz_attempt.save
+      redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, @quiz_attempt),
+                  notice: 'Bài làm đã được nộp thành công.'
     else
-      redirect_to dashboard_course_quiz_path(@course, @quiz), alert: 'Lỗi khi ghi nhận bài làm.'
+      redirect_to dashboard_course_quiz_path(@course, @quiz), alert: 'Có lỗi xảy ra khi nộp bài.'
     end
   end
 
-  def show
-    @questions = @quiz.questions
-    @answers = @attempt.answers || {}
+  def edit; end
+
+  def update
+    if @quiz_attempt.update(quiz_attempt_params)
+      redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, @quiz_attempt), notice: 'Bài làm đã được cập nhật.'
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @quiz_attempt.destroy
+    redirect_to dashboard_course_quiz_attempts_path(@course, @quiz), notice: 'Bài làm đã được xóa.'
   end
 
   private
@@ -44,36 +77,11 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
     @quiz = @course.quizzes.find(params[:quiz_id])
   end
 
-  def set_attempt
-    @attempt = QuizAttempt.find(params[:id])
+  def set_quiz_attempt
+    @quiz_attempt = @quiz.quiz_attempts.find(params[:id])
   end
 
-  def check_enrollment
-    unless current_user && Enrollment.exists?(user: current_user, course: @course, status: :active)
-      redirect_to dashboard_course_path(@course), alert: 'Bạn cần đăng ký khóa học để làm bài kiểm tra.'
-    end
-  end
-
-  def check_if_exam_already_attempted
-    if QuizAttempt.exists?(quiz: @quiz, user: current_user)
-      redirect_to dashboard_course_quizzes_path(@course), alert: 'Bài thi này đã được nộp. Bài thi chỉ được làm một lần duy nhất.'
-    end
-  end
-
-  def calculate_score
-    return 0 if !params[:answers] || params[:answers].empty?
-
-    correct_count = 0
-    params[:answers].each do |question_id, answer|
-      question = Question.find_by(id: question_id)
-      next unless question
-
-      correct_count += 1 if answer.to_i == question.correct_option
-    end
-
-    questions_count = @quiz.questions.count
-    return 0 if questions_count == 0
-
-    (correct_count.to_f / questions_count * 100).round
+  def quiz_attempt_params
+    params.require(:quiz_attempt).permit(:answers, :time_spent)
   end
 end
