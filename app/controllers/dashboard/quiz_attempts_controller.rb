@@ -10,17 +10,7 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
     @quiz_attempts = @quiz.quiz_attempts.where(user: current_user).order(created_at: :desc)
   end
 
-  def in_progress
-    @course = Course.find(params[:course_id])
 
-    @quiz_attempts = QuizAttempt.joins(:quiz)
-                                .where(quizzes: { course_id: @course.id }, user: current_user)
-                                .select('quiz_attempts.id, quiz_attempts.quiz_id, quiz_attempts.completed_at')
-
-    render json: @quiz_attempts
-  end
-
-  def show; end
   def show; end
 
   def new
@@ -66,8 +56,6 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
       @quiz_attempt.time_spent = params[:time_spent].to_i
 
       if @quiz_attempt.save
-        notify_instructor_of_cheating if @quiz_attempt.check_cheating_behavior
-
         redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                     notice: 'Bài làm đã được nộp thành công.'
       else
@@ -78,7 +66,6 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
     end
   end
 
-  def edit; end
   def edit; end
 
   def update
@@ -112,53 +99,4 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
     params.require(:quiz_attempt).permit(:answers, :time_spent)
   end
 
-  def check_cheating_behavior
-    if !@quiz.is_exam?
-      return
-    end
-
-    suspicious_behavior = false
-
-    if @quiz_attempt.tab_switch_count.to_i >= 5
-      suspicious_behavior = true
-    end
-
-    if @quiz_attempt.copy_paste_count.to_i >= 3
-      suspicious_behavior = true
-    end
-
-    if @quiz_attempt.screenshot_count.to_i >= 2
-      suspicious_behavior = true
-    end
-
-    if @quiz_attempt.right_click_count.to_i >= 3
-      suspicious_behavior = true
-    end
-
-    if @quiz_attempt.devtools_open_count.to_i >= 2
-      suspicious_behavior = true
-    end
-
-    if @quiz_attempt.other_unusual_actions.to_i >= 3
-      suspicious_behavior = true
-    end
-
-    if suspicious_behavior
-      notify_instructor_of_cheating
-    end
-  end
-
-  def notify_instructor_of_cheating
-    return if @quiz_attempt.is_notified
-
-    @quiz_attempt.update(
-      is_notified: true,
-      notified_at: Time.current
-    )
-
-    CourseMailer.cheating_notification(
-      @course.user,
-      @quiz_attempt
-    ).deliver_later
-  end
 end

@@ -479,7 +479,7 @@ __metadata:
     "@hotwired/stimulus": ^3.2.2
     "@hotwired/turbo-rails": ^8.0.13
     autoprefixer: ^10.4.21
-    daisyui: ^5.0.30
+    daisyui: ^4.7.2
     framer-motion: ^12.7.4
     hls.js: ^1.6.2
     lucide: latest
@@ -719,6 +719,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"css-selector-tokenizer@npm:^0.8":
+  version: 0.8.0
+  resolution: "css-selector-tokenizer@npm:0.8.0"
+  dependencies:
+    cssesc: ^3.0.0
+    fastparse: ^1.1.2
+  checksum: 1eb7ca7d2c21ede700a0fab7df4547198431c30ba62663d81a566a8abe6ab7524f627ce6c0bde63f34917e199b73be4081e449bd8faf107d155766204082aa0a
+  languageName: node
+  linkType: hard
+
 "cssesc@npm:^3.0.0":
   version: 3.0.0
   resolution: "cssesc@npm:3.0.0"
@@ -728,10 +738,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"daisyui@npm:^5.0.30":
-  version: 5.0.35
-  resolution: "daisyui@npm:5.0.35"
-  checksum: 9df00cba4c8a17aca1b8375231e4eaf6184f789006692ddef31cb19322d35287aa222af30aa16541a9866737c9e2ebd02ce1faa1f064908e1c352179eb6f76ab
+"culori@npm:^3":
+  version: 3.3.0
+  resolution: "culori@npm:3.3.0"
+  checksum: 7091ab572ed49222a25872a0c2c350340b96dac1c3237a7b58a93bfb02d11c64d68c585c32f91985a563b3d52402d16722e33a00087456287df28e3db5d99f13
+  languageName: node
+  linkType: hard
+
+"daisyui@npm:^4.7.2":
+  version: 4.12.24
+  resolution: "daisyui@npm:4.12.24"
+  dependencies:
+    css-selector-tokenizer: ^0.8
+    culori: ^3
+    picocolors: ^1
+    postcss-js: ^4
+  checksum: 7c503bb64e64067b7ac58c95c85e3af02294413575127bcfd727fa1a841d956ab4b1e7cec7f4ca5466dd86c2fb96a6642f8f6c4f1e4a059701da908d4bd24d7e
   languageName: node
   linkType: hard
 
@@ -769,9 +791,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.5.149":
-  version: 1.5.151
-  resolution: "electron-to-chromium@npm:1.5.151"
-  checksum: 50e272c418a8faea6bf33f15476a28f13af28ecbde95defaae5d9eb511083beebc5f3a7d19e2b4c2eb401cb2b7c924298933820f791f6da5e4b6e930d81d71eb
+  version: 1.5.152
+  resolution: "electron-to-chromium@npm:1.5.152"
+  checksum: 68841f52694791f0f1902b0a7595a800099e0e3a9bdbb90bb7412c49e4d94af0862bc73361d75e2bb9d09bb8e8ffc15e50de6c191617f7f9425c94ef92a2e636
   languageName: node
   linkType: hard
 
@@ -919,6 +941,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fastparse@npm:^1.1.2":
+  version: 1.1.2
+  resolution: "fastparse@npm:1.1.2"
+  checksum: c4d199809dc4e8acafeb786be49481cc9144de296e2d54df4540ccfd868d0df73afc649aba70a748925eb32bbc4208b723d6288adf92382275031a8c7e10c0aa
+  languageName: node
+  linkType: hard
+
 "fastq@npm:^1.6.0":
   version: 1.19.1
   resolution: "fastq@npm:1.19.1"
@@ -967,10 +996,10 @@ __metadata:
   linkType: hard
 
 "framer-motion@npm:^12.7.4":
-  version: 12.10.5
-  resolution: "framer-motion@npm:12.10.5"
+  version: 12.11.0
+  resolution: "framer-motion@npm:12.11.0"
   dependencies:
-    motion-dom: ^12.10.5
+    motion-dom: ^12.11.0
     motion-utils: ^12.9.4
     tslib: ^2.4.0
   peerDependencies:
@@ -984,7 +1013,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: f561a6ad69fd09b5b957bc9e75b7a0db6ea7a8a482d837443736c305071e6f4d92e0c55793cb4ba047a18140fe89e6981ea06853a53307ec821db6981e16179b
+  checksum: 0b730e32918505de31e78070189f37371b1f5d388799f474a41e16f8cc9984238e1a87387fc200db59c0c2ae6d93db45f142436366dd3dee1620900b6a6cd874
   languageName: node
   linkType: hard
 
@@ -1253,9 +1282,9 @@ __metadata:
   linkType: hard
 
 "lucide@npm:latest":
-  version: 0.509.0
-  resolution: "lucide@npm:0.509.0"
-  checksum: f6c3e5f05b35c51a35a29a8656257542a7a5a5addbb820183dfff52c8e00bdab8da31fcdb9a3317bfccf15b8fea6615a49b28068fefd1a329552f825e4d5e726
+  version: 0.510.0
+  resolution: "lucide@npm:0.510.0"
+  checksum: 75a4644d20dd2a2e0cf2015947acd7dc3d5032f1c51e75f93dbf3674fd63c9e06f65b4faeaa7fedaa80084459771efe28ef0bc268f4503bcaed0f405a435355f
   languageName: node
   linkType: hard
 
@@ -1389,12 +1418,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"motion-dom@npm:^12.10.5":
-  version: 12.10.5
-  resolution: "motion-dom@npm:12.10.5"
+"motion-dom@npm:^12.11.0":
+  version: 12.11.0
+  resolution: "motion-dom@npm:12.11.0"
   dependencies:
     motion-utils: ^12.9.4
-  checksum: 7d24097ead5c4fab4e99a650628fddf054f3c57ee846d4f1b8eaec64ccaa989c9eda78e3d95125e1dc51e433ac23a8a3452414219014fa3f1438fe826ae60792
+  checksum: 0234ac4c0269233904eb8d65fd4e4cc635806a3dbf231920de32d9c1e240c492efa6196a2160a35fbc2d7ff10a05a18466939249a5d164a71a9c117613115f0c
   languageName: node
   linkType: hard
 
@@ -1543,7 +1572,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"picocolors@npm:^1.0.0, picocolors@npm:^1.1.1":
+"picocolors@npm:^1, picocolors@npm:^1.0.0, picocolors@npm:^1.1.1":
   version: 1.1.1
   resolution: "picocolors@npm:1.1.1"
   checksum: e1cf46bf84886c79055fdfa9dcb3e4711ad259949e3565154b004b260cd356c5d54b31a1437ce9782624bf766272fe6b0154f5f0c744fb7af5d454d2b60db045
@@ -1591,7 +1620,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-js@npm:^4.0.1":
+"postcss-js@npm:^4, postcss-js@npm:^4.0.1":
   version: 4.0.1
   resolution: "postcss-js@npm:4.0.1"
   dependencies:
@@ -1842,11 +1871,11 @@ __metadata:
   linkType: hard
 
 "semver@npm:^7.3.5":
-  version: 7.7.1
-  resolution: "semver@npm:7.7.1"
+  version: 7.7.2
+  resolution: "semver@npm:7.7.2"
   bin:
     semver: bin/semver.js
-  checksum: 586b825d36874007c9382d9e1ad8f93888d8670040add24a28e06a910aeebd673a2eb9e3bf169c6679d9245e66efb9057e0852e70d9daa6c27372aab1dda7104
+  checksum: dd94ba8f1cbc903d8eeb4dd8bf19f46b3deb14262b6717d0de3c804b594058ae785ef2e4b46c5c3b58733c99c83339068203002f9e37cfe44f7e2cc5e3d2f621
   languageName: node
   linkType: hard
 
