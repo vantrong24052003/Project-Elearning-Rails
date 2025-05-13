@@ -3,7 +3,13 @@ import { QuizApi } from "../../services/quiz_api"
 
 export default class extends Controller {
   connect() {
-    this.checkInProgressQuizzes();
+    this.updateContinueButtons();
+    this.updateStartButtons();
+
+    this.updateInterval = setInterval(() => {
+      this.updateContinueButtons();
+      this.updateStartButtons();
+    }, 2000);
   }
 
   async checkInProgressQuizzes() {

@@ -166,6 +166,23 @@ export default class extends Controller {
   }
 
   startTimer() {
+    this.clearTimers();
+
+    if (!this.startTime) {
+      this.startTime = new Date().getTime();
+    }
+
+    this.saveInterval = setInterval(() => {
+      if (!this.isPaused && !this.isSubmitted) {
+        const currentTime = new Date().getTime();
+        const elapsedSeconds = Math.floor((currentTime - this.startTime) / 1000);
+        const totalElapsedTime = this.initialElapsedTime + elapsedSeconds;
+        const remainingSeconds = Math.max(0, this.initialTimeLimit - totalElapsedTime);
+
+        localStorage.setItem(`${this.quizId}_remaining_time`, remainingSeconds);
+      }
+    }, 2000);
+
     this.interval = setInterval(() => {
       if (!this.isPaused) {
         const now = new Date();
@@ -537,6 +554,12 @@ export default class extends Controller {
       this.saveState();
       history.back();
     }
+  }
+
+  updatePauseButtonUI() {
+    this.pauseBtnTarget.classList.add('hidden');
+    this.resumeBtnTarget.classList.remove('hidden');
+    this.displayTarget.classList.add('text-yellow-500');
   }
 
   handleTurboBeforeRender(event) {

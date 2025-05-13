@@ -4,6 +4,9 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
+
+  <!-- Thêm nonce để tránh trình duyệt sử dụng cache -->
+  <meta name="quiz-nonce" content="<%= SecureRandom.hex(8) %>">
 <% end %>
 
 <div class="container mx-auto px-4 py-8 bg-white dark:bg-gray-900 text-gray-800 dark:text-white"
@@ -49,7 +52,7 @@
               Tạm dừng
             </button>
             <button type="button"
-                    class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm hidden"
+                    class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm hidden <%= @quiz.is_exam ? 'hidden' : '' %>"
                     data-dashboard--quiz-timer-target="resumeBtn"
                     data-action="click->dashboard--quiz-timer#togglePause">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -63,14 +66,14 @@
 
         <div class="mb-6">
           <div class="text-sm text-gray-600 dark:text-gray-300 mb-2">Câu hỏi:</div>
-          <div class="grid grid-cols-5 gap-2" data-dashboard--quiz-timer-target="questionNav">
+          <div class="grid grid-cols-5 gap-2" data-dashboard--quiz-flag-target="questionNav">
             <% @questions.each_with_index do |question, index| %>
               <button type="button"
                       class="w-full aspect-square bg-gray-500 rounded flex items-center justify-center text-white font-medium text-sm"
-                      data-dashboard--quiz-timer-target="questionNavItem"
+                      data-dashboard--quiz-flag-target="questionNavItem"
                       data-question-id="<%= question.id %>"
                       data-index="<%= index %>"
-                      data-action="click->dashboard--quiz-timer#goToQuestion">
+                      data-action="click->dashboard--quiz-flag#goToQuestion">
                 <%= index + 1 %>
               </button>
             <% end %>
@@ -114,7 +117,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-200 dark:border-gray-700">
         <div class="flex justify-between items-center mb-6">
           <div class="text-gray-600 dark:text-gray-300">
-            Câu <span data-dashboard--quiz-timer-target="currentQuestionDisplay">1</span> / <%= @questions.size %>
+            Câu <span data-dashboard--quiz-flag-target="currentQuestionDisplay">1</span> / <%= @questions.size %>
           </div>
 
           <div class="flex gap-2">
@@ -168,7 +171,7 @@
         <div class="flex justify-between mt-8">
           <button type="button"
                   class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-white rounded-lg"
-                  data-action="click->dashboard--quiz-timer#prevQuestion">
+                  data-action="click->dashboard--quiz-flag#prevQuestion">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
@@ -177,7 +180,7 @@
 
           <button type="button"
                   class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-white rounded-lg"
-                  data-action="click->dashboard--quiz-timer#nextQuestion">
+                  data-action="click->dashboard--quiz-flag#nextQuestion">
             Câu tiếp
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

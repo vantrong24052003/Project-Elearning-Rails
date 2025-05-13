@@ -48,7 +48,8 @@ class Manage::OverviewsController < Manage::BaseController
   def calculate_average_rating
     query = @courses
     query = query.where(id: @selected_course_id) if @selected_course_id.present?
-    query.average(:rating)&.round(2) || 0
+    avg_rating = query.average(:rating)
+    avg_rating.present? ? avg_rating.round(2) : 0
   end
 
   def get_new_students

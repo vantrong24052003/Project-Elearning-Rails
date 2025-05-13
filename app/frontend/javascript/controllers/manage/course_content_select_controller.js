@@ -1,10 +1,11 @@
-import { Controller } from "@hotwired/stimulus"
+
+import { Controller } from '@hotwired/stimulus'
 
 export default class extends Controller {
   static targets = [
     "form", "courseSelect", "loading", "questionsContainer", "questionTemplate", "questionsData",
     "controls", "analysis", "analysisLoading", "conceptCount", "coverageBar",
-    "coverageText", "suggestions"
+    "coverageText", "suggestions", "videoSelect"
   ]
 
   connect() {
@@ -18,9 +19,11 @@ export default class extends Controller {
     const formData = new FormData(this.formTarget)
     const courseId = formData.get('quiz[course_id]')
     const numQuestions = formData.get('num_questions')
+    const difficulty = formData.get('difficulty')
+    const questionTypes = formData.getAll('question_types[]')
 
     if (!courseId) {
-      alert('Please select a course')
+      alert('Vui lòng chọn khóa học')
       return
     }
 
@@ -190,7 +193,7 @@ export default class extends Controller {
 
   saveQuiz() {
     if (this.questions.length === 0) {
-      alert('No questions to save')
+      alert('Không có câu hỏi nào để lưu')
       return
     }
 
@@ -199,7 +202,7 @@ export default class extends Controller {
     const courseId = form.querySelector('select[name="quiz[course_id]"]').value
 
     if (!title || !courseId) {
-      alert('Please fill in all required quiz information')
+      alert('Vui lòng điền đầy đủ thông tin bài kiểm tra')
       return
     }
 
@@ -237,5 +240,49 @@ export default class extends Controller {
     this.questionsDataTarget.value = JSON.stringify(questionsData)
 
     form.submit()
+  }
+
+  extractVideoContent(event) {
+    event.preventDefault()
+
+    const videoId = this.videoSelectTarget.value
+    if (!videoId) {
+      return
+    }
+
+    fetch(`/manage/quizzes/video_details/${videoId}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Could not load video information')
+        }
+        return response.json()
+      })
+      .then(video => {
+        const userDescriptionField = document.querySelector('textarea[name="user_description"]')
+        if (userDescriptionField) {
+          const formattedContent = this.formatVideoContent(video)
+          userDescriptionField.value = formattedContent
+
+          this.showToast('Video content added to description')
+        }
+      })
+      .catch(error => {
+        console.error('Error extracting transcript from video:', error)
+        this.showToast('Could not get content from video', 'error')
+      })
+  }
+
+  formatVideoContent(video) {
+    let content = `📚 Video: ${video.title}\n\n`
+
+    if (video.transcript && video.transcript.trim()) {
+      content += `📝 Content:\n${video.transcript}`
+    } else if (video.processing_log && video.processing_log.trim()) {
+      content += `📝 Content:\n${video.processing_log}`
+    } else {
+      content += '❗ No transcript available for this video. Please enter description manually.'
+    }
+
+    return content
   }
 }
