@@ -7,9 +7,16 @@
 <% end %>
 
 <div class="container mx-auto px-4 py-8 bg-white dark:bg-gray-900 text-gray-800 dark:text-white"
-     data-controller="dashboard--quiz-timer"
+     data-controller="dashboard--quiz-timer dashboard--quiz-proctor"
      data-dashboard--quiz-timer-mode-value="<%= @mode %>"
-     data-dashboard--quiz-timer-total-questions-value="<%= @questions.size %>">
+     data-dashboard--quiz-proctor-mode-value="<%= @mode %>"                                                       
+     data-dashboard--quiz-timer-total-questions-value="<%= @questions.size %>"
+     data-dashboard--quiz-timer-course-id-value="<%= @course.id %>"
+     data-dashboard--quiz-proctor-course-id-value="<%= @course.id %>"
+     data-dashboard--quiz-timer-quiz-id-value="<%= @quiz.id %>"
+     data-dashboard--quiz-proctor-quiz-id-value="<%= @quiz.id %>"
+     data-dashboard--quiz-timer-attempt-id-value="<%= @quiz_attempt&.id %>"
+     data-dashboard--quiz-proctor-attempt-id-value="<%= @quiz_attempt&.id %>">
 
   <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
     <div class="lg:col-span-1">
@@ -100,14 +107,14 @@
 
         <div class="mt-6 space-y-2">
           <button type="button"
-                  class="w-full py-3 bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white rounded-lg font-medium "
+                  class="w-full py-3 bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white rounded-lg font-medium"
                   data-dashboard--quiz-timer-target="submitBtn"
                   data-action="click->dashboard--quiz-timer#submitForm">
             Nộp bài
           </button>
           <% unless @quiz.is_exam? %>
             <%= link_to dashboard_course_quizzes_path(@course),
-                      class: "w-full py-2 border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-center block  text-sm",
+                      class: "w-full py-2 border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-center block text-sm",
                       data: { dashboard__quiz_timer_target: "cancelBtn", action: "click->dashboard--quiz-timer#cancel" } do %>
               Hủy bỏ
             <% end %>
@@ -125,13 +132,13 @@
 
           <div class="flex gap-2">
             <button type="button"
-                    class="px-3 py-1 rounded flex items-center "
+                    class="px-3 py-1 bg-gray-500 rounded flex items-center text-white"
                     data-dashboard--quiz-timer-target="flagBtn"
                     data-action="click->dashboard--quiz-timer#flagCurrentQuestion">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
               </svg>
-              <span data-dashboard--quiz-timer-target="flagBtnText">Đánh dấu</span>
+              Đánh dấu
             </button>
           </div>
         </div>
@@ -140,30 +147,31 @@
           <%= f.hidden_field :time_spent, data: { dashboard__quiz_timer_target: "timeSpent" } %>
           <%= f.hidden_field :mode, value: @mode %>
 
-          <% @questions.each_with_index do |question, index| %>
-            <div class="mb-8 <%= index == 0 ? '' : 'hidden' %>"
-                 data-dashboard--quiz-timer-target="questionContainer"
-                 data-question-id="<%= question.id %>">
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                <%= question.content %>
-              </h3>
+          <div data-dashboard--quiz-timer-target="questionContainer" class="question-container">
+            <% @questions.each_with_index do |question, index| %>
+              <div class="question mb-8 <%= index == 0 ? '' : 'hidden' %>"
+                   data-question-id="<%= question.id %>">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  <%= question.content %>
+                </h3>
 
-              <div class="space-y-3">
-                <% question.options.each_with_index do |option, option_index| %>
-                  <div class="flex items-start">
-                    <div class="flex items-center h-6 mt-1">
-                      <%= f.radio_button "answers[#{question.id}]", option_index, class: "h-5 w-5 text-blue-600 dark:text-purple-600 focus:ring-blue-500 dark:focus:ring-purple-500 border-gray-300 dark:border-gray-600" %>
+                <div class="space-y-3">
+                  <% question.options.each_with_index do |option, option_index| %>
+                    <div class="flex items-start">
+                      <div class="flex items-center h-6 mt-1">
+                        <%= f.radio_button "answers[#{question.id}]", option_index, class: "h-5 w-5 text-blue-600 dark:text-purple-600 focus:ring-blue-500 dark:focus:ring-purple-500 border-gray-300 dark:border-gray-600" %>
+                      </div>
+                      <div class="ml-3">
+                        <label class="text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+                          <%= option %>
+                        </label>
+                      </div>
                     </div>
-                    <div class="ml-3">
-                      <label class="text-gray-700 dark:text-gray-300 cursor-pointer select-none">
-                        <%= option %>
-                      </label>
-                    </div>
-                  </div>
-                <% end %>
+                  <% end %>
+                </div>
               </div>
-            </div>
-          <% end %>
+            <% end %>
+          </div>
         <% end %>
 
         <div class="flex justify-between mt-8">

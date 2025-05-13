@@ -27,7 +27,7 @@ end
 
 admin = begin
   user = User.new(
-    email: 'admin@gmail.com', password: 'Admin123@',
+    email: 'trongdn24052003@gmail.com', password: 'Admin123@',
     name: 'Admin User', phone: '1234567890', address: 'Admin Address',
     bio: 'This is an admin user', date_of_birth: '1985-05-10'
   )
@@ -39,7 +39,7 @@ end
 
 instructor = begin
   user = User.new(
-    email: 'instructor@gmail.com', password: 'Admin123@',
+    email: 'trongtk24052003@gmail.com', password: 'Admin123@',
     name: 'Instructor User', phone: '0987654321', address: 'Instructor Address',
     bio: 'This is an instructor user', date_of_birth: '1990-07-15'
   )

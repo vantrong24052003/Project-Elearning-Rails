@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+  <body>
+    <h1>Cảnh báo gian lận</h1>
+    <p>Kính gửi <%= @user.name %>,</p>
+
+    <p>Hệ thống đã phát hiện các hành vi bất thường trong bài làm của học viên <%= @student.name %> trong bài thi <%= @quiz_attempt.quiz.title %> của khóa học <%= @course.title %>.</p>
+
+    <h2>Chi tiết bài làm:</h2>
+    <ul>
+      <li>Học viên: <%= @student.name %> (<%= @student.email %>)</li>
+      <li>Khóa học: <%= @course.title %></li>
+      <li>Bài thi: <%= @quiz_attempt.quiz.title %></li>
+      <li>Thời gian làm bài: <%= Time.at(@quiz_attempt.time_spent).utc.strftime("%H:%M:%S") %></li>
+      <li>Điểm số: <%= @quiz_attempt.score %>%</li>
+      <li>Thời gian bắt đầu: <%= @quiz_attempt.start_time.strftime("%d/%m/%Y %H:%M:%S") %></li>
+      <li>Thời gian hoàn thành: <%= @quiz_attempt.completed_at.strftime("%d/%m/%Y %H:%M:%S") %></li>
+    </ul>
+
+    <h2>Các hành vi bất thường:</h2>
+    <ul>
+      <li>Số lần chuyển tab/cửa sổ: <%= @quiz_attempt.tab_switch_count %></li>
+      <li>Số lần copy/paste: <%= @quiz_attempt.copy_paste_count %></li>
+      <li>Số lần chụp màn hình: <%= @quiz_attempt.screenshot_count %></li>
+      <li>Thiết bị: <%= @quiz_attempt.device_info %></li>
+      <li>IP: <%= @quiz_attempt.ip_address %></li>
+    </ul>
+
+    <p>Vui lòng kiểm tra và xác minh các hành vi này.</p>
+
+    <p>Trân trọng,<br>Hệ thống E-learning</p>
+  </body>
+</html>
