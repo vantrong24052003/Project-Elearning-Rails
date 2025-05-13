@@ -1,22 +1,14 @@
+# frozen_string_literal: true
+
 class Dashboard::QuizAttemptsController < Dashboard::DashboardController
   before_action :set_course
   before_action :set_quiz
-  before_action :set_quiz_attempt, only: [:show, :edit, :update, :destroy, :log_action, :update_behavior_counts]
+  before_action :set_quiz_attempt, only: %i[show edit update destroy]
   before_action :authenticate_user!
   before_action :check_ownership, only: [:show, :update, :edit, :destroy]
 
   def index
     @quiz_attempts = @quiz.quiz_attempts.where(user: current_user).order(created_at: :desc)
-  end
-
-  def in_progress
-    @course = Course.find(params[:course_id])
-
-    @quiz_attempts = QuizAttempt.joins(:quiz)
-                              .where(quizzes: { course_id: @course.id }, user: current_user)
-                              .select('quiz_attempts.id, quiz_attempts.quiz_id, quiz_attempts.completed_at')
-
-    render json: @quiz_attempts
   end
 
   def show
@@ -30,10 +22,10 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
 
   def create
     @quiz_attempt = @quiz.quiz_attempts
-                       .where(user: current_user)
-                       .where(completed_at: nil)
-                       .order(created_at: :desc)
-                       .first
+                         .where(user: current_user)
+                         .where(completed_at: nil)
+                         .order(created_at: :desc)
+                         .first
 
     if @quiz_attempt.nil?
       @quiz_attempt = @quiz.quiz_attempts.build
@@ -42,7 +34,7 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
       @quiz_attempt.device_info = request.user_agent
       @quiz_attempt.ip_address = request.remote_ip
 
-      if !@quiz_attempt.save
+      unless @quiz_attempt.save
         redirect_to dashboard_course_quiz_path(@course, @quiz), alert: 'Có lỗi xảy ra khi bắt đầu làm bài.'
         return
       end
@@ -56,9 +48,7 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
       params[:answers]&.each do |question_id, selected_option|
         formatted_answers[question_id.to_s] = selected_option.to_i
         question = @quiz.questions.find_by(id: question_id)
-        if question && question.correct_option.to_i == selected_option.to_i
-          correct_answers += 1
-        end
+        correct_answers += 1 if question && question.correct_option.to_i == selected_option.to_i
       end
 
       @quiz_attempt.answers = formatted_answers.to_json
@@ -79,8 +69,7 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
     end
   end
 
-  def edit
-  end
+  def edit; end
 
   def update
     if params[:answers].present?
@@ -132,68 +121,9 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
 
   def destroy
     @quiz_attempt.destroy
-    redirect_to dashboard_course_quiz_quiz_attempts_path(@course, @quiz), notice: 'Bài làm đã được xóa.'
+    redirect_to dashboard_course_quiz_attempts_path(@course, @quiz), notice: 'Bài làm đã được xóa.'
   end
 
-  def log_action
-    action_type = params[:action_type]
-
-    case action_type
-    when 'tab_switch', 'window_blur', 'alt_tab'
-      @quiz_attempt.increment!(:tab_switch_count)
-    when 'copy', 'paste', 'cut'
-      @quiz_attempt.increment!(:copy_paste_count)
-    when 'screenshot'
-      @quiz_attempt.increment!(:screenshot_count)
-    when 'right_click'
-      @quiz_attempt.increment!(:right_click_count)
-    when 'devtools_open', 'devtools_key'
-      @quiz_attempt.increment!(:devtools_open_count)
-    when 'drag_attempt', 'drop_attempt', 'window_resize'
-      @quiz_attempt.increment!(:other_unusual_actions)
-    end
-
-    render json: { success: true }
-  end
-
-  def update_behavior_counts
-    counts = params.permit(
-      :tab_switch_count,
-      :copy_paste_count,
-      :screenshot_count,
-      :right_click_count,
-      :devtools_open_count,
-      :other_unusual_actions
-    )
-
-    if counts[:tab_switch_count].present? && counts[:tab_switch_count].to_i > @quiz_attempt.tab_switch_count.to_i
-      @quiz_attempt.update(tab_switch_count: counts[:tab_switch_count])
-    end
-
-    if counts[:copy_paste_count].present? && counts[:copy_paste_count].to_i > @quiz_attempt.copy_paste_count.to_i
-      @quiz_attempt.update(copy_paste_count: counts[:copy_paste_count])
-    end
-
-    if counts[:screenshot_count].present? && counts[:screenshot_count].to_i > @quiz_attempt.screenshot_count.to_i
-      @quiz_attempt.update(screenshot_count: counts[:screenshot_count])
-    end
-
-    if counts[:right_click_count].present? && counts[:right_click_count].to_i > @quiz_attempt.right_click_count.to_i
-      @quiz_attempt.update(right_click_count: counts[:right_click_count])
-    end
-
-    if counts[:devtools_open_count].present? && counts[:devtools_open_count].to_i > @quiz_attempt.devtools_open_count.to_i
-      @quiz_attempt.update(devtools_open_count: counts[:devtools_open_count])
-    end
-
-    if counts[:other_unusual_actions].present? && counts[:other_unusual_actions].to_i > @quiz_attempt.other_unusual_actions.to_i
-      @quiz_attempt.update(other_unusual_actions: counts[:other_unusual_actions])
-    end
-
-    check_cheating_behavior
-
-    render json: { success: true, updated: true }
-  end
 
   private
 
@@ -226,34 +156,4 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
     params.require(:quiz_attempt).permit(:answers, :time_spent)
   end
 
-  def check_cheating_behavior
-    suspicious_behavior = false
-
-    suspicious_behavior = true if @quiz_attempt.tab_switch_count.to_i >= 5
-    suspicious_behavior = true if @quiz_attempt.copy_paste_count.to_i >= 3
-    suspicious_behavior = true if @quiz_attempt.screenshot_count.to_i >= 2
-    suspicious_behavior = true if @quiz_attempt.right_click_count.to_i >= 3
-    suspicious_behavior = true if @quiz_attempt.devtools_open_count.to_i >= 2
-    suspicious_behavior = true if @quiz_attempt.other_unusual_actions.to_i >= 3
-
-    if suspicious_behavior
-      notify_instructor_of_cheating
-    end
-
-    suspicious_behavior
-  end
-
-  def notify_instructor_of_cheating
-    return if @quiz_attempt.is_notified
-
-    @quiz_attempt.update(
-      is_notified: true,
-      notified_at: Time.current
-    )
-
-    CourseMailer.cheating_notification(
-      @course.user,
-      @quiz_attempt
-    ).deliver_later
-  end
 end

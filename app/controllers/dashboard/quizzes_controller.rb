@@ -26,10 +26,10 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
     end
 
     @quiz_attempt = @quiz.quiz_attempts
-                        .where(user: current_user)
-                        .where(completed_at: nil)
-                        .order(created_at: :desc)
-                        .first
+                         .where(user: current_user)
+                         .where(completed_at: nil)
+                         .order(created_at: :desc)
+                         .first
 
     if params[:start] == 'true'
       unless @quiz_attempt
@@ -94,6 +94,7 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   def check_if_exam_already_taken
     return unless @quiz.is_exam?
 
+
     if QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).exists?
       latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).order(created_at: :desc).first
       redirect_to dashboard_course_quiz_quiz_attempts_path(@course, @quiz, latest_attempt),
@@ -115,10 +116,10 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
     @exam_quizzes = @course.quizzes.where(is_exam: true)
 
     @all_quiz_attempts = QuizAttempt.joins(:quiz)
-                                  .where(user: current_user, quizzes: { course_id: @course.id })
-                                  .includes(:quiz)
-                                  .order(created_at: :desc)
-                                  .to_a
+                                    .where(user: current_user, quizzes: { course_id: @course.id })
+                                    .includes(:quiz)
+                                    .order(created_at: :desc)
+                                    .to_a
 
     @practice_attempts = @all_quiz_attempts.select { |a| a.quiz.is_exam == false }
     @exam_attempts = @all_quiz_attempts.select { |a| a.quiz.is_exam == true }
@@ -167,10 +168,10 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
     @total_user_attempts = QuizAttempt.joins(:quiz).where(quizzes: { course_id: @course.id }).distinct.count('user_id')
 
     highest_score_attempt = QuizAttempt.joins(:quiz, :user)
-                                     .where(quizzes: { course_id: @course.id })
-                                     .order(score: :desc)
-                                     .select('quiz_attempts.*, users.id as user_id, users.name as user_name')
-                                     .first
+                                       .where(quizzes: { course_id: @course.id })
+                                       .order(score: :desc)
+                                       .select('quiz_attempts.*, users.id as user_id, users.name as user_name')
+                                       .first
 
     if highest_score_attempt
       @highest_score = highest_score_attempt.score
@@ -178,11 +179,11 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
     end
 
     top_users_data = QuizAttempt.joins(:quiz, :user)
-                               .where(quizzes: { course_id: @course.id })
-                               .select('quiz_attempts.user_id, MAX(quiz_attempts.score) as best_score, COUNT(quiz_attempts.id) as attempts_count, MAX(quiz_attempts.created_at) as last_attempt_at, users.name as user_name')
-                               .group('quiz_attempts.user_id, users.name')
-                               .order('best_score DESC')
-                               .limit(50)
+                                .where(quizzes: { course_id: @course.id })
+                                .select('quiz_attempts.user_id, MAX(quiz_attempts.score) as best_score, COUNT(quiz_attempts.id) as attempts_count, MAX(quiz_attempts.created_at) as last_attempt_at, users.name as user_name')
+                                .group('quiz_attempts.user_id, users.name')
+                                .order('best_score DESC')
+                                .limit(50)
 
     @top_users = top_users_data.map do |data|
       {
