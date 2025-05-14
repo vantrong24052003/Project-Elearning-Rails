@@ -32,14 +32,20 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
                          .first
 
     if (params[:start] == 'true') && !@quiz_attempt
+      client_ip = params[:client_ip].presence || request.remote_ip
+
       @quiz_attempt = @quiz.quiz_attempts.create!(
         user: current_user,
         start_time: Time.current,
-        device_info: request.user_agent,
-        ip_address: request.remote_ip,
         score: 0,
         time_spent: 0
       )
+
+      @quiz_attempt.log_action('start_quiz', {
+        start_time: @quiz_attempt.start_time,
+        client_ip: client_ip,
+        device_info: request.user_agent
+      })
     end
   end
 

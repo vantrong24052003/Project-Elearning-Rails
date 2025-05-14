@@ -30,13 +30,17 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
       @quiz_attempt = @quiz.quiz_attempts.build
       @quiz_attempt.user = current_user
       @quiz_attempt.start_time = Time.current
-      @quiz_attempt.device_info = request.user_agent
-      @quiz_attempt.ip_address = request.remote_ip
 
       unless @quiz_attempt.save
         redirect_to dashboard_course_quiz_path(@course, @quiz), alert: 'Có lỗi xảy ra khi bắt đầu làm bài.'
         return
       end
+
+      @quiz_attempt.log_action('start_quiz', {
+        start_time: @quiz_attempt.start_time,
+        client_ip: params[:client_ip_address].presence || request.remote_ip,
+        device_info: request.user_agent
+      })
     end
 
     if params[:answers].present?
@@ -56,6 +60,13 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
       @quiz_attempt.time_spent = params[:time_spent].to_i
 
       if @quiz_attempt.save
+        @quiz_attempt.log_action('submit_quiz', {
+          score: @quiz_attempt.score,
+          time_spent: @quiz_attempt.time_spent,
+          completed_at: @quiz_attempt.completed_at,
+          client_ip: params[:client_ip_address].presence || request.remote_ip
+        })
+
         redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                     notice: 'Bài làm đã được nộp thành công.'
       else
@@ -87,18 +98,30 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
         answers: formatted_answers.to_json,
         completed_at: Time.current
       )
+        @quiz_attempt.log_action('update_quiz', {
+          score: score,
+          time_spent: time_spent,
+          completed_at: Time.current,
+          client_ip: params[:client_ip_address].presence || request.remote_ip
+        })
+
         redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                     notice: 'The assignment has been updated successfully.'
       else
         redirect_to dashboard_course_quiz_path(@course, @quiz), alert: 'An error occurred while updating the assignment.'
       end
     elsif params[:time_spent].present?
-      if @quiz_attempt.update(time_spent: params[:time_spent].to_i, completed_at: Time.current)
+      if @quiz_attempt.update(
+        time_spent: params[:time_spent].to_i,
+        completed_at: Time.current
+      )
         redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                     notice: 'The assignment has been updated.'
       end
     elsif params[:quiz_attempt].present?
-      quiz_attempt_params_with_completed = quiz_attempt_params.merge(completed_at: Time.current)
+      quiz_attempt_params_with_completed = quiz_attempt_params.merge(
+        completed_at: Time.current
+      )
       if @quiz_attempt.update(quiz_attempt_params_with_completed)
         redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                     notice: 'The assignment has been updated.'

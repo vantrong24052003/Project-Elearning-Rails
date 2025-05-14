@@ -43,6 +43,13 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
   def log_cheating_behavior
     action_type = params[:action_type]
 
+    # Ghi log chi tiết vào log_actions
+    @quiz_attempt.log_action(action_type, {
+      client_ip: request.remote_ip,
+      details: params[:details]
+    })
+
+    # Cập nhật counter cho loại hành vi
     case action_type
     when 'tab_switch', 'window_blur', 'alt_tab'
       @quiz_attempt.increment!(:tab_switch_count)

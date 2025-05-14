@@ -5,13 +5,15 @@ export class QuizApi {
     return ApiService.get(`/dashboard/courses/${courseId}/quiz_statuses`);
   }
 
-  static async logAction(courseId, quizId, attemptId, actionType) {
+  static async logAction(courseId, quizId, attemptId, actionType, extraData = {}) {
     return ApiService.put(
       `/dashboard/courses/${courseId}/quiz_statuses/${attemptId}`,
       {
         quiz_id: quizId,
         action_type: actionType,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        client_ip: extraData.client_ip,
+        details: extraData.details || null
       }
     );
   }
