@@ -11,24 +11,38 @@ export default class extends Controller {
   }
 
   connect() {
-    if (ipAddress && this.attemptIdValue) {
-      const ipAddress = this.detectIp();
-      this.logIpInfo(ipAddress);
-    } else if (this.startValue && !this.hasIpValue) {
+    if (this.startValue && !this.hasIpValue) {
       this.detectIp();
+    } else if (this.attemptIdValue) {
+      this.detectIp().then(ip => {
+        if (ip) {
+          this.logIpInfo(ip);
+        }
+      });
     }
   }
 
   async detectIp() {
     try {
-      const response  = QuizApi.getAttemptInfo()
-      const data = await response.json()
-      console.log("IP Address:", data.ip);
+      const urlParams = new URLSearchParams(window.location.search);
+      const clientIp = urlParams.get('client_ip');
 
-      return data.ip
+      if (clientIp) {
+        console.log("Using IP from URL:", clientIp);
+        return clientIp;
+      } else {
+        try {
+          const ipData = await QuizApi.getIpAddress();
+          console.log("IP from API111111111:", ipData);
+          return ipData.ip || "0.0.0.0";
+        } catch (ipError) {
+          console.error("Error getting IP from API:", ipError);
+          return "0.0.0.0";
+        }
+      }
     } catch (error) {
       console.error("Lỗi khi lấy IP:", error);
-      return '::1'
+      return "0.0.0.0";
     }
   }
 

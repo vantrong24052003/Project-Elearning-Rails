@@ -39,7 +39,6 @@ class QuizAttempt < ApplicationRecord
       client_ip: details[:client_ip] || '',
       device_info: details[:device_info] || ''
     }
-    log_entry.merge!(details) if details.present?
     current_logs << log_entry
     update(log_actions: current_logs)
   end

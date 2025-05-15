@@ -15,8 +15,12 @@ Rails.application.routes.draw do
       resources :quizzes do
         resources :attempts
         resources :quiz_attempts, only: %i[index show new create edit update destroy]
+        resources :quiz_statuses, only: %i[index update] do
+          collection do
+            get 'get_ip'
+          end
+        end
       end
-      resources :quiz_statuses, only: %i[index update]
       resources :payments
       resources :viewers
     end

@@ -64,10 +64,21 @@ export class QuizApi {
   }
 
   static async saveAttemptState(courseId, quizId, attemptId, data) {
+    let clientIp = "0.0.0.0";
+    try {
+      const ipData = await this.getIpAddress();
+      if (ipData && ipData.ip) {
+        clientIp = ipData.ip;
+      }
+    } catch (error) {
+      console.error("Error getting IP for saveAttemptState:", error);
+    }
+    
     return ApiService.put(
       `/dashboard/courses/${courseId}/quiz_statuses/${attemptId}`,
       {
         quiz_id: quizId,
+        client_ip: clientIp,
         state_data: {
           current_question: data.current_question,
           elapsed_time: data.elapsed_time,
@@ -86,6 +97,34 @@ export class QuizApi {
   }
 
   static async getIpAddress() {
-    return  ApiService.get('https://api.ipify.org?format=json')
+    try {
+      const response = await fetch('https://api.ipify.org?format=json', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        cache: 'no-cache',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching IP address:", error);
+      return { ip: "0.0.0.0" };
+    }
+  }
+
+  static async getLocalIpAddress(courseId) {
+    try {
+      return ApiService.get(`/dashboard/courses/${courseId}/quiz_statuses/get_ip`);
+    } catch (error) {
+      console.error("Error fetching local IP address:", error);
+      return { ip: "0.0.0.0" };
+    }
   }
 }

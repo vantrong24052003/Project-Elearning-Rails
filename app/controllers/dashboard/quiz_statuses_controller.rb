@@ -16,15 +16,72 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
     action_type = params[:action_type]
     behavior_counts = params[:behavior_counts]
     state_data = params[:state_data]
+    quiz_attempt_data = params[:quiz_attempt]
+
+    client_ip = params[:client_ip].presence || request.remote_ip
 
     if action_type.present?
       log_cheating_behavior(action_type)
+
+      @quiz_attempt.log_action({
+        client_ip: client_ip,
+        device_info: request.user_agent
+      })
+
       head :no_content
     elsif behavior_counts.present?
       update_behaviors(behavior_counts)
+
+      @quiz_attempt.log_action({
+        client_ip: client_ip,
+        device_info: request.user_agent
+      })
+
       head :no_content
     elsif state_data.present?
-      save_attempt_state(state_data)
+      @quiz_attempt.update(
+        time_spent: state_data[:elapsed_time].to_i,
+        current_question: state_data[:current_question].to_i
+      )
+
+      if state_data[:answers].present?
+        answers_data = @quiz_attempt.answers_hash
+        state_data[:answers].each do |question_id, answer|
+          answers_data[question_id.to_s] = answer
+        end
+        @quiz_attempt.update(answers: answers_data.to_json)
+      end
+
+      @quiz_attempt.log_action({
+        client_ip: client_ip,
+        device_info: request.user_agent
+      })
+
+      head :no_content
+    elsif quiz_attempt_data.present?
+      if quiz_attempt_data[:current_question].present?
+        @quiz_attempt.update(current_question: quiz_attempt_data[:current_question].to_i)
+      end
+
+      if quiz_attempt_data[:time_spent].present? || quiz_attempt_data[:elapsed_time].present?
+        time_spent = quiz_attempt_data[:time_spent].presence || quiz_attempt_data[:elapsed_time]
+        @quiz_attempt.update(time_spent: time_spent.to_i)
+      end
+
+      if quiz_attempt_data[:answers].present?
+        answers_data = @quiz_attempt.answers_hash
+        quiz_attempt_data[:answers].each do |question_id, answer|
+          answers_data[question_id.to_s] = answer
+        end
+        @quiz_attempt.update(answers: answers_data.to_json)
+      end
+
+      @quiz_attempt.log_action({
+        client_ip: client_ip,
+        device_info: request.user_agent
+      })
+
+      head :no_content
     else
       render json: { error: 'No data' }, status: :unprocessable_entity
     end
@@ -41,27 +98,6 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
     attempt_id = params[:id]
     @quiz = @course.quizzes.find(quiz_id) if quiz_id.present?
     @quiz_attempt = QuizAttempt.find(attempt_id)
-  end
-
-  def save_attempt_state(state_data)
-    return unless @quiz_attempt && current_user == @quiz_attempt.user
-
-    if state_data[:current_question].present? || state_data[:elapsed_time].present? || state_data[:answers].present?
-      @quiz_attempt.update(time_spent: state_data[:elapsed_time]) if state_data[:elapsed_time].present?
-
-      @quiz_attempt.log_actions = [] if @quiz_attempt.log_actions.nil?
-      @quiz_attempt.log_actions << {
-        timestamp: Time.current.iso8601,
-        action_type: 'save_state',
-        current_question: state_data[:current_question],
-        answers: state_data[:answers]
-      }
-      @quiz_attempt.save
-
-      render json: { success: true, message: 'Đã lưu trạng thái bài làm' }, status: :ok
-    else
-      render json: { success: false, message: 'Dữ liệu không hợp lệ' }, status: :unprocessable_entity
-    end
   end
 
   def log_cheating_behavior(action_type = nil)

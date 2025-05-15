@@ -30,11 +30,7 @@ export default class extends Controller {
     document.addEventListener('turbo:before-render', this.handleTurboBeforeRender.bind(this));
     document.addEventListener('quiz:auto-submit', this.autoSubmit.bind(this));
 
-    if (this.modeValue === 'exam') {
-      this.checkQuizStatus();
-    } else {
-      this.initializeQuizTimer();
-    }
+    this.checkQuizStatus();
   }
 
   async checkQuizStatus() {
@@ -277,14 +273,17 @@ export default class extends Controller {
       if (answeredQuestions < this.totalQuestionsValue) {
         if (this.modeValue === 'exam') {
           if (confirm(`Bạn chỉ mới trả lời ${answeredQuestions}/${this.totalQuestionsValue} câu hỏi. Bạn có chắc muốn nộp bài?`)) {
+            this.isSubmitted = true;
             this.getIpAndSubmit(submitTheForm);
           }
         } else {
           if (confirm(`Bạn chỉ mới trả lời ${answeredQuestions}/${this.totalQuestionsValue} câu hỏi. Bạn vẫn muốn nộp bài?`)) {
+            this.isSubmitted = true;
             this.getIpAndSubmit(submitTheForm);
           }
         }
       } else {
+        this.isSubmitted = true;
         this.getIpAndSubmit(submitTheForm);
       }
     };
@@ -318,25 +317,36 @@ export default class extends Controller {
       const clientIp = urlParams.get('client_ip');
 
       if (clientIp) {
-        console.log("Sử dụng IP từ URL:", clientIp);
+        console.log("Using IP from URL:", clientIp);
         const ipInput = document.createElement('input');
         ipInput.type = 'hidden';
-        ipInput.name = 'client_ip_address';
+        ipInput.name = 'client_ip';
         ipInput.value = clientIp;
         this.formTarget.appendChild(ipInput);
         callback();
       } else {
-        const response = await fetch('https://api.ipify.org/?format=json');
-        const data = await response.json();
-        const ipInput = document.createElement('input');
-        ipInput.type = 'hidden';
-        ipInput.name = 'client_ip_address';
-        ipInput.value = data.ip;
-        this.formTarget.appendChild(ipInput);
-        callback();
+        try {
+          const ipData = await QuizApi.getIpAddress();
+          console.log("IP from API:", ipData);
+
+          const ipInput = document.createElement('input');
+          ipInput.type = 'hidden';
+          ipInput.name = 'client_ip';
+          ipInput.value = ipData.ip || "0.0.0.0";
+          this.formTarget.appendChild(ipInput);
+          callback();
+        } catch (ipError) {
+          console.error("Error getting IP from API:", ipError);
+          const ipInput = document.createElement('input');
+          ipInput.type = 'hidden';
+          ipInput.name = 'client_ip';
+          ipInput.value = "0.0.0.0";
+          this.formTarget.appendChild(ipInput);
+          callback();
+        }
       }
     } catch (error) {
-      console.error("Lỗi khi lấy địa chỉ IP:", error);
+      console.error("Error in getIpAndSubmit:", error);
       callback();
     }
   }
@@ -365,16 +375,6 @@ export default class extends Controller {
     }
   }
 
-  handleBackButton(e) {
-    e.preventDefault();
-    history.pushState(null, null, location.href);
-
-    if (!this.isSubmitted && confirm('Bạn có chắc muốn rời khỏi trang này? Tiến trình làm bài sẽ được lưu lại.')) {
-      window.removeEventListener('popstate', this.handleBackButton);
-      this.saveState();
-      history.back();
-    }
-  }
 
   updatePauseButtonUI() {
     this.pauseBtnTarget.classList.add('hidden');

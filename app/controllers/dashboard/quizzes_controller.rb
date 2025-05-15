@@ -7,6 +7,7 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   before_action :check_quiz_availability, only: [:show]
   before_action :load_stats_data, only: [:index]
   before_action :authenticate_user!
+  before_action :set_no_cache_headers, only: [:show]
 
   def index
     @quizzes = @course.quizzes
@@ -66,6 +67,12 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   end
 
   private
+
+  def set_no_cache_headers
+    response.headers["Cache-Control"] = "no-cache, no-store, max-age=0, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "Fri, 01 Jan 1990 00:00:00 GMT"
+  end
 
   def set_course
     @course = Course.find(params[:course_id])
