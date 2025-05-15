@@ -20,8 +20,8 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
 
     if @quiz.is_exam? && QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).exists?
       latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
-      redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, latest_attempt),
-                  notice: 'Bạn đã hoàn thành bài thi này. Đây là kết quả của bạn.'
+      redirect_to dashboard_course_quiz_quiz_attempts_path(@course, @quiz, latest_attempt),
+                  notice: 'You have completed this test. Here are your results.'
       return
     end
 
@@ -31,15 +31,17 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
                          .order(created_at: :desc)
                          .first
 
-    if (params[:start] == 'true') && !@quiz_attempt
-      @quiz_attempt = @quiz.quiz_attempts.create!(
-        user: current_user,
-        start_time: Time.current,
-        device_info: request.user_agent,
-        ip_address: request.remote_ip,
-        score: 0,
-        time_spent: 0
-      )
+    if params[:start] == 'true'
+      unless @quiz_attempt
+        @quiz_attempt = @quiz.quiz_attempts.create!(
+          user: current_user,
+          start_time: Time.current,
+          device_info: request.user_agent,
+          ip_address: request.remote_ip,
+          score: 0,
+          time_spent: 0
+        )
+      end
     end
   end
 
@@ -92,20 +94,20 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   def check_if_exam_already_taken
     return unless @quiz.is_exam?
 
+
     if QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).exists?
-      latest_attempt = QuizAttempt.where(quiz: @quiz,
-                                         user: current_user).where.not(completed_at: nil).order(created_at: :desc).first
-      redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, latest_attempt),
-                  notice: 'Bạn đã hoàn thành bài thi này. Đây là kết quả của bạn.'
+      latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).order(created_at: :desc).first
+      redirect_to dashboard_course_quiz_quiz_attempts_path(@course, @quiz, latest_attempt),
+                  notice: 'You have completed this test. Here are your results.'
       return
     end
 
-    if !(params[:start] == 'true' || params[:force] == 'true') && QuizAttempt.where(quiz: @quiz, user: current_user,
-                                                                                    completed_at: nil).exists?
-      QuizAttempt.where(quiz: @quiz, user: current_user,
-                        completed_at: nil).order(created_at: :desc).first
-      redirect_to dashboard_course_quiz_path(@course, @quiz, start: true),
-                  notice: 'Bạn có bài thi đang làm dở. Vui lòng tiếp tục làm bài.'
+    unless params[:start] == 'true' || params[:force] == 'true'
+      if QuizAttempt.where(quiz: @quiz, user: current_user, completed_at: nil).exists?
+        incomplete_attempt = QuizAttempt.where(quiz: @quiz, user: current_user, completed_at: nil).order(created_at: :desc).first
+        redirect_to dashboard_course_quiz_path(@course, @quiz, start: true),
+                    notice: 'You have an exam in progress. Please continue working on it.'
+      end
     end
   end
 
