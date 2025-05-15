@@ -533,4 +533,30 @@ end
 
 puts '✅ Created course ratings!'
 
+puts 'Đang cập nhật dữ liệu phiên âm cho các uploads...'
+
+transcription_samples = [
+  "Hôm nay tôi sẽ hướng dẫn các bạn cách vẽ một bức tranh đơn giản để tặng crush. Đầu tiên, chúng ta cần chuẩn bị bút màu và giấy vẽ. Sau đó, hãy phác họa khung cảnh mà bạn muốn vẽ. Tôi sẽ vẽ một phong cảnh thiên nhiên với hoa và cây cối. Tiếp theo, hãy tô màu cho bức tranh bằng những gam màu tươi sáng để tạo sự sinh động. Cuối cùng, viết một lời nhắn nhỏ ở góc bức tranh để thể hiện tình cảm của bạn.",
+
+  "Một biệt đội phản anh hùng bất thường đã tụ họp lại để thực hiện sứ mệnh quan trọng. Nhóm này bao gồm những người có khả năng đặc biệt nhưng tính cách khá khác thường. Họ không hoàn hảo như các siêu anh hùng truyền thống, mỗi người đều có khuyết điểm và những vấn đề riêng. Tuy nhiên, chính điều này làm cho họ trở nên đặc biệt và gần gũi với khán giả hơn. Những câu chuyện về họ không chỉ là các pha hành động mãn nhãn mà còn chứa đựng nhiều bài học về tình bạn, sự hy sinh và lòng dũng cảm.",
+
+  "Đôi khi, chúng ta thường bị cuốn vào những tình huống khó xử mà không biết phải làm sao. Điều này có thể khiến ta cảm thấy mất tự tin và mất phương hướng. Tuy nhiên, thay vì tự trách mình, hãy nhớ rằng ai cũng có lúc gặp khó khăn và mắc sai lầm. Quan trọng là ta học được gì từ những trải nghiệm đó. Đừng quá khắt khe với bản thân và hãy cho mình cơ hội để trưởng thành từ những thất bại. Mỗi thử thách đều là cơ hội để ta mạnh mẽ hơn.",
+
+  "Mười, chín, tám, bảy, sáu, năm, bốn, ba, hai, một, không! Đếm ngược là một cách hiệu quả để tạo cảm giác hồi hộp và mong đợi. Khi chúng ta đếm ngược, não bộ tự động chuẩn bị cho một sự kiện sắp xảy ra, giúp tăng sự tập trung và sẵn sàng. Đây là kỹ thuật được sử dụng phổ biến trong nhiều lĩnh vực từ thể thao, giáo dục đến quản lý thời gian. Bạn có thể áp dụng phương pháp đếm ngược trong cuộc sống hàng ngày để bắt đầu một thói quen mới hoặc hoàn thành công việc hiệu quả hơn."
+]
+
+Upload.where(status: 'success').each_with_index do |upload, index|
+  sample_text = transcription_samples[index % transcription_samples.length]
+
+  modified_text = "#{sample_text} Video ID: #{upload.id.split('-').first}"
+
+  upload.update!(
+    transcription: modified_text,
+    transcription_status: 'completed'
+  )
+  print '.'
+end
+
+puts "\n✅ Đã cập nhật phiên âm cho #{Upload.where(transcription_status: 'completed').count} uploads."
+
 puts "\n🎉 Seed data completed successfully!"

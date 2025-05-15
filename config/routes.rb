@@ -46,13 +46,6 @@ Rails.application.routes.draw do
       resource :moderation, only: [:update]
     end
     resources :quizzes do
-      collection do
-        get 'course_chapters/:course_id', to: 'quizzes#course_chapters', as: :course_chapters
-        get 'chapter_lessons/:chapter_id', to: 'quizzes#chapter_lessons', as: :chapter_lessons
-        get 'lesson_videos/:lesson_id', to: 'quizzes#lesson_videos', as: :lesson_videos
-        get 'video_details/:video_id', to: 'quizzes#video_details', as: :video_details
-      end
-
       resources :quiz_attempts, only: [:index]
     end
     resources :questions

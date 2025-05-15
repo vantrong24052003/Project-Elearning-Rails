@@ -22,6 +22,23 @@ class Manage::QuizzesController < Manage::BaseController
 
   def new
     @quiz = Quiz.new
+
+     respond_to do |format|
+      format.html
+      format.json do
+        if params[:get_content_type] == 'course_chapters'
+          render json: get_course_chapters
+        elsif params[:get_content_type] == 'chapter_lessons'
+          render json: get_chapter_lessons
+        elsif params[:get_content_type] == 'lesson_videos'
+          render json: get_lesson_videos
+        elsif params[:get_content_type] == 'video_details'
+          render json: get_video_details
+        else
+          render json: { error: 'Invalid content type' }, status: :unprocessable_entity
+        end
+      end
+    end
   end
 
   def edit; end
@@ -81,6 +98,41 @@ class Manage::QuizzesController < Manage::BaseController
   end
 
   private
+
+  def get_course_chapters
+    course = Course.find(params[:course_id])
+    course.chapters.order(position: :asc).map { |chapter| { id: chapter.id, title: chapter.title } }
+  end
+
+  def get_chapter_lessons
+    chapter = Chapter.find(params[:chapter_id])
+    chapter.lessons.order(position: :asc).map { |lesson| { id: lesson.id, title: lesson.title } }
+  end
+
+  def get_lesson_videos
+    lesson = Lesson.find(params[:lesson_id])
+    lesson.videos.order(position: :asc).map { |video| { id: video.id, title: video.title } }
+  end
+
+  def get_video_details
+      video = Video.find_by(id: params[:video_id])
+      return if video.nil?
+
+      result = { id: video.id, title: video.title }
+
+      if video.upload.present?
+        upload = video.upload
+
+        transcription_value = upload.transcription
+        if transcription_value.present?
+          result[:transcription] = transcription_value
+        else
+          result[:transcription] = "Chưa có phiên âm cho video này."
+        end
+
+      end
+      result
+  end
 
   def set_quiz
     @quiz = Quiz.includes(questions: [:quiz_questions]).find(params[:id])

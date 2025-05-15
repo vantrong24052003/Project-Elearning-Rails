@@ -1,16 +1,233 @@
-
 import { Controller } from '@hotwired/stimulus'
+import { CourseContentApi } from '../../services/course_content_api'
 
 export default class extends Controller {
   static targets = [
     "form", "courseSelect", "loading", "questionsContainer", "questionTemplate", "questionsData",
     "controls", "analysis", "analysisLoading", "conceptCount", "coverageBar",
-    "coverageText", "suggestions", "videoSelect"
+    "coverageText", "suggestions", "videoSelect", "chapterSelect", "lessonSelect", "videoPreview", "videoTitle", "videoDetailLink"
   ]
 
   connect() {
+    console.log("CourseContentSelect controller connected")
     this.questions = []
     this.isGenerating = false
+    // Kiểm tra các target có tồn tại không
+    console.log("courseSelect target found:", this.hasCourseSelectTarget)
+    console.log("chapterSelect target found:", this.hasChapterSelectTarget)
+    console.log("lessonSelect target found:", this.hasLessonSelectTarget)
+    console.log("videoSelect target found:", this.hasVideoSelectTarget)
+  }
+
+  // Phương thức load các chương khi chọn khóa học
+  loadChapters() {
+    console.log("loadChapters called")
+    // Kiểm tra xem courseSelect có phải là selector select trong DOM không
+    console.log("courseSelect element:", this.courseSelectTarget)
+
+    // Trong trường hợp courseSelect là một phần tử khác, tìm select trong form của quiz
+    let courseId = this.courseSelectTarget.value
+    if (!courseId) {
+      const formElement = document.querySelector('form[data-manage--quiz-ai-generator-target="form"]')
+      if (formElement) {
+        const courseSelect = formElement.querySelector('select[name="quiz[course_id]"]')
+        if (courseSelect) {
+          courseId = courseSelect.value
+          console.log("Found courseId from form:", courseId)
+        }
+      }
+    }
+
+    if (!courseId) {
+      console.log("No courseId found")
+      this.resetSelect(this.chapterSelectTarget)
+      this.resetSelect(this.lessonSelectTarget)
+      this.resetSelect(this.videoSelectTarget)
+      this.hideVideoPreview()
+      return
+    }
+
+    console.log("Loading chapters for course:", courseId)
+    this.resetSelect(this.chapterSelectTarget, 'Đang tải...')
+    this.resetSelect(this.lessonSelectTarget)
+    this.resetSelect(this.videoSelectTarget)
+    this.hideVideoPreview()
+
+    CourseContentApi.getCourseChapters(courseId)
+      .then(chapters => {
+        console.log("Chapters loaded:", chapters)
+        this.populateSelect(this.chapterSelectTarget, chapters, 'Chọn chương')
+      })
+      .catch(error => {
+        console.error('Error loading chapters:', error)
+        this.resetSelect(this.chapterSelectTarget, 'Lỗi khi tải dữ liệu')
+      })
+  }
+
+  // Phương thức load các bài học khi chọn chương
+  loadLessons() {
+    const chapterId = this.chapterSelectTarget.value
+    if (!chapterId) {
+      this.resetSelect(this.lessonSelectTarget)
+      this.resetSelect(this.videoSelectTarget)
+      this.hideVideoPreview()
+      return
+    }
+
+    console.log("Loading lessons for chapter:", chapterId)
+    this.resetSelect(this.lessonSelectTarget, 'Đang tải...')
+    this.resetSelect(this.videoSelectTarget)
+    this.hideVideoPreview()
+
+    CourseContentApi.getChapterLessons(chapterId)
+      .then(lessons => {
+        console.log("Lessons loaded:", lessons)
+        this.populateSelect(this.lessonSelectTarget, lessons, 'Chọn bài học')
+      })
+      .catch(error => {
+        console.error('Error loading lessons:', error)
+        this.resetSelect(this.lessonSelectTarget, 'Lỗi khi tải dữ liệu')
+      })
+  }
+
+  // Phương thức load các video khi chọn bài học
+  loadVideos() {
+    const lessonId = this.lessonSelectTarget.value
+    if (!lessonId) {
+      this.resetSelect(this.videoSelectTarget)
+      this.hideVideoPreview()
+      return
+    }
+
+    console.log("Loading videos for lesson:", lessonId)
+    this.resetSelect(this.videoSelectTarget, 'Đang tải...')
+    this.hideVideoPreview()
+
+    CourseContentApi.getLessonVideos(lessonId)
+      .then(videos => {
+        console.log("Videos loaded:", videos)
+        this.populateSelect(this.videoSelectTarget, videos, 'Chọn video')
+      })
+      .catch(error => {
+        console.error('Error loading videos:', error)
+        this.resetSelect(this.videoSelectTarget, 'Lỗi khi tải dữ liệu')
+      })
+  }
+
+  showVideoPreview() {
+    const videoId = this.videoSelectTarget.value
+    if (!videoId) {
+      this.hideVideoPreview()
+      return
+    }
+
+    CourseContentApi.getVideoDetails(videoId)
+      .then(video => {
+        this.videoPreviewTarget.classList.remove('hidden')
+
+        if (this.hasVideoDetailLinkTarget) {
+          this.videoDetailLinkTarget.href = `/manage/videos/${videoId}`
+          this.videoDetailLinkTarget.addEventListener('click', (e) => {
+            if (!videoId) {
+              e.preventDefault()
+              this.showToast('Không thể xem chi tiết video này', 'error')
+            }
+          })
+        }
+      })
+      .catch(error => {
+        console.error('Error loading video details:', error)
+        this.hideVideoPreview()
+      })
+  }
+
+  resetSelect(selectElement, placeholderText = null) {
+    if (!selectElement) return
+
+    selectElement.innerHTML = ''
+    const placeholder = document.createElement('option')
+    placeholder.value = ''
+    placeholder.textContent = placeholderText || selectElement.getAttribute('data-placeholder') || 'Chọn một giá trị'
+    placeholder.selected = true
+    placeholder.disabled = true
+    selectElement.appendChild(placeholder)
+  }
+
+  populateSelect(selectElement, items, placeholderText) {
+    if (!selectElement) return
+
+    this.resetSelect(selectElement, placeholderText)
+
+    items.forEach(item => {
+      const option = document.createElement('option')
+      option.value = item.id
+      option.textContent = item.title || item.name
+      selectElement.appendChild(option)
+    })
+  }
+
+  hideVideoPreview() {
+    if (this.hasVideoPreviewTarget) {
+      this.videoPreviewTarget.classList.add('hidden')
+    }
+  }
+
+  getYoutubeVideoId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+    const match = url.match(regExp)
+    return (match && match[2].length === 11) ? match[2] : null
+  }
+
+  extractVideoContent(event) {
+    event.preventDefault()
+
+    const videoId = this.videoSelectTarget.value
+    if (!videoId) {
+      this.showToast('Vui lòng chọn video trước', 'error')
+      return
+    }
+
+    CourseContentApi.getVideoDetails(videoId)
+      .then(video => {
+        const userDescriptionField = document.querySelector('textarea[name="user_description"]')
+        if (userDescriptionField) {
+          const formattedContent = this.formatVideoContent(video)
+          userDescriptionField.value = formattedContent
+          this.showToast('Nội dung video đã được thêm vào mô tả')
+        }
+      })
+      .catch(error => {
+        console.error('Error extracting transcript from video:', error)
+        this.showToast('Không thể lấy nội dung từ video', 'error')
+      })
+  }
+
+  formatVideoContent(video) {
+    let content = `📚 Video: ${video.title || 'Không có tiêu đề'}\n\n`
+
+    if (video.transcription) {
+      content += `📝 Nội dung:\n${video.transcription}` 
+    } else {
+      content += '❗ Không có nội dung phiên âm sẵn cho video này. Vui lòng nhập mô tả thủ công.'
+    }
+
+    return content
+  }
+
+  showToast(message, type = 'success') {
+    const toast = document.createElement('div')
+    toast.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-lg ${
+      type === 'success' ? 'bg-green-500' : 'bg-red-500'
+    } text-white shadow-lg transform transition-transform duration-300 ease-in-out`
+    toast.textContent = message
+    document.body.appendChild(toast)
+
+    setTimeout(() => {
+      toast.classList.add('opacity-0')
+      setTimeout(() => {
+        document.body.removeChild(toast)
+      }, 300)
+    }, 3000)
   }
 
   generateQuestions(event) {
@@ -240,49 +457,5 @@ export default class extends Controller {
     this.questionsDataTarget.value = JSON.stringify(questionsData)
 
     form.submit()
-  }
-
-  extractVideoContent(event) {
-    event.preventDefault()
-
-    const videoId = this.videoSelectTarget.value
-    if (!videoId) {
-      return
-    }
-
-    fetch(`/manage/quizzes/video_details/${videoId}`)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Could not load video information')
-        }
-        return response.json()
-      })
-      .then(video => {
-        const userDescriptionField = document.querySelector('textarea[name="user_description"]')
-        if (userDescriptionField) {
-          const formattedContent = this.formatVideoContent(video)
-          userDescriptionField.value = formattedContent
-
-          this.showToast('Video content added to description')
-        }
-      })
-      .catch(error => {
-        console.error('Error extracting transcript from video:', error)
-        this.showToast('Could not get content from video', 'error')
-      })
-  }
-
-  formatVideoContent(video) {
-    let content = `📚 Video: ${video.title}\n\n`
-
-    if (video.transcript && video.transcript.trim()) {
-      content += `📝 Content:\n${video.transcript}`
-    } else if (video.processing_log && video.processing_log.trim()) {
-      content += `📝 Content:\n${video.processing_log}`
-    } else {
-      content += '❗ No transcript available for this video. Please enter description manually.'
-    }
-
-    return content
   }
 }

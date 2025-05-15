@@ -30,6 +30,7 @@ import toaster_controller from "./shared/toaster_controller"
 import QuizFlagController from "./dashboard/quiz_flag_controller"
 import QuizRedirectController from "./dashboard/quiz_redirect_controller"
 import QuizTimerController from "./dashboard/quiz_timer_controller"
+import course_content_select_controller from "./manage/course_content_select_controller"
 
 // home
 application.register("home--faq", faq_controller)
@@ -68,3 +69,4 @@ application.register("manage--upload-transcoding", UploadTranscodingController)
 application.register("manage--upload-form", ManageUploadFormController)
 application.register("manage--quiz-ai-generator", QuizAiGeneratorController)
 application.register("manage--overview", OverviewController)
+application.register("manage--course-content-select", course_content_select_controller)
