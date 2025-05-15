@@ -3,13 +3,42 @@
 class Dashboard::AttemptsController < Dashboard::DashboardController
   before_action :set_course
   before_action :set_quiz, only: [:create]
-  before_action :set_attempt, only: [:show]
-  before_action :check_ownership, only: [:show]
+  before_action :set_attempt, only: %i[show update destroy]
+  before_action :check_ownership, only: %i[show update]
   after_action :clear_session_data, only: [:create]
 
   def show
     @questions = @attempt.quiz.questions
     mark_quiz_as_submitted(@attempt.quiz_id)
+  end
+
+  def update
+    answers = params[:answers] || {}
+    time_spent = params[:time_spent].to_i
+    total_questions = @attempt.quiz.questions.count
+    correct_count = 0
+    formatted_answers = {}
+
+    answers.each do |question_id, answer|
+      formatted_answers[question_id.to_s] = answer.to_i
+      question = Question.find_by(id: question_id)
+      correct_count += 1 if question && answer.to_i == question.correct_option
+    end
+
+    score = total_questions.positive? ? (correct_count.to_f / total_questions * 100).round : 0
+
+    if @attempt.update(
+      score: score,
+      time_spent: time_spent,
+      answers: formatted_answers,
+      completed_at: Time.current
+    )
+      redirect_to dashboard_course_quiz_attempt_path(@course, @attempt.quiz, @attempt),
+                  notice: 'Your quiz has been updated successfully.'
+    else
+      redirect_to dashboard_course_quiz_path(@course, @attempt.quiz),
+                  alert: 'There was an error updating your quiz. Please try again.'
+    end
   end
 
   def create
@@ -32,7 +61,9 @@ class Dashboard::AttemptsController < Dashboard::DashboardController
       user: current_user,
       score: score,
       time_spent: time_spent,
-      answers: formatted_answers
+      answers: formatted_answers,
+      completed_at: Time.current,
+      start_time: Time.current
     )
 
     if @attempt.save

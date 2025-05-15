@@ -24,6 +24,7 @@ import ManageUploadFormController from "./manage/upload_form_controller"
 import VideoPlayerController from "./shared/video_player_controller"
 import QuizAiGeneratorController from "./manage/quiz_ai_generator_controller"
 import OverviewController from "./manage/overview_controller"
+import toaster_controller from "./shared/toaster_controller"
 import QuizFlagController from "./dashboard/quiz_flag_controller"
 import QuizRedirectController from "./dashboard/quiz_redirect_controller"
 import QuizTimerController from "./dashboard/quiz_timer_controller"
@@ -42,6 +43,7 @@ application.register("shared--countdown", countdown_controller)
 application.register("shared--drawer", drawer_controller)
 application.register("shared--pagination", PaginationController)
 application.register("shared--video-player", VideoPlayerController)
+application.register("shared--toaster", toaster_controller)
 
 // dashboard
 application.register("dashboard--course-filter", course_filter_controller)
