@@ -37,10 +37,10 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
       end
 
       @quiz_attempt.log_action('start_quiz', {
-        start_time: @quiz_attempt.start_time,
-        client_ip: params[:client_ip_address].presence || request.remote_ip,
-        device_info: request.user_agent
-      })
+                                 start_time: @quiz_attempt.start_time,
+                                 client_ip: params[:client_ip_address].presence || request.remote_ip,
+                                 device_info: request.user_agent
+                               })
     end
 
     if params[:answers].present?
@@ -61,11 +61,11 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
 
       if @quiz_attempt.save
         @quiz_attempt.log_action('submit_quiz', {
-          score: @quiz_attempt.score,
-          time_spent: @quiz_attempt.time_spent,
-          completed_at: @quiz_attempt.completed_at,
-          client_ip: params[:client_ip_address].presence || request.remote_ip
-        })
+                                   score: @quiz_attempt.score,
+                                   time_spent: @quiz_attempt.time_spent,
+                                   completed_at: @quiz_attempt.completed_at,
+                                   client_ip: params[:client_ip_address].presence || request.remote_ip
+                                 })
 
         redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                     notice: 'Bài làm đã được nộp thành công.'
@@ -99,16 +99,17 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
         completed_at: Time.current
       )
         @quiz_attempt.log_action('update_quiz', {
-          score: score,
-          time_spent: time_spent,
-          completed_at: Time.current,
-          client_ip: params[:client_ip_address].presence || request.remote_ip
-        })
+                                   score: score,
+                                   time_spent: time_spent,
+                                   completed_at: Time.current,
+                                   client_ip: params[:client_ip_address].presence || request.remote_ip
+                                 })
 
         redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                     notice: 'The assignment has been updated successfully.'
       else
-        redirect_to dashboard_course_quiz_path(@course, @quiz), alert: 'An error occurred while updating the assignment.'
+        redirect_to dashboard_course_quiz_path(@course, @quiz),
+                    alert: 'An error occurred while updating the assignment.'
       end
     elsif params[:time_spent].present?
       if @quiz_attempt.update(

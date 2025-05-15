@@ -42,10 +42,10 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
       )
 
       @quiz_attempt.log_action('start_quiz', {
-        start_time: @quiz_attempt.start_time,
-        client_ip: client_ip,
-        device_info: request.user_agent
-      })
+                                 start_time: @quiz_attempt.start_time,
+                                 client_ip: client_ip,
+                                 device_info: request.user_agent
+                               })
     end
   end
 

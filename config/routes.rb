@@ -47,7 +47,7 @@ Rails.application.routes.draw do
         get 'lesson_videos/:lesson_id', to: 'quizzes#lesson_videos', as: :lesson_videos
         get 'video_details/:video_id', to: 'quizzes#video_details', as: :video_details
       end
-      
+
       resources :quiz_attempts, only: [:index]
     end
     resources :questions

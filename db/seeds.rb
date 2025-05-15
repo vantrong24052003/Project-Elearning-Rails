@@ -180,7 +180,7 @@ course_descriptions = [
 
 categories = [category1, category2, category3, category4]
 languages = %w[English Vietnamese Japanese]
-prices = [299000, 499000, 999000, 1499000, 1999000]
+prices = [299_000, 499_000, 999_000, 1_499_000, 1_999_000]
 
 100.times do |i|
   title_index = rand(0..course_titles.length - 1)

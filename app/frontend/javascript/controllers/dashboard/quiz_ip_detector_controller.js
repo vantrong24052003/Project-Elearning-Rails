@@ -13,7 +13,6 @@ export default class extends Controller {
   connect() {
     console.log("Quiz IP Detector connected");
 
-    // Lấy IP từ URL nếu có
     const urlParams = new URLSearchParams(window.location.search);
     const ipAddress = urlParams.get('client_ip');
 
@@ -34,14 +33,12 @@ export default class extends Controller {
       const ipAddress = data.ip;
       console.log("Đã lấy được IP:", ipAddress);
 
-      // Thêm IP vào URL
       const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.set('client_ip', ipAddress);
       window.location.href = currentUrl.toString();
     } catch (error) {
       console.error("Lỗi khi lấy IP:", error);
 
-      // Nếu không lấy được IP, vẫn thêm tham số client_ip=unknown vào URL
       const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.set('client_ip', 'unknown');
       window.location.href = currentUrl.toString();

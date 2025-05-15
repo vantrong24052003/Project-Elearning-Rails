@@ -135,7 +135,6 @@ export default class extends Controller {
       }, 30000);
     }
 
-    // Đăng ký trực tiếp xử lý cho sự kiện PrintScreen nếu trình duyệt hỗ trợ
     if ('onbeforeprint' in window) {
       window.addEventListener('beforeprint', () => {
         this.screenshotCount++
