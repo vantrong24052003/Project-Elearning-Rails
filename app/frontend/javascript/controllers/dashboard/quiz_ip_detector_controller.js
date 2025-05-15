@@ -11,40 +11,24 @@ export default class extends Controller {
   }
 
   connect() {
-    console.log("Quiz IP Detector connected");
-
-    // Lấy IP từ URL nếu có
-    const urlParams = new URLSearchParams(window.location.search);
-    const ipAddress = urlParams.get('client_ip');
-
     if (ipAddress && this.attemptIdValue) {
-      console.log("Đã có IP và attempt_id, log IP vào attempt");
+      const ipAddress = this.detectIp();
       this.logIpInfo(ipAddress);
     } else if (this.startValue && !this.hasIpValue) {
-      console.log("Bắt đầu lấy IP...");
       this.detectIp();
     }
   }
 
   async detectIp() {
     try {
-      console.log("Đang gọi API lấy IP...");
-      const response = await fetch('https://api.ipify.org/?format=json');
-      const data = await response.json();
-      const ipAddress = data.ip;
-      console.log("Đã lấy được IP:", ipAddress);
+      const response  = QuizApi.getAttemptInfo()
+      const data = await response.json()
+      console.log("IP Address:", data.ip);
 
-      // Thêm IP vào URL
-      const currentUrl = new URL(window.location.href);
-      currentUrl.searchParams.set('client_ip', ipAddress);
-      window.location.href = currentUrl.toString();
+      return data.ip
     } catch (error) {
       console.error("Lỗi khi lấy IP:", error);
-
-      // Nếu không lấy được IP, vẫn thêm tham số client_ip=unknown vào URL
-      const currentUrl = new URL(window.location.href);
-      currentUrl.searchParams.set('client_ip', 'unknown');
-      window.location.href = currentUrl.toString();
+      return '::1'
     }
   }
 
@@ -55,7 +39,6 @@ export default class extends Controller {
     }
 
     try {
-      console.log(`Đang log IP ${ipAddress} vào log_actions cho attempt_id ${this.attemptIdValue}`);
       await QuizApi.logAction(
         this.courseIdValue,
         this.quizIdValue,
@@ -64,9 +47,6 @@ export default class extends Controller {
         {
           client_ip: ipAddress,
           device_info: navigator.userAgent,
-          details: {
-            timestamp: new Date().toISOString()
-          }
         }
       );
       console.log("Đã log IP thành công!");

@@ -12,20 +12,36 @@ export default class extends Controller {
   }
 
   connect() {
-    const quizIdMatch = location.pathname.match(/\/quizzes\/([^\/]+)/);
-    this.quizId = quizIdMatch ? quizIdMatch[1] : null;
-    this.storageKey = this.quizId ? `quiz_flag_${this.quizId}` : null;
-
     this.flaggedQuestions = new Set();
-
-    this.loadFlaggedState();
-
+    this.answeredQuestions = new Set();
+    this.checkAnsweredQuestions();
     this.updateNavigation();
     this.updateFlagButton();
+    document.addEventListener('change', this.handleAnswerChange.bind(this));
   }
 
   disconnect() {
-    this.saveFlaggedState();
+    document.removeEventListener('change', this.handleAnswerChange.bind(this));
+  }
+
+  handleAnswerChange(event) {
+    if (event.target.type === 'radio' && event.target.name.startsWith('answers')) {
+      const currentQuestion = this.getCurrentQuestion();
+      const questionId = currentQuestion.dataset.questionId;
+      this.answeredQuestions.add(questionId);
+      this.updateNavigation();
+    }
+  }
+
+  checkAnsweredQuestions() {
+    document.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+      if (input.name.startsWith('answers')) {
+        const match = input.name.match(/answers\[(\d+)\]/);
+        if (match && match[1]) {
+          this.answeredQuestions.add(match[1]);
+        }
+      }
+    });
   }
 
   flagCurrentQuestion() {
@@ -35,17 +51,16 @@ export default class extends Controller {
     if (this.flaggedQuestions.has(questionId)) {
       this.flaggedQuestions.delete(questionId);
       this.flagBtnTarget.classList.remove('bg-yellow-500', 'text-white');
-      this.flagBtnTarget.classList.add('bg-gray-200', 'text-gray-700');
+      this.flagBtnTarget.classList.add('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-white');
       this.flagBtnTarget.querySelector('span').textContent = 'Đánh dấu';
     } else {
       this.flaggedQuestions.add(questionId);
-      this.flagBtnTarget.classList.remove('bg-gray-200', 'text-gray-700');
+      this.flagBtnTarget.classList.remove('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-white');
       this.flagBtnTarget.classList.add('bg-yellow-500', 'text-white');
       this.flagBtnTarget.querySelector('span').textContent = 'Bỏ đánh dấu';
     }
 
     this.updateNavigation();
-    this.saveFlaggedState();
   }
 
   goToQuestion(event) {
@@ -83,11 +98,7 @@ export default class extends Controller {
     this.currentQuestionDisplayTarget.textContent = (index + 1);
 
     this.updateFlagButton();
-
     this.updateNavigation();
-
-    this.saveFlaggedState();
-
     this.dispatch('questionChanged', { detail: { index: index } });
   }
 
@@ -100,80 +111,35 @@ export default class extends Controller {
     const questionId = currentQuestion.dataset.questionId;
 
     if (this.flaggedQuestions.has(questionId)) {
-      this.flagBtnTarget.classList.remove('bg-gray-200', 'text-gray-700');
+      this.flagBtnTarget.classList.remove('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-white');
       this.flagBtnTarget.classList.add('bg-yellow-500', 'text-white');
       this.flagBtnTarget.querySelector('span').textContent = 'Bỏ đánh dấu';
     } else {
       this.flagBtnTarget.classList.remove('bg-yellow-500', 'text-white');
-      this.flagBtnTarget.classList.add('bg-gray-200', 'text-gray-700');
+      this.flagBtnTarget.classList.add('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-white');
       this.flagBtnTarget.querySelector('span').textContent = 'Đánh dấu';
     }
   }
 
   updateNavigation() {
-    this.questionNavItemTargets.forEach((item, index) => {
+    this.questionNavItemTargets.forEach((item) => {
       const questionId = item.dataset.questionId;
 
-      const isAnswered = item.classList.contains('bg-green-500');
+      item.classList.remove('bg-gray-500', 'bg-green-500', 'bg-yellow-500');
 
-      const isFlagged = this.flaggedQuestions.has(questionId);
-
-      if (isFlagged) {
-        item.classList.remove('bg-gray-500', 'bg-green-500');
+      if (this.flaggedQuestions.has(questionId)) {
         item.classList.add('bg-yellow-500');
-      } else if (!isAnswered) {
-        item.classList.remove('bg-yellow-500', 'bg-green-500');
+      } else if (this.answeredQuestions.has(questionId)) {
+        item.classList.add('bg-green-500');
+      } else {
         item.classList.add('bg-gray-500');
       }
 
-      if (index === this.currentQuestionValue) {
+      if (parseInt(item.dataset.index) === this.currentQuestionValue) {
         item.classList.add('ring-2', 'ring-white');
       } else {
         item.classList.remove('ring-2', 'ring-white');
       }
     });
-  }
-
-  saveFlaggedState() {
-    if (!this.storageKey) return;
-
-    try {
-      const state = {
-        currentQuestion: this.currentQuestionValue,
-        flaggedQuestions: Array.from(this.flaggedQuestions),
-        timestamp: new Date().getTime()
-      };
-
-      localStorage.setItem(this.storageKey, JSON.stringify(state));
-    } catch (error) {
-      console.error('Lỗi khi lưu trạng thái đánh dấu:', error);
-    }
-  }
-
-  loadFlaggedState() {
-    if (!this.storageKey) return;
-
-    try {
-      const savedData = localStorage.getItem(this.storageKey);
-      if (!savedData) return;
-
-      const state = JSON.parse(savedData);
-
-      if (state.currentQuestion !== undefined) {
-        this.currentQuestionValue = state.currentQuestion;
-      }
-
-      if (state.flaggedQuestions && Array.isArray(state.flaggedQuestions)) {
-        this.flaggedQuestions = new Set(state.flaggedQuestions);
-      }
-    } catch (error) {
-      console.error('Lỗi khi tải trạng thái đánh dấu:', error);
-    }
-  }
-
-  clearFlaggedState() {
-    if (this.storageKey) {
-      localStorage.removeItem(this.storageKey);
-    }
   }
 }

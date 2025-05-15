@@ -65,9 +65,14 @@ export class QuizApi {
 
   static async saveAttemptState(courseId, quizId, attemptId, data) {
     return ApiService.put(
-      `/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}`,
+      `/dashboard/courses/${courseId}/quiz_statuses/${attemptId}`,
       {
-        quiz_attempt: data
+        quiz_id: quizId,
+        state_data: {
+          current_question: data.current_question,
+          elapsed_time: data.elapsed_time,
+          answers: data.answers
+        }
       }
     );
   }
@@ -78,5 +83,9 @@ export class QuizApi {
 
   static async getAttemptState(courseId, quizId, attemptId) {
     return ApiService.get(`/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}`);
+  }
+
+  static async getIpAddress() {
+    return  ApiService.get('https://api.ipify.org?format=json')
   }
 }

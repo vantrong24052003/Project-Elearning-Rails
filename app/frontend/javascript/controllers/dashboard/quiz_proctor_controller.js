@@ -108,41 +108,20 @@ export default class extends Controller {
       window.addEventListener("resize", this.eventHandlers['window:resize']);
 
       window.addEventListener("beforeprint", () => {
-        console.log("Print attempt detected");
         this.screenshotCount++;
         this.logAction("screenshot");
-        this.showCheatingAlert("In màn hình", "không được phép khi làm bài thi");
+        this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi")
       });
 
       this.devtoolsCheckInterval = setInterval(() => {
         this.checkDevTools();
       }, 1000);
 
-      const style = document.createElement('style');
-      style.id = 'quiz-proctor-style';
-      style.innerHTML = `
-        .question-container * {
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-        }
-      `;
-      document.head.appendChild(style);
-
       this.syncInterval = setInterval(() => {
         this.syncBehaviorCounts();
       }, 30000);
     }
 
-    // Đăng ký trực tiếp xử lý cho sự kiện PrintScreen nếu trình duyệt hỗ trợ
-    if ('onbeforeprint' in window) {
-      window.addEventListener('beforeprint', () => {
-        this.screenshotCount++
-        this.logAction("screenshot")
-        this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi")
-      })
-    }
   }
 
   setupGlobalScreenshotDetection() {
@@ -162,7 +141,7 @@ export default class extends Controller {
                 this.lastScreenshotTime = now;
                 this.screenshotCount++;
                 this.logAction("screenshot");
-                this.showCheatingAlert("Chụp màn hình phát hiện qua clipboard", "không được phép khi làm bài thi");
+                this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi")
               }
             }
           })
@@ -424,25 +403,22 @@ export default class extends Controller {
     Toast.show(`<span class="font-medium">${action}:</span> ${message}`, type, duration);
   }
 
-  async logAction(actionType, details = {}) {
+  async logAction(actionType) {
     const courseId = this.courseIdValue
     const quizId = this.quizIdValue
     const attemptId = this.attemptIdValue
 
     try {
       let clientIp = ''
-      try {
-        const ipResponse = await fetch('https://api.ipify.org/?format=json')
-        const ipData = await ipResponse.json()
-        clientIp = ipData.ip
-      } catch (error) {
-        console.error("Lỗi khi lấy IP từ ipify:", error)
-      }
+        try {
+          const response = QuizApi.getIpAddress()
+          const data = await response.json();
+          clientIp = data.ip
+        } catch (error) {
+          console.error("Lỗi khi lấy IP từ ipify:", error)
+        }
 
-      QuizApi.logAction(courseId, quizId, attemptId, actionType, {
-        client_ip: clientIp,
-        details: details
-      })
+      QuizApi.logAction(courseId, quizId, attemptId, actionType)
     } catch (error) {
       console.error("Lỗi khi ghi log:", error)
     }

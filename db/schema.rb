@@ -130,7 +130,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_13_084528) do
     t.integer "devtools_open_count", default: 0
     t.integer "other_unusual_actions", default: 0
     t.integer "device_count", default: 1
-    t.boolean "is_notified", default: false
     t.datetime "notified_at"
     t.jsonb "log_actions", default: [], null: false
     t.index ["quiz_id"], name: "index_quiz_attempts_on_quiz_id"

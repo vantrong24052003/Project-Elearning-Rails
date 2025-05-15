@@ -15,15 +15,18 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
   def update
     action_type = params[:action_type]
     behavior_counts = params[:behavior_counts]
+    state_data = params[:state_data]
 
     if action_type.present?
-      log_cheating_behavior
-      render json: { success: true }
+      log_cheating_behavior(action_type)
+      head :no_content
     elsif behavior_counts.present?
-      sync_behaviors
-      render json: { success: true, updated: true }
+      update_behaviors(behavior_counts)
+      head :no_content
+    elsif state_data.present?
+      save_attempt_state(state_data)
     else
-      render json: { error: 'Không có dữ liệu' }, status: :unprocessable_entity
+      render json: { error: 'No data' }, status: :unprocessable_entity
     end
   end
 
@@ -36,20 +39,33 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
   def set_quiz_attempt
     quiz_id = params[:quiz_id]
     attempt_id = params[:id]
-    @quiz = @course.quizzes.find(quiz_id)
+    @quiz = @course.quizzes.find(quiz_id) if quiz_id.present?
     @quiz_attempt = QuizAttempt.find(attempt_id)
   end
 
-  def log_cheating_behavior
-    action_type = params[:action_type]
+  def save_attempt_state(state_data)
+    return unless @quiz_attempt && current_user == @quiz_attempt.user
 
-    # Ghi log chi tiết vào log_actions
-    @quiz_attempt.log_action(action_type, {
-      client_ip: request.remote_ip,
-      details: params[:details]
-    })
+    if state_data[:current_question].present? || state_data[:elapsed_time].present? || state_data[:answers].present?
+      @quiz_attempt.update(time_spent: state_data[:elapsed_time]) if state_data[:elapsed_time].present?
 
-    # Cập nhật counter cho loại hành vi
+      @quiz_attempt.log_actions = [] if @quiz_attempt.log_actions.nil?
+      @quiz_attempt.log_actions << {
+        timestamp: Time.current.iso8601,
+        action_type: 'save_state',
+        current_question: state_data[:current_question],
+        answers: state_data[:answers]
+      }
+      @quiz_attempt.save
+
+      render json: { success: true, message: 'Đã lưu trạng thái bài làm' }, status: :ok
+    else
+      render json: { success: false, message: 'Dữ liệu không hợp lệ' }, status: :unprocessable_entity
+    end
+  end
+
+  def log_cheating_behavior(action_type = nil)
+    return unless @quiz_attempt.quiz.is_exam?
     case action_type
     when 'tab_switch', 'window_blur', 'alt_tab'
       @quiz_attempt.increment!(:tab_switch_count)
@@ -66,39 +82,36 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
     end
   end
 
-  def sync_behaviors
-    counts = params[:behavior_counts]
-
-    if counts[:tab_switch_count].present? && counts[:tab_switch_count].to_i > @quiz_attempt.tab_switch_count.to_i
-      @quiz_attempt.update(tab_switch_count: counts[:tab_switch_count])
+  def update_behaviors(behavior_counts)
+    return unless @quiz_attempt.quiz.is_exam?
+    if behavior_counts[:tab_switch_count].present? && behavior_counts[:tab_switch_count].to_i > @quiz_attempt.tab_switch_count.to_i
+      @quiz_attempt.update(tab_switch_count: behavior_counts[:tab_switch_count])
     end
 
-    if counts[:copy_paste_count].present? && counts[:copy_paste_count].to_i > @quiz_attempt.copy_paste_count.to_i
-      @quiz_attempt.update(copy_paste_count: counts[:copy_paste_count])
+    if behavior_counts[:copy_paste_count].present? && behavior_counts[:copy_paste_count].to_i > @quiz_attempt.copy_paste_count.to_i
+      @quiz_attempt.update(copy_paste_count: behavior_counts[:copy_paste_count])
     end
 
-    if counts[:screenshot_count].present? && counts[:screenshot_count].to_i > @quiz_attempt.screenshot_count.to_i
-      @quiz_attempt.update(screenshot_count: counts[:screenshot_count])
+    if behavior_counts[:screenshot_count].present? && behavior_counts[:screenshot_count].to_i > @quiz_attempt.screenshot_count.to_i
+      @quiz_attempt.update(screenshot_count: behavior_counts[:screenshot_count])
     end
 
-    if counts[:right_click_count].present? && counts[:right_click_count].to_i > @quiz_attempt.right_click_count.to_i
-      @quiz_attempt.update(right_click_count: counts[:right_click_count])
+    if behavior_counts[:right_click_count].present? && behavior_counts[:right_click_count].to_i > @quiz_attempt.right_click_count.to_i
+      @quiz_attempt.update(right_click_count: behavior_counts[:right_click_count])
     end
 
-    if counts[:devtools_open_count].present? && counts[:devtools_open_count].to_i > @quiz_attempt.devtools_open_count.to_i
-      @quiz_attempt.update(devtools_open_count: counts[:devtools_open_count])
+    if behavior_counts[:devtools_open_count].present? && behavior_counts[:devtools_open_count].to_i > @quiz_attempt.devtools_open_count.to_i
+      @quiz_attempt.update(devtools_open_count: behavior_counts[:devtools_open_count])
     end
 
-    if counts[:other_unusual_actions].present? && counts[:other_unusual_actions].to_i > @quiz_attempt.other_unusual_actions.to_i
-      @quiz_attempt.update(other_unusual_actions: counts[:other_unusual_actions])
+    if behavior_counts[:other_unusual_actions].present? && behavior_counts[:other_unusual_actions].to_i > @quiz_attempt.other_unusual_actions.to_i
+      @quiz_attempt.update(other_unusual_actions: behavior_counts[:other_unusual_actions])
     end
 
     check_cheating_behavior
   end
 
   def check_cheating_behavior
-    return unless @quiz_attempt.quiz.is_exam?
-
     suspicious_behavior = false
     suspicious_behavior = true if @quiz_attempt.tab_switch_count.to_i >= 5
     suspicious_behavior = true if @quiz_attempt.copy_paste_count.to_i >= 3
@@ -107,13 +120,10 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
     suspicious_behavior = true if @quiz_attempt.devtools_open_count.to_i >= 2
     suspicious_behavior = true if @quiz_attempt.other_unusual_actions.to_i >= 3
 
-    @quiz_attempt.update(suspicious_behavior: suspicious_behavior) if @quiz_attempt.suspicious_behavior != suspicious_behavior
+    check_and_notify_cheating if suspicious_behavior
   end
 
   def check_and_notify_cheating
-    return unless @quiz_attempt.quiz.is_exam?
-    return if @quiz_attempt.is_notified
-    return unless @quiz_attempt.suspicious_behavior
     return unless @quiz_attempt.completed_at.present?
 
     CourseMailer.cheating_notification(
@@ -121,6 +131,6 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
       @quiz_attempt
     ).deliver_later
 
-    @quiz_attempt.update(is_notified: true, notified_at: Time.current)
+    @quiz_attempt.update(notified_at: Time.current)
   end
 end

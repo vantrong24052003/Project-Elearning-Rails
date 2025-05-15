@@ -180,7 +180,7 @@ course_descriptions = [
 
 categories = [category1, category2, category3, category4]
 languages = %w[English Vietnamese Japanese]
-prices = [299000, 499000, 999000, 1499000, 1999000]
+prices = [299_000, 499_000, 999_000, 1_499_000, 1_999_000]
 
 100.times do |i|
   title_index = rand(0..course_titles.length - 1)
@@ -409,7 +409,9 @@ def create_practice_quiz_for_course(course, category_name)
     title: title,
     is_exam: false,
     time_limit: [10, 15, 20, 25, 30].sample,
-    course: course
+    course: course,
+    start_time: Time.current,
+    end_time: Time.current + rand(1..3).days
   )
 
   rand(3..7).times do |j|
@@ -439,7 +441,9 @@ def create_exam_for_course(course, category_name)
     title: "Bài thi cuối khóa - #{course.title.truncate(30)}",
     is_exam: true,
     time_limit: [30, 45, 60].sample,
-    course: course
+    course: course,
+    start_time: Time.current,
+    end_time: Time.current + rand(1..3).days
   )
 
   exam_templates = EXAM_QUESTIONS[category_name] || EXAM_QUESTIONS['Programming']
