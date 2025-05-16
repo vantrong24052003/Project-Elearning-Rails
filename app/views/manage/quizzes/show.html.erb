@@ -1,4 +1,4 @@
-<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8" data-controller="manage--course-content-select">
   <div class="flex flex-col gap-4">
     <div class="flex items-center gap-3 mb-4">
       <%= link_to manage_quizzes_path, class: "flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white" do %>
@@ -32,7 +32,7 @@
               </div>
 
               <div class="flex items-center gap-2">
-                <button type="button" id="edit-mode-toggle" class="btn btn-primary btn-sm">
+                <button type="button" id="edit-mode-toggle" class="btn btn-primary btn-sm" data-action="click->manage--course-content-select#toggleEditMode">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                   </svg>
@@ -67,18 +67,19 @@
 
           <div class="p-6">
             <% if @quiz.questions.any? %>
-              <div class="space-y-8">
-                <form id="update-questions-form" action="<%= manage_quiz_path(@quiz) %>" method="post" class="hidden">
+              <div class="space-y-8" data-manage--course-content-select-target="questionsContainer">
+                <form id="update-questions-form" action="<%= manage_quiz_path(@quiz) %>" method="post" class="hidden" data-manage--course-content-select-target="form">
                   <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
                   <input type="hidden" name="_method" value="patch">
                   <input type="hidden" name="update_questions" value="true">
-                  <div id="questions-data-container"></div>
+                  <input type="hidden" name="questions_data" id="questions_data" data-manage--course-content-select-target="questionsData">
+                  <input type="hidden" name="delete_question_id" id="delete_question_id">
                 </form>
 
                 <% @quiz.questions.each_with_index do |question, index| %>
-                  <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden question-item" data-question-id="<%= question.id %>">
+                  <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden question-item" data-question-id="<%= question.id %>" data-index="<%= index %>">
                     <div class="bg-gray-50 dark:bg-gray-800 px-4 py-3 flex justify-between items-center">
-                      <h3 class="font-medium text-gray-800 dark:text-white">Câu hỏi <%= index + 1 %></h3>
+                      <h3 class="font-medium text-gray-800 dark:text-white question-number">Câu hỏi <%= index + 1 %></h3>
                       <div class="flex items-center gap-2">
                         <select class="question-difficulty select select-sm select-bordered hidden edit-only" data-default="<%= question.difficulty %>">
                           <option value="easy" <%= question.difficulty == 'easy' ? 'selected' : '' %>>Dễ</option>
@@ -98,7 +99,7 @@
                           <%= question.difficulty.capitalize %>
                         </span>
 
-                        <button type="button" class="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 delete-question hidden edit-only" data-question-id="<%= question.id %>">
+                        <button type="button" class="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 delete-question hidden edit-only" data-action="click->manage--course-content-select#deleteQuestion" data-question-id="<%= question.id %>">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 6h18"></path>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -132,9 +133,9 @@
                             </div>
 
                             <div class="flex-1">
-                              <textarea class="option-text w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hidden edit-only" rows="1" data-default="<%= option %>"><%= option %></textarea>
+                              <textarea class="option-text w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hidden edit-only" rows="1" data-default="<%= option[1] %>"><%= option[1] %></textarea>
                               <div class="text-gray-700 dark:text-gray-300 <%= question.correct_option == option_idx ? 'font-medium text-green-600 dark:text-green-400' : '' %> view-only">
-                                <%= option %>
+                                <%= option[1] %>
                               </div>
                             </div>
                           </div>
@@ -153,6 +154,19 @@
                     </div>
                   </div>
                 <% end %>
+              </div>
+
+              <div class="hidden controls" data-manage--course-content-select-target="controls">
+                <div class="flex justify-end mt-6">
+                  <button type="button" class="btn btn-primary" data-action="click->manage--course-content-select#saveQuiz">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                      <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                      <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    Lưu thay đổi
+                  </button>
+                </div>
               </div>
             <% else %>
               <div class="text-center py-8">
@@ -223,142 +237,10 @@
                 <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Số lượt làm bài</h4>
                 <p class="text-gray-900 dark:text-white"><%= @quiz.quiz_attempts.count %> lượt</p>
               </div>
-
-              <div>
-                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Điểm trung bình</h4>
-                <% avg_score = @quiz.quiz_attempts.average(:score)&.round(2) || 0 %>
-                <div class="flex items-center">
-                  <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                    <div class="bg-blue-600 h-2.5 rounded-full dark:bg-blue-500" style="width: <%= [avg_score, 100].min %>%"></div>
-                  </div>
-                  <span class="text-gray-900 dark:text-white ml-2"><%= avg_score %>%</span>
-                </div>
-              </div>
             </div>
           </div>
-
-          <!-- Phân tích nội dung -->
-          <% if @analysis.present? %>
-          <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Phân tích nội dung</h3>
-
-            <div class="space-y-4">
-              <div>
-                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Số lượng khái niệm chính</h4>
-                <p class="text-gray-900 dark:text-white"><%= @analysis[:concept_count] || 'N/A' %></p>
-              </div>
-
-              <div>
-                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Mức độ bao phủ nội dung</h4>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                  <div class="bg-blue-600 h-2.5 rounded-full dark:bg-blue-500" style="width: <%= @analysis[:coverage] || 0 %>%"></div>
-                </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= @analysis[:coverage] || 0 %>%</p>
-              </div>
-
-              <% if @analysis[:suggestions].present? %>
-              <div>
-                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Đề xuất cải thiện</h4>
-                <ul class="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                  <% @analysis[:suggestions].each do |suggestion| %>
-                    <li><%= suggestion %></li>
-                  <% end %>
-                </ul>
-              </div>
-              <% end %>
-            </div>
-          </div>
-          <% end %>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const editModeToggle = document.getElementById('edit-mode-toggle');
-    const viewOnlyElements = document.querySelectorAll('.view-only');
-    const editOnlyElements = document.querySelectorAll('.edit-only');
-    const editText = document.querySelector('.edit-text');
-    const saveText = document.querySelector('.save-text');
-    const updateForm = document.getElementById('update-questions-form');
-    const questionsDataContainer = document.getElementById('questions-data-container');
-
-    let editMode = false;
-
-    editModeToggle.addEventListener('click', function() {
-      editMode = !editMode;
-
-      if (editMode) {
-        // Switch to edit mode
-        viewOnlyElements.forEach(el => el.classList.add('hidden'));
-        editOnlyElements.forEach(el => el.classList.remove('hidden'));
-        editText.classList.add('hidden');
-        saveText.classList.remove('hidden');
-        editModeToggle.classList.remove('btn-primary');
-        editModeToggle.classList.add('btn-success');
-      } else {
-        // Save changes
-        const questionsData = [];
-        document.querySelectorAll('.question-item').forEach((item) => {
-          const questionId = item.dataset.questionId;
-          const content = item.querySelector('.question-content').value;
-          const explanation = item.querySelector('.explanation')?.value || '';
-          const difficulty = item.querySelector('.question-difficulty').value;
-
-          const options = {};
-          const optionElements = item.querySelectorAll('.option-text');
-          optionElements.forEach((el, idx) => {
-            options[idx.toString()] = el.value;
-          });
-
-          let correctOption = 0;
-          const radioButtons = item.querySelectorAll('.option-radio');
-          radioButtons.forEach((radio, radioIndex) => {
-            if (radio.checked) {
-              correctOption = radioIndex;
-            }
-          });
-
-          questionsData.push({
-            id: questionId,
-            content,
-            options,
-            correct_option: correctOption,
-            explanation,
-            difficulty
-          });
-        });
-
-        // Create hidden fields for form submission
-        questionsDataContainer.innerHTML = '';
-        const questionsDataField = document.createElement('input');
-        questionsDataField.type = 'hidden';
-        questionsDataField.name = 'questions_data';
-        questionsDataField.value = JSON.stringify(questionsData);
-        questionsDataContainer.appendChild(questionsDataField);
-
-        // Submit the form
-        updateForm.submit();
-      }
-    });
-
-    // Delete question button functionality
-    document.querySelectorAll('.delete-question').forEach(button => {
-      button.addEventListener('click', function() {
-        const questionId = this.dataset.questionId;
-        if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này không?')) {
-          // Add to form and submit
-          const deleteField = document.createElement('input');
-          deleteField.type = 'hidden';
-          deleteField.name = 'delete_question_id';
-          deleteField.value = questionId;
-          questionsDataContainer.appendChild(deleteField);
-
-          updateForm.submit();
-        }
-      });
-    });
-  });
-</script>

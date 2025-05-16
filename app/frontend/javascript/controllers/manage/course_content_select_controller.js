@@ -534,4 +534,80 @@ export default class extends Controller {
     // Submit form
     form.submit()
   }
+
+  toggleEditMode(event) {
+    event.preventDefault()
+
+    const editModeToggle = event.currentTarget
+    const isEditMode = editModeToggle.classList.contains('editing')
+
+    if (isEditMode) {
+      this.collectQuestionsData()
+      this.formTarget.submit()
+    } else {
+      const viewElements = document.querySelectorAll('.view-only')
+      const editElements = document.querySelectorAll('.edit-only')
+
+      viewElements.forEach(el => el.classList.add('hidden'))
+      editElements.forEach(el => el.classList.remove('hidden'))
+
+      if (this.hasControlsTarget) {
+        this.controlsTarget.classList.remove('hidden')
+      }
+
+      editModeToggle.classList.add('editing')
+      editModeToggle.querySelector('.edit-text').classList.add('hidden')
+      editModeToggle.querySelector('.save-text').classList.remove('hidden')
+    }
+  }
+
+  collectQuestionsData() {
+    const questionsData = []
+    const questionItems = this.questionsContainerTarget.querySelectorAll('.question-item')
+
+    questionItems.forEach(item => {
+      const questionId = item.getAttribute('data-question-id')
+      const content = item.querySelector('.question-content').value
+      const explanation = item.querySelector('.explanation')?.value || ''
+      const difficulty = item.querySelector('.question-difficulty').value
+
+      const optionElements = item.querySelectorAll('.option-text')
+      const options = {}
+      optionElements.forEach((el, idx) => {
+        options[idx.toString()] = el.value
+      })
+
+      let correctOption = 0
+      const radioButtons = item.querySelectorAll('.option-radio')
+      radioButtons.forEach((radio, idx) => {
+        if (radio.checked) {
+          correctOption = idx
+        }
+      })
+
+      questionsData.push({
+        id: questionId,
+        content,
+        options,
+        correct_option: correctOption,
+        explanation,
+        difficulty
+      })
+    })
+
+    this.questionsDataTarget.value = JSON.stringify(questionsData)
+    return questionsData
+  }
+
+  deleteQuestion(event) {
+    event.preventDefault()
+
+    const button = event.currentTarget
+    const questionId = button.getAttribute('data-question-id')
+
+    if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này không?')) {
+      document.getElementById('delete_question_id').value = questionId
+      this.formTarget.submit()
+    }
+  }
 }

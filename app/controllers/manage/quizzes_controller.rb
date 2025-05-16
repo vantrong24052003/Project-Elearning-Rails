@@ -3,9 +3,15 @@
 class Manage::QuizzesController < Manage::BaseController
   before_action :set_quiz, only: %i[show edit update destroy]
   before_action :set_courses, only: %i[new edit]
-
   def index
-    @quizzes = Quiz.includes(:course, :questions).order(created_at: :desc).page(params[:page]).per(10)
+    @quizzes = if params[:course_id].present?
+                 Quiz.includes(:course,
+                               :questions).where(course_id: params[:course_id]).order(created_at: :desc).page(params[:page]).per(10)
+               else
+                 Quiz.includes(:course, :questions).order(created_at: :desc).page(params[:page]).per(10)
+               end
+
+    @course = Course.find_by(id: params[:course_id]) if params[:course_id].present?
   end
 
   def show
@@ -23,16 +29,22 @@ class Manage::QuizzesController < Manage::BaseController
   def new
     @quiz = Quiz.new
 
-     respond_to do |format|
+    if params[:course_id].present?
+      @quiz.course_id = params[:course_id]
+      @course = Course.find_by(id: params[:course_id])
+    end
+
+    respond_to do |format|
       format.html
       format.json do
-        if params[:get_content_type] == 'course_chapters'
+        case params[:get_content_type]
+        when 'course_chapters'
           render json: get_course_chapters
-        elsif params[:get_content_type] == 'chapter_lessons'
+        when 'chapter_lessons'
           render json: get_chapter_lessons
-        elsif params[:get_content_type] == 'lesson_videos'
+        when 'lesson_videos'
           render json: get_lesson_videos
-        elsif params[:get_content_type] == 'video_details'
+        when 'video_details'
           render json: get_video_details
         else
           render json: { error: 'Invalid content type' }, status: :unprocessable_entity
@@ -93,23 +105,18 @@ class Manage::QuizzesController < Manage::BaseController
       begin
         questions_data = JSON.parse(params[:questions_data])
 
-        # Xử lý xóa câu hỏi
         if params[:delete_question_id].present?
           question_to_delete = Question.find_by(id: params[:delete_question_id])
-          if question_to_delete && question_to_delete.quizzes.include?(@quiz)
+          if question_to_delete&.quizzes&.include?(@quiz)
             QuizQuestion.where(quiz: @quiz, question: question_to_delete).destroy_all
-            # Nếu câu hỏi này chỉ thuộc về quiz này, xóa luôn câu hỏi
-            if question_to_delete.quizzes.count == 0
-              question_to_delete.destroy
-            end
+            question_to_delete.destroy if question_to_delete.quizzes.count.zero?
             flash[:notice] = 'Câu hỏi đã được xóa khỏi bài kiểm tra.'
           end
         end
 
-        # Cập nhật các câu hỏi
         questions_data.each do |q_data|
           question = Question.find_by(id: q_data['id'])
-          next unless question && question.quizzes.include?(@quiz)
+          next unless question&.quizzes&.include?(@quiz)
 
           question.update(
             content: q_data['content'],
@@ -126,7 +133,7 @@ class Manage::QuizzesController < Manage::BaseController
         flash[:alert] = 'Dữ liệu câu hỏi không hợp lệ.'
         redirect_to manage_quiz_path(@quiz)
         return
-      rescue => e
+      rescue StandardError => e
         Rails.logger.error("Lỗi khi cập nhật câu hỏi: #{e.message}")
         flash[:alert] = "Lỗi khi cập nhật câu hỏi: #{e.message}"
         redirect_to manage_quiz_path(@quiz)
@@ -144,8 +151,17 @@ class Manage::QuizzesController < Manage::BaseController
   end
 
   def destroy
+    questions = @quiz.questions.to_a
+    QuizQuestion.where(quiz_id: @quiz.id).destroy_all
+
+    questions.each do |question|
+      count = QuizQuestion.where(question_id: question.id).count
+      question.destroy if count.zero?
+    end
+
     @quiz.destroy!
-    redirect_to manage_quizzes_path, notice: 'Quiz was successfully destroyed.'
+
+    redirect_to manage_quizzes_path, notice: 'Bài kiểm tra đã được xóa thành công.'
   end
 
   private
@@ -176,7 +192,7 @@ class Manage::QuizzesController < Manage::BaseController
       end
 
       render json: questions, status: :ok
-    rescue => e
+    rescue StandardError => e
       Rails.logger.error("Lỗi khi tạo câu hỏi từ phiên âm: #{e.message}")
       render json: { error: "Không thể tạo câu hỏi: #{e.message}" }, status: :unprocessable_entity
     end
@@ -207,11 +223,11 @@ class Manage::QuizzesController < Manage::BaseController
       upload = video.upload
 
       transcription_value = upload.transcription
-      if transcription_value.present?
-        result[:transcription] = transcription_value
-      else
-        result[:transcription] = "Chưa có phiên âm cho video này."
-      end
+      result[:transcription] = if transcription_value.present?
+                                 transcription_value
+                               else
+                                 'Chưa có phiên âm cho video này.'
+                               end
     end
 
     result
