@@ -31,17 +31,21 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
                          .order(created_at: :desc)
                          .first
 
-    if params[:start] == 'true'
-      unless @quiz_attempt
-        @quiz_attempt = @quiz.quiz_attempts.create!(
-          user: current_user,
-          start_time: Time.current,
-          device_info: request.user_agent,
-          ip_address: request.remote_ip,
-          score: 0,
-          time_spent: 0
-        )
-      end
+    if (params[:start] == 'true') && !@quiz_attempt
+      client_ip = params[:client_ip].presence || request.remote_ip
+
+      @quiz_attempt = @quiz.quiz_attempts.create!(
+        user: current_user,
+        start_time: Time.current,
+        score: 0,
+        time_spent: 0
+      )
+
+      @quiz_attempt.log_action('start_quiz', {
+                                 start_time: @quiz_attempt.start_time,
+                                 client_ip: client_ip,
+                                 device_info: request.user_agent
+                               })
     end
   end
 
@@ -94,20 +98,20 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   def check_if_exam_already_taken
     return unless @quiz.is_exam?
 
-
     if QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).exists?
-      latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).order(created_at: :desc).first
+      latest_attempt = QuizAttempt.where(quiz: @quiz,
+                                         user: current_user).where.not(completed_at: nil).order(created_at: :desc).first
       redirect_to dashboard_course_quiz_quiz_attempts_path(@course, @quiz, latest_attempt),
                   notice: 'You have completed this test. Here are your results.'
       return
     end
 
-    unless params[:start] == 'true' || params[:force] == 'true'
-      if QuizAttempt.where(quiz: @quiz, user: current_user, completed_at: nil).exists?
-        incomplete_attempt = QuizAttempt.where(quiz: @quiz, user: current_user, completed_at: nil).order(created_at: :desc).first
-        redirect_to dashboard_course_quiz_path(@course, @quiz, start: true),
-                    notice: 'You have an exam in progress. Please continue working on it.'
-      end
+    if !(params[:start] == 'true' || params[:force] == 'true') && QuizAttempt.where(quiz: @quiz, user: current_user,
+                                                                                    completed_at: nil).exists?
+      QuizAttempt.where(quiz: @quiz, user: current_user,
+                        completed_at: nil).order(created_at: :desc).first
+      redirect_to dashboard_course_quiz_path(@course, @quiz, start: true),
+                  notice: 'You have an exam in progress. Please continue working on it.'
     end
   end
 

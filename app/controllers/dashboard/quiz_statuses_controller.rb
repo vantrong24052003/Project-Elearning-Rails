@@ -43,6 +43,11 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
   def log_cheating_behavior
     action_type = params[:action_type]
 
+    @quiz_attempt.log_action(action_type, {
+                               client_ip: request.remote_ip,
+                               details: params[:details]
+                             })
+
     case action_type
     when 'tab_switch', 'window_blur', 'alt_tab'
       @quiz_attempt.increment!(:tab_switch_count)
@@ -93,7 +98,6 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
     return unless @quiz_attempt.quiz.is_exam?
 
     suspicious_behavior = false
-
     suspicious_behavior = true if @quiz_attempt.tab_switch_count.to_i >= 5
     suspicious_behavior = true if @quiz_attempt.copy_paste_count.to_i >= 3
     suspicious_behavior = true if @quiz_attempt.screenshot_count.to_i >= 2
@@ -101,20 +105,22 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
     suspicious_behavior = true if @quiz_attempt.devtools_open_count.to_i >= 2
     suspicious_behavior = true if @quiz_attempt.other_unusual_actions.to_i >= 3
 
-    notify_instructor_of_cheating if suspicious_behavior
+    if @quiz_attempt.suspicious_behavior != suspicious_behavior
+      @quiz_attempt.update(suspicious_behavior: suspicious_behavior)
+    end
   end
 
-  def notify_instructor_of_cheating
+  def check_and_notify_cheating
+    return unless @quiz_attempt.quiz.is_exam?
     return if @quiz_attempt.is_notified
-
-    @quiz_attempt.update(
-      is_notified: true,
-      notified_at: Time.current
-    )
+    return unless @quiz_attempt.suspicious_behavior
+    return unless @quiz_attempt.completed_at.present?
 
     CourseMailer.cheating_notification(
-      @quiz_attempt.quiz.course.user,
+      @course.user,
       @quiz_attempt
     ).deliver_later
+
+    @quiz_attempt.update(is_notified: true, notified_at: Time.current)
   end
 end

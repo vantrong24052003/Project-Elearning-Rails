@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 20_250_512_000_001) do
+ActiveRecord::Schema[8.0].define(version: 20_250_513_084_528) do
   # These are extensions that must be enabled in order to support this database
   enable_extension 'pg_catalog.plpgsql'
   enable_extension 'pgcrypto'
@@ -125,8 +125,6 @@ ActiveRecord::Schema[8.0].define(version: 20_250_512_000_001) do
     t.integer 'time_spent'
     t.datetime 'start_time'
     t.datetime 'completed_at'
-    t.string 'device_info'
-    t.string 'ip_address'
     t.integer 'tab_switch_count', default: 0
     t.integer 'copy_paste_count', default: 0
     t.integer 'screenshot_count', default: 0
@@ -136,6 +134,7 @@ ActiveRecord::Schema[8.0].define(version: 20_250_512_000_001) do
     t.integer 'device_count', default: 1
     t.boolean 'is_notified', default: false
     t.datetime 'notified_at'
+    t.jsonb 'log_actions', default: [], null: false
     t.index ['quiz_id'], name: 'index_quiz_attempts_on_quiz_id'
     t.index ['user_id'], name: 'index_quiz_attempts_on_user_id'
   end
@@ -158,6 +157,7 @@ ActiveRecord::Schema[8.0].define(version: 20_250_512_000_001) do
     t.datetime 'updated_at', null: false
     t.datetime 'start_time'
     t.datetime 'end_time'
+    t.boolean 'notify_cheating', default: true
     t.index ['course_id'], name: 'index_quizzes_on_course_id'
   end
 

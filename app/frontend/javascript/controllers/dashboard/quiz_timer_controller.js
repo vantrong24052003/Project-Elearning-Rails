@@ -30,10 +30,6 @@ export default class extends Controller {
     document.addEventListener('turbo:before-render', this.handleTurboBeforeRender.bind(this));
     document.addEventListener('quiz:auto-submit', this.autoSubmit.bind(this));
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const startingNewQuiz = urlParams.get('start') === 'true';
-    const forceRetake = urlParams.get('force') === 'true';
-
     if (this.modeValue === 'exam') {
       this.checkQuizStatus();
     } else {
@@ -76,7 +72,6 @@ export default class extends Controller {
     this.isPaused = false;
     this.isSubmitted = false;
 
-    // Phòng trường hợp không load được questions
     if (!this.hasQuestionContainerTarget) {
       console.error("Không tìm thấy container câu hỏi");
       return;
@@ -88,20 +83,18 @@ export default class extends Controller {
       return;
     }
 
-    // Time limit từ HTML
     if (this.hasDisplayTarget && this.displayTarget.dataset.timeLimit) {
       this.timeLimit = parseInt(this.displayTarget.dataset.timeLimit, 10) * 60;
       this.remainingSeconds = this.timeLimit;
       this.elapsedTime = 0;
     } else {
       console.error("Không tìm thấy thông tin time limit");
-      this.timeLimit = 3600; // Default 60 phút
+      this.timeLimit = 3600;
       this.remainingSeconds = 3600;
       this.elapsedTime = 0;
     }
 
     try {
-      // Tải trạng thái từ database
       if (this.courseIdValue && this.quizIdValue && this.attemptIdValue) {
         const state = await QuizApi.getAttemptState(
           this.courseIdValue,
@@ -143,7 +136,6 @@ export default class extends Controller {
     history.pushState(null, null, location.href);
     window.addEventListener('popstate', this.handleBackButton.bind(this));
 
-    // Lưu trạng thái ban đầu
     this.saveStateDebounced = this.debounce(this.saveState.bind(this), 1000);
   }
 
@@ -261,10 +253,14 @@ export default class extends Controller {
   }
 
   updateAnsweredQuestions() {
-    if (!this.hasFormTarget || !this.hasProgressTarget) return;
+    if (!this.hasFormTarget) return;
 
     const radioGroups = this.getAnsweredQuestions();
-    this.progressTarget.textContent = radioGroups.length;
+
+    if (this.hasProgressTarget) {
+      this.progressTarget.textContent = radioGroups.length;
+    }
+
     this.updateNavigation();
   }
 
@@ -290,31 +286,35 @@ export default class extends Controller {
       return;
     }
 
-    if (!this.hasFormTarget || !this.hasTimeSpentTarget || !this.hasTotalQuestionsValue) return;
+    if (!this.hasFormTarget || !this.hasTimeSpentTarget) return;
 
     this.timeSpentTarget.value = this.elapsedTime;
 
-    const answeredQuestions = parseInt(this.progressTarget.textContent, 10);
+    const answeredQuestions = this.getAnsweredQuestions().length;
 
-    if (answeredQuestions < this.totalQuestionsValue) {
-      if (this.modeValue === 'exam') {
-        if (confirm(`Bạn chỉ mới trả lời ${answeredQuestions}/${this.totalQuestionsValue} câu hỏi. Bạn có chắc muốn nộp bài?`)) {
-          this.isSubmitted = true;
-          window.quizSubmitted = true;
-          this.formTarget.submit();
-        }
-      } else {
-        if (confirm(`Bạn chỉ mới trả lời ${answeredQuestions}/${this.totalQuestionsValue} câu hỏi. Bạn vẫn muốn nộp bài?`)) {
-          this.isSubmitted = true;
-          window.quizSubmitted = true;
-          this.formTarget.submit();
-        }
-      }
-    } else {
+    const submitTheForm = () => {
       this.isSubmitted = true;
       window.quizSubmitted = true;
       this.formTarget.submit();
-    }
+    };
+
+    const confirmAndSubmit = () => {
+      if (answeredQuestions < this.totalQuestionsValue) {
+        if (this.modeValue === 'exam') {
+          if (confirm(`Bạn chỉ mới trả lời ${answeredQuestions}/${this.totalQuestionsValue} câu hỏi. Bạn có chắc muốn nộp bài?`)) {
+            this.getIpAndSubmit(submitTheForm);
+          }
+        } else {
+          if (confirm(`Bạn chỉ mới trả lời ${answeredQuestions}/${this.totalQuestionsValue} câu hỏi. Bạn vẫn muốn nộp bài?`)) {
+            this.getIpAndSubmit(submitTheForm);
+          }
+        }
+      } else {
+        this.getIpAndSubmit(submitTheForm);
+      }
+    };
+
+    confirmAndSubmit();
   }
 
   autoSubmit(event) {
@@ -329,10 +329,42 @@ export default class extends Controller {
     }
 
     this.timeSpentTarget.value = this.elapsedTime;
-    this.isSubmitted = true;
-    window.quizSubmitted = true;
 
-    this.formTarget.submit();
+    this.getIpAndSubmit(() => {
+      this.isSubmitted = true;
+      window.quizSubmitted = true;
+      this.formTarget.submit();
+    });
+  }
+
+  async getIpAndSubmit(callback) {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const clientIp = urlParams.get('client_ip');
+
+      if (clientIp) {
+        console.log("Sử dụng IP từ URL:", clientIp);
+        const ipInput = document.createElement('input');
+        ipInput.type = 'hidden';
+        ipInput.name = 'client_ip_address';
+        ipInput.value = clientIp;
+        this.formTarget.appendChild(ipInput);
+        callback();
+      } else {
+        console.log("Không có IP trong URL, đang gọi API...");
+        const response = await fetch('https://api.ipify.org/?format=json');
+        const data = await response.json();
+        const ipInput = document.createElement('input');
+        ipInput.type = 'hidden';
+        ipInput.name = 'client_ip_address';
+        ipInput.value = data.ip;
+        this.formTarget.appendChild(ipInput);
+        callback();
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy địa chỉ IP:", error);
+      callback();
+    }
   }
 
   cancel(event) {
@@ -563,7 +595,6 @@ export default class extends Controller {
     }
   }
 
-  // Hàm debounce để tránh lưu quá nhiều
   debounce(func, wait) {
     return (...args) => {
       if (this.saveStateTimeout) {

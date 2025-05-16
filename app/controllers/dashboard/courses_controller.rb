@@ -91,13 +91,9 @@ class Dashboard::CoursesController < Dashboard::DashboardController
   def apply_price_filters(courses, min_price, max_price)
     result = courses
 
-    if min_price.present?
-      result = result.where('price >= ?', min_price.to_i)
-    end
+    result = result.where('price >= ?', min_price.to_i) if min_price.present?
 
-    if max_price.present?
-      result = result.where('price <= ?', max_price.to_i)
-    end
+    result = result.where('price <= ?', max_price.to_i) if max_price.present?
 
     result
   end

@@ -10,16 +10,18 @@
 <% end %>
 
 <div class="container mx-auto px-4 py-8 bg-white dark:bg-gray-900 text-gray-800 dark:text-white"
-     data-controller="dashboard--quiz-timer dashboard--quiz-proctor"
+     data-controller="dashboard--quiz-timer dashboard--quiz-proctor dashboard--quiz-ip-detector"
      data-dashboard--quiz-timer-mode-value="<%= @mode %>"
-     data-dashboard--quiz-proctor-mode-value="<%= @mode %>"                                                       
+     data-dashboard--quiz-proctor-mode-value="<%= @mode %>"
      data-dashboard--quiz-timer-total-questions-value="<%= @questions.size %>"
      data-dashboard--quiz-timer-course-id-value="<%= @course.id %>"
      data-dashboard--quiz-proctor-course-id-value="<%= @course.id %>"
      data-dashboard--quiz-timer-quiz-id-value="<%= @quiz.id %>"
      data-dashboard--quiz-proctor-quiz-id-value="<%= @quiz.id %>"
      data-dashboard--quiz-timer-attempt-id-value="<%= @quiz_attempt&.id %>"
-     data-dashboard--quiz-proctor-attempt-id-value="<%= @quiz_attempt&.id %>">
+     data-dashboard--quiz-proctor-attempt-id-value="<%= @quiz_attempt&.id %>"
+     data-dashboard--quiz-ip-detector-start-value="<%= params[:start] == 'true' %>"
+     data-dashboard--quiz-ip-detector-has-ip-value="<%= params[:client_ip].present? %>">
 
   <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
     <div class="lg:col-span-1">
@@ -61,19 +63,6 @@
               </svg>
               Tiếp tục
             </button>
-          </div>
-        </div>
-
-        <div class="mb-6">
-          <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
-            <span>Tiến độ</span>
-            <span>
-              <span data-dashboard--quiz-timer-target="progress">0</span>/<span><%= @questions.size %></span> câu
-            </span>
-          </div>
-          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-            <div class="bg-blue-600 dark:bg-purple-600 h-2.5 rounded-full" style="width: 0%"
-                 data-dashboard--quiz-timer-target="progressBar"></div>
           </div>
         </div>
 
