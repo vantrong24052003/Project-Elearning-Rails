@@ -45,7 +45,6 @@ class GeminiServices
       contents: [content]
     }
 
-    # Add tools if provided
     request[:tools] = options[:tools] if options[:tools].present?
 
     if options[:temperature].present? || options[:top_p].present? || options[:top_k].present? || options[:max_output_tokens].present?
