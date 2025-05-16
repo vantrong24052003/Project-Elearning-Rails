@@ -25,6 +25,7 @@ class QuizAttempt < ApplicationRecord
 
     parsed_answers = answers_hash
     return false unless parsed_answers.key?(question_id.to_s)
+    return false unless parsed_answers.key?(question_id.to_s)
 
     question = Question.find_by(id: question_id)
     return false if question.nil?
@@ -39,6 +40,9 @@ class QuizAttempt < ApplicationRecord
       client_ip: details[:client_ip] || '',
       device_info: details[:device_info] || ''
     }
+
+    log_entry.merge!(details) if details.present?
+
     current_logs << log_entry
     update(log_actions: current_logs)
   end
