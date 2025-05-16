@@ -28,7 +28,7 @@ export default class extends Controller {
     // Trong trường hợp courseSelect là một phần tử khác, tìm select trong form của quiz
     let courseId = this.courseSelectTarget.value
     if (!courseId) {
-      const formElement = document.querySelector('form[data-manage--quiz-ai-generator-target="form"]')
+      const formElement = document.querySelector('form[data-manage--course-content-select-target="form"]')
       if (formElement) {
         const courseSelect = formElement.querySelector('select[name="quiz[course_id]"]')
         if (courseSelect) {
@@ -206,7 +206,7 @@ export default class extends Controller {
     let content = `📚 Video: ${video.title || 'Không có tiêu đề'}\n\n`
 
     if (video.transcription) {
-      content += `📝 Nội dung:\n${video.transcription}` 
+      content += `📝 Nội dung:\n${video.transcription}`
     } else {
       content += '❗ Không có nội dung phiên âm sẵn cho video này. Vui lòng nhập mô tả thủ công.'
     }
@@ -235,9 +235,10 @@ export default class extends Controller {
 
     const formData = new FormData(this.formTarget)
     const courseId = formData.get('quiz[course_id]')
-    const numQuestions = formData.get('num_questions')
-    const difficulty = formData.get('difficulty')
+    const numQuestions = formData.get('num_questions') || 5
+    const difficulty = formData.get('difficulty') || 'medium'
     const questionTypes = formData.getAll('question_types[]')
+    const videoId = this.hasVideoSelectTarget ? this.videoSelectTarget.value : null
 
     if (!courseId) {
       alert('Vui lòng chọn khóa học')
@@ -251,65 +252,195 @@ export default class extends Controller {
     this.questionsContainerTarget.classList.add("hidden")
     this.controlsTarget.classList.add("hidden")
 
-    setTimeout(() => {
-      this.analysisLoadingTarget.classList.add("hidden")
-      this.analysisTarget.classList.remove("hidden")
+    if (videoId) {
+      // Nếu có video được chọn, sử dụng transcription
+      this.showToast('Đang lấy dữ liệu phiên âm từ video...', 'success')
 
-      const conceptCount = Math.floor(Math.random() * 8) + 5
-      this.conceptCountTarget.textContent = conceptCount
+      this.createQuestionsFromVideo(videoId, numQuestions, difficulty)
+        .then(questions => {
+          this.questions = questions
+          this.displayQuestionsAndAnalysis()
+          this.showToast(`Đã tạo ${questions.length} câu hỏi từ phiên âm video thành công!`, 'success')
+        })
+        .catch(error => {
+          console.error('Lỗi khi tạo câu hỏi từ video:', error)
+          this.createSampleQuestions(numQuestions)
+            .then(questions => {
+              this.questions = questions
+              this.displayQuestionsAndAnalysis()
+              this.showToast('Lỗi khi tạo câu hỏi từ phiên âm, sử dụng mô tả người dùng thay thế', 'warning')
+            })
+            .catch(err => {
+              console.error('Lỗi khi tạo câu hỏi mẫu:', err)
+              this.showToast('Đã xảy ra lỗi khi tạo câu hỏi', 'error')
+              this.loadingTarget.classList.add("hidden")
+              this.isGenerating = false
+            })
+        })
+    } else {
+      // Nếu không có video, sử dụng mô tả người dùng
+      this.showToast('Đang tạo câu hỏi từ mô tả của bạn...', 'success')
 
-      const coverage = Math.floor(Math.random() * 30) + 70
-      this.coverageBarTarget.style.width = `${coverage}%`
-      this.coverageTextTarget.textContent = `${coverage}%`
+      this.createSampleQuestions(numQuestions)
+        .then(questions => {
+          this.questions = questions
+          this.displayQuestionsAndAnalysis()
+          this.showToast('Đã tạo câu hỏi thành công!', 'success')
+        })
+        .catch(error => {
+          console.error('Lỗi khi tạo câu hỏi:', error)
+          this.showToast('Đã xảy ra lỗi khi tạo câu hỏi', 'error')
+          this.loadingTarget.classList.add("hidden")
+          this.isGenerating = false
+        })
+    }
+  }
 
-      const suggestions = [
-        'Bổ sung thêm ví dụ thực tế để làm rõ khái niệm',
-        'Cân nhắc thêm các câu hỏi về ứng dụng thực tiễn',
-        'Tăng độ phủ của các khái niệm nâng cao'
-      ]
+  displayQuestionsAndAnalysis() {
+    this.analysisLoadingTarget.classList.add("hidden")
+    this.analysisTarget.classList.remove("hidden")
 
-      this.suggestionsTarget.innerHTML = suggestions.map(s => `<li>${s}</li>`).join('')
+    const conceptCount = Math.floor(Math.random() * 8) + 5
+    this.conceptCountTarget.textContent = conceptCount
 
-      this.questions = this.createSampleQuestions(numQuestions)
-      this.renderQuestions()
+    const coverage = Math.floor(Math.random() * 30) + 70
+    this.coverageBarTarget.style.width = `${coverage}%`
+    this.coverageTextTarget.textContent = `${coverage}%`
 
-      this.loadingTarget.classList.add("hidden")
-      this.questionsContainerTarget.classList.remove("hidden")
-      this.controlsTarget.classList.remove("hidden")
-      this.isGenerating = false
-    }, 2000)
+    const suggestions = [
+      'Bổ sung thêm ví dụ thực tế để làm rõ khái niệm',
+      'Cân nhắc thêm các câu hỏi về ứng dụng thực tiễn',
+      'Tăng độ phủ của các khái niệm nâng cao'
+    ]
+
+    this.suggestionsTarget.innerHTML = suggestions.map(s => `<li>${s}</li>`).join('')
+
+    this.renderQuestions()
+
+    this.loadingTarget.classList.add("hidden")
+    this.questionsContainerTarget.classList.remove("hidden")
+    this.controlsTarget.classList.remove("hidden")
+    this.isGenerating = false
+  }
+
+  createQuestionsFromVideo(videoId, numQuestions, difficulty) {
+    return new Promise((resolve, reject) => {
+      CourseContentApi.getVideoDetails(videoId)
+        .then(video => {
+          const title = video.title || 'Video không có tiêu đề'
+          const transcription = video.transcription
+
+          // Kiểm tra nếu không có transcription hoặc là message mặc định
+          if (!transcription || transcription === "Chưa có phiên âm cho video này.") {
+            console.warn('Không có dữ liệu phiên âm, sử dụng câu hỏi mẫu')
+            resolve(this.createSampleQuestions(numQuestions))
+            return
+          }
+
+          // Hiển thị thông báo đang tạo câu hỏi
+          this.showToast('Đang tạo câu hỏi từ phiên âm...', 'success')
+
+          // Có transcription, gửi đến server để tạo câu hỏi
+          fetch('/manage/quizzes.json', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+              title: title,
+              description: transcription,
+              num_questions: numQuestions,
+              difficulty: difficulty || 'medium'
+            })
+          })
+          .then(response => {
+            if (!response.ok) {
+              return response.json().then(errorData => {
+                throw new Error(errorData.error || 'Lỗi khi tạo câu hỏi từ phiên âm')
+              })
+            }
+            return response.json()
+          })
+          .then(data => {
+            console.log('Câu hỏi từ AI:', data)
+            if (!data || !Array.isArray(data) || data.length === 0) {
+              throw new Error('Không nhận được câu hỏi hợp lệ từ AI')
+            }
+            this.showToast('Đã tạo câu hỏi thành công từ phiên âm!', 'success')
+            resolve(data)
+          })
+          .catch(error => {
+            console.error('Lỗi khi gọi API tạo câu hỏi:', error.message)
+            this.showToast(`Lỗi: ${error.message}`, 'error')
+            reject(error)
+          })
+        })
+        .catch(error => {
+          console.error('Lỗi khi lấy thông tin video:', error)
+          reject(error)
+        })
+    })
   }
 
   createSampleQuestions(count) {
-    const questions = []
-    const questionTypes = [
-      "Khái niệm chính của khóa học là gì?",
-      "Đâu là ví dụ tốt nhất minh họa cho nguyên tắc này?",
-      "Trong trường hợp nào phương pháp này không áp dụng được?",
-      "Điểm khác biệt chính giữa hai khái niệm là gì?",
-      "Đâu là thứ tự đúng của các bước trong quy trình này?",
-      "Yếu tố nào quan trọng nhất trong việc áp dụng lý thuyết này?",
-      "Đâu là kết quả dự kiến khi áp dụng phương pháp này?"
-    ]
+    const questionContent = document.querySelector('textarea[name="user_description"]')?.value || 'Nội dung mẫu khóa học'
+    const courseTitle = document.querySelector('select[name="quiz[course_id]"] option:checked')?.text || 'Khóa học'
+    const difficulty = document.querySelector('select[name="difficulty"]')?.value || 'medium'
 
-    for (let i = 0; i < count; i++) {
-      const options = [
-        `Đáp án A mẫu cho câu hỏi ${i+1}`,
-        `Đáp án B mẫu cho câu hỏi ${i+1}`,
-        `Đáp án C mẫu cho câu hỏi ${i+1}`,
-        `Đáp án D mẫu cho câu hỏi ${i+1}`
+    return fetch('/manage/quizzes.json', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: JSON.stringify({
+        title: courseTitle,
+        description: questionContent,
+        num_questions: count,
+        difficulty: difficulty
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Lỗi khi tạo câu hỏi')
+      }
+      return response.json()
+    })
+    .catch(error => {
+      console.error('Lỗi khi gọi API tạo câu hỏi:', error)
+
+      // Trả về dữ liệu mẫu nếu API lỗi
+      const questions = []
+      const questionTypes = [
+        "Khái niệm chính của khóa học là gì?",
+        "Đâu là ví dụ tốt nhất minh họa cho nguyên tắc này?",
+        "Trong trường hợp nào phương pháp này không áp dụng được?",
+        "Điểm khác biệt chính giữa hai khái niệm là gì?",
+        "Đâu là thứ tự đúng của các bước trong quy trình này?",
+        "Yếu tố nào quan trọng nhất trong việc áp dụng lý thuyết này?",
+        "Đâu là kết quả dự kiến khi áp dụng phương pháp này?"
       ]
 
-      questions.push({
-        content: `${questionTypes[i % questionTypes.length]} (Câu hỏi mẫu ${i+1})`,
-        options: options,
-        correct_option: Math.floor(Math.random() * 4),
-        explanation: `Giải thích mẫu cho câu hỏi ${i+1}. Đáp án đúng là vì nó phù hợp với các nguyên tắc đã học trong khóa học. Các đáp án khác không chính xác vì chúng không đáp ứng điều kiện hoặc ngữ cảnh của vấn đề.`,
-        difficulty: ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)]
-      })
-    }
+      for (let i = 0; i < count; i++) {
+        const options = [
+          `Đáp án A mẫu cho câu hỏi ${i+1}`,
+          `Đáp án B mẫu cho câu hỏi ${i+1}`,
+          `Đáp án C mẫu cho câu hỏi ${i+1}`,
+          `Đáp án D mẫu cho câu hỏi ${i+1}`
+        ]
 
-    return questions
+        questions.push({
+          content: `${questionTypes[i % questionTypes.length]} (Câu hỏi mẫu ${i+1})`,
+          options: options,
+          correct_option: Math.floor(Math.random() * 4),
+          explanation: `Giải thích mẫu cho câu hỏi ${i+1}. Đáp án đúng là vì nó phù hợp với các nguyên tắc đã học trong khóa học. Các đáp án khác không chính xác vì chúng không đáp ứng điều kiện hoặc ngữ cảnh của vấn đề.`,
+          difficulty: ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)]
+        })
+      }
+
+      return questions
+    })
   }
 
   renderQuestions() {
@@ -363,9 +494,67 @@ export default class extends Controller {
   }
 
   regenerateQuestion(index) {
-    const newQuestion = this.createSampleQuestions(1)[0]
-    this.questions[index] = newQuestion
+    const videoId = this.hasVideoSelectTarget ? this.videoSelectTarget.value : null
 
+    if (videoId) {
+      const numQuestions = 1
+      const difficulty = document.querySelector('select[name="difficulty"]')?.value || 'medium'
+
+      this.showToast(`Đang tạo lại câu hỏi #${index + 1} từ phiên âm video...`, 'success')
+
+      this.createQuestionsFromVideo(videoId, numQuestions, difficulty).then(questions => {
+        if (questions && questions.length > 0) {
+          this.questions[index] = questions[0]
+          this.updateQuestionItem(index, questions[0])
+          this.showToast(`Đã tạo lại câu hỏi #${index + 1} thành công!`, 'success')
+        } else {
+          // Fallback to sample question if no questions returned
+          this.showToast('Không nhận được câu hỏi từ AI, sử dụng câu hỏi mẫu', 'error')
+          this.createSampleQuestions(1)
+            .then(questions => {
+              if (questions && questions.length > 0) {
+                this.questions[index] = questions[0]
+                this.updateQuestionItem(index, questions[0])
+              }
+            })
+            .catch(error => {
+              console.error('Lỗi khi tạo câu hỏi mẫu:', error)
+            })
+        }
+      }).catch(error => {
+        console.error('Lỗi khi tạo lại câu hỏi từ video:', error)
+        this.showToast('Lỗi khi tạo câu hỏi từ phiên âm, sử dụng câu hỏi mẫu thay thế', 'error')
+        this.createSampleQuestions(1)
+          .then(questions => {
+            if (questions && questions.length > 0) {
+              this.questions[index] = questions[0]
+              this.updateQuestionItem(index, questions[0])
+            }
+          })
+          .catch(err => {
+            console.error('Lỗi khi tạo câu hỏi mẫu:', err)
+          })
+      })
+    } else {
+      this.showToast('Không có video được chọn, sử dụng mô tả người dùng', 'info')
+      this.createSampleQuestions(1)
+        .then(questions => {
+          if (questions && questions.length > 0) {
+            this.questions[index] = questions[0]
+            this.updateQuestionItem(index, questions[0])
+            this.showToast('Đã tạo lại câu hỏi thành công', 'success')
+          } else {
+            this.showToast('Không thể tạo câu hỏi mẫu', 'error')
+          }
+        })
+        .catch(error => {
+          console.error('Lỗi khi tạo câu hỏi mẫu:', error)
+          this.showToast('Đã xảy ra lỗi khi tạo câu hỏi', 'error')
+        })
+    }
+  }
+
+  updateQuestionItem(index, newQuestion) {
     const item = this.questionsContainerTarget.querySelector(`[data-index="${index}"]`)
     if (item) {
       item.querySelector('.question-content').value = newQuestion.content
@@ -397,15 +586,58 @@ export default class extends Controller {
     this.loadingTarget.classList.remove("hidden")
     this.questionsContainerTarget.classList.add("hidden")
 
-    setTimeout(() => {
-      const numQuestions = this.questions.length
-      this.questions = this.createSampleQuestions(numQuestions)
-      this.renderQuestions()
+    const videoId = this.hasVideoSelectTarget ? this.videoSelectTarget.value : null
+    const numQuestions = this.questions.length || 5
+    const difficulty = document.querySelector('select[name="difficulty"]')?.value || 'medium'
 
-      this.loadingTarget.classList.add("hidden")
-      this.questionsContainerTarget.classList.remove("hidden")
-      this.isGenerating = false
-    }, 1500)
+    if (videoId) {
+      this.showToast('Đang tạo lại câu hỏi từ phiên âm video...', 'success')
+
+      this.createQuestionsFromVideo(videoId, numQuestions, difficulty).then(questions => {
+        this.questions = questions
+        this.renderQuestions()
+        this.loadingTarget.classList.add("hidden")
+        this.questionsContainerTarget.classList.remove("hidden")
+        this.isGenerating = false
+        this.showToast(`Đã tạo lại ${questions.length} câu hỏi từ phiên âm video thành công!`, 'success')
+      }).catch(error => {
+        console.error('Lỗi khi tạo lại câu hỏi từ video:', error)
+        this.showToast('Lỗi khi tạo câu hỏi từ phiên âm, sử dụng mô tả người dùng thay thế', 'error')
+
+        this.createSampleQuestions(numQuestions)
+          .then(questions => {
+            this.questions = questions
+            this.renderQuestions()
+            this.loadingTarget.classList.add("hidden")
+            this.questionsContainerTarget.classList.remove("hidden")
+            this.isGenerating = false
+          })
+          .catch(err => {
+            console.error('Lỗi khi tạo câu hỏi mẫu:', err)
+            this.loadingTarget.classList.add("hidden")
+            this.isGenerating = false
+            this.showToast('Đã xảy ra lỗi khi tạo câu hỏi', 'error')
+          })
+      })
+    } else {
+      this.showToast('Sử dụng mô tả người dùng để tạo câu hỏi...', 'info')
+
+      this.createSampleQuestions(numQuestions)
+        .then(questions => {
+          this.questions = questions
+          this.renderQuestions()
+          this.loadingTarget.classList.add("hidden")
+          this.questionsContainerTarget.classList.remove("hidden")
+          this.isGenerating = false
+          this.showToast('Đã tạo lại câu hỏi thành công', 'success')
+        })
+        .catch(error => {
+          console.error('Lỗi khi tạo câu hỏi mẫu:', error)
+          this.loadingTarget.classList.add("hidden")
+          this.isGenerating = false
+          this.showToast('Đã xảy ra lỗi khi tạo câu hỏi', 'error')
+        })
+    }
   }
 
   saveQuiz() {

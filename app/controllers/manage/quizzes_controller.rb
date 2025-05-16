@@ -44,6 +44,11 @@ class Manage::QuizzesController < Manage::BaseController
   def edit; end
 
   def create
+    if request.format.json? && params[:title].present? && params[:description].present?
+      create_questions_from_transcription
+      return
+    end
+
     @quiz = Quiz.new(quiz_params)
 
     if params[:source_type] == 'ai_generated' && params[:questions_data].present?
@@ -99,6 +104,38 @@ class Manage::QuizzesController < Manage::BaseController
 
   private
 
+  def create_questions_from_transcription
+    title = params[:title]
+    description = params[:description]
+    num_questions = params[:num_questions].to_i || 5
+    difficulty = params[:difficulty] || 'medium'
+
+    if description.blank? || title.blank?
+      render json: { error: 'Thiếu thông tin cần thiết' }, status: :bad_request
+      return
+    end
+
+    gemini_service = GeminiServices.new
+    begin
+      questions = gemini_service.generate_quiz(
+        title: title,
+        description: description,
+        num_questions: num_questions,
+        difficulty: difficulty
+      )
+
+      if questions.blank? || !questions.is_a?(Array) || questions.empty?
+        render json: { error: 'Không thể tạo câu hỏi từ nội dung phiên âm này' }, status: :unprocessable_entity
+        return
+      end
+
+      render json: questions, status: :ok
+    rescue => e
+      Rails.logger.error("Lỗi khi tạo câu hỏi từ phiên âm: #{e.message}")
+      render json: { error: "Không thể tạo câu hỏi: #{e.message}" }, status: :unprocessable_entity
+    end
+  end
+
   def get_course_chapters
     course = Course.find(params[:course_id])
     course.chapters.order(position: :asc).map { |chapter| { id: chapter.id, title: chapter.title } }
@@ -115,23 +152,23 @@ class Manage::QuizzesController < Manage::BaseController
   end
 
   def get_video_details
-      video = Video.find_by(id: params[:video_id])
-      return if video.nil?
+    video = Video.find_by(id: params[:video_id])
+    return if video.nil?
 
-      result = { id: video.id, title: video.title }
+    result = { id: video.id, title: video.title }
 
-      if video.upload.present?
-        upload = video.upload
+    if video.upload.present?
+      upload = video.upload
 
-        transcription_value = upload.transcription
-        if transcription_value.present?
-          result[:transcription] = transcription_value
-        else
-          result[:transcription] = "Chưa có phiên âm cho video này."
-        end
-
+      transcription_value = upload.transcription
+      if transcription_value.present?
+        result[:transcription] = transcription_value
+      else
+        result[:transcription] = "Chưa có phiên âm cho video này."
       end
-      result
+    end
+
+    result
   end
 
   def set_quiz
