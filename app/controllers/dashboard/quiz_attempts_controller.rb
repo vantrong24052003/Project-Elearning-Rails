@@ -12,7 +12,6 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
     @questions = @quiz.questions
   end
 
-
   def update
     if params[:answers].present?
       correct_answers = 0
@@ -36,9 +35,9 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
       )
         client_ip = params[:client_ip].presence || request.remote_ip
         @quiz_attempt.log_action({
-          client_ip: client_ip,
-          device_info: request.user_agent
-        })
+                                   client_ip: client_ip,
+                                   device_info: request.user_agent
+                                 })
 
         redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                     notice: 'The assignment has been updated successfully.'
@@ -53,9 +52,9 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
       )
         client_ip = params[:client_ip].presence || request.remote_ip
         @quiz_attempt.log_action({
-          client_ip: client_ip,
-          device_info: request.user_agent
-        })
+                                   client_ip: client_ip,
+                                   device_info: request.user_agent
+                                 })
 
         redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                     notice: 'The assignment has been updated.'
@@ -67,9 +66,9 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
       if @quiz_attempt.update(quiz_attempt_params_with_completed)
         client_ip = params[:client_ip].presence || request.remote_ip
         @quiz_attempt.log_action({
-          client_ip: client_ip,
-          device_info: request.user_agent
-        })
+                                   client_ip: client_ip,
+                                   device_info: request.user_agent
+                                 })
 
         redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                     notice: 'The assignment has been updated.'
@@ -87,9 +86,9 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
   private
 
   def set_no_cache_headers
-    response.headers["Cache-Control"] = "no-cache, no-store, max-age=0, must-revalidate"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Expires"] = "Fri, 01 Jan 1990 00:00:00 GMT"
+    response.headers['Cache-Control'] = 'no-cache, no-store, max-age=0, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = 'Fri, 01 Jan 1990 00:00:00 GMT'
   end
 
   def set_course
