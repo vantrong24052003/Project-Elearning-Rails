@@ -409,7 +409,9 @@ def create_practice_quiz_for_course(course, category_name)
     title: title,
     is_exam: false,
     time_limit: [10, 15, 20, 25, 30].sample,
-    course: course
+    course: course,
+    start_time: Time.current,
+    end_time: Time.current + rand(1..3).days
   )
 
   rand(3..7).times do |j|
@@ -439,7 +441,9 @@ def create_exam_for_course(course, category_name)
     title: "Bài thi cuối khóa - #{course.title.truncate(30)}",
     is_exam: true,
     time_limit: [30, 45, 60].sample,
-    course: course
+    course: course,
+    start_time: Time.current,
+    end_time: Time.current + rand(1..3).days
   )
 
   exam_templates = EXAM_QUESTIONS[category_name] || EXAM_QUESTIONS['Programming']

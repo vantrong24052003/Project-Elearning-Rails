@@ -25,6 +25,7 @@ class QuizAttempt < ApplicationRecord
 
     parsed_answers = answers_hash
     return false unless parsed_answers.key?(question_id.to_s)
+    return false unless parsed_answers.key?(question_id.to_s)
 
     question = Question.find_by(id: question_id)
     return false if question.nil?
@@ -32,12 +33,12 @@ class QuizAttempt < ApplicationRecord
     parsed_answers[question_id.to_s].to_i == question.correct_option
   end
 
-  def log_action(action_type, details = {})
+  def log_action(details = {})
     current_logs = log_actions || []
-
     log_entry = {
-      action: action_type,
-      timestamp: Time.current
+      timestamp: Time.current,
+      client_ip: details[:client_ip] || '',
+      device_info: details[:device_info] || ''
     }
 
     log_entry.merge!(details) if details.present?

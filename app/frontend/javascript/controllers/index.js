@@ -15,6 +15,7 @@ import quiz_timer_controller from "./dashboard/quiz_timer_controller"
 import quiz_proctor_controller from "./dashboard/quiz_proctor_controller"
 import quiz_index_controller from "./dashboard/quiz_index_controller"
 import quiz_ip_detector_controller from "./dashboard/quiz_ip_detector_controller"
+import quiz_cache_controller from "./dashboard/quiz_cache_controller"
 import drawer_controller from "./shared/drawer_controller"
 import ManageCoursesController from "./manage/courses_controller"
 import VideoFilterController from "./manage/video_filter_controller"
@@ -57,6 +58,7 @@ application.register("dashboard--video-player", VideoPlayerController)
 application.register("dashboard--quiz-flag", QuizFlagController)
 application.register("dashboard--quiz-redirect", QuizRedirectController)
 application.register("dashboard--quiz-timer", QuizTimerController)
+application.register("dashboard--quiz-cache", quiz_cache_controller)
 
 // manage
 application.register("manage--courses", ManageCoursesController)

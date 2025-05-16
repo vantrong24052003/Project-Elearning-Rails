@@ -11,37 +11,38 @@ export default class extends Controller {
   }
 
   connect() {
-    console.log("Quiz IP Detector connected");
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const ipAddress = urlParams.get('client_ip');
-
-    if (ipAddress && this.attemptIdValue) {
-      console.log("Đã có IP và attempt_id, log IP vào attempt");
-      this.logIpInfo(ipAddress);
-    } else if (this.startValue && !this.hasIpValue) {
-      console.log("Bắt đầu lấy IP...");
+    if (this.startValue && !this.hasIpValue) {
       this.detectIp();
+    } else if (this.attemptIdValue) {
+      this.detectIp().then(ip => {
+        if (ip) {
+          this.logIpInfo(ip);
+        }
+      });
     }
   }
 
   async detectIp() {
     try {
-      console.log("Đang gọi API lấy IP...");
-      const response = await fetch('https://api.ipify.org/?format=json');
-      const data = await response.json();
-      const ipAddress = data.ip;
-      console.log("Đã lấy được IP:", ipAddress);
+      const urlParams = new URLSearchParams(window.location.search);
+      const clientIp = urlParams.get('client_ip');
 
-      const currentUrl = new URL(window.location.href);
-      currentUrl.searchParams.set('client_ip', ipAddress);
-      window.location.href = currentUrl.toString();
+      if (clientIp) {
+        console.log("Using IP from URL:", clientIp);
+        return clientIp;
+      } else {
+        try {
+          const ipData = await QuizApi.getIpAddress();
+          console.log("IP from API111111111:", ipData);
+          return ipData.ip || "0.0.0.0";
+        } catch (ipError) {
+          console.error("Error getting IP from API:", ipError);
+          return "0.0.0.0";
+        }
+      }
     } catch (error) {
       console.error("Lỗi khi lấy IP:", error);
-
-      const currentUrl = new URL(window.location.href);
-      currentUrl.searchParams.set('client_ip', 'unknown');
-      window.location.href = currentUrl.toString();
+      return "0.0.0.0";
     }
   }
 
@@ -52,7 +53,6 @@ export default class extends Controller {
     }
 
     try {
-      console.log(`Đang log IP ${ipAddress} vào log_actions cho attempt_id ${this.attemptIdValue}`);
       await QuizApi.logAction(
         this.courseIdValue,
         this.quizIdValue,
@@ -61,9 +61,6 @@ export default class extends Controller {
         {
           client_ip: ipAddress,
           device_info: navigator.userAgent,
-          details: {
-            timestamp: new Date().toISOString()
-          }
         }
       );
       console.log("Đã log IP thành công!");

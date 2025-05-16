@@ -4,14 +4,19 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   before_action :set_course
   before_action :set_quiz, only: [:show]
   before_action :check_enrollment, only: [:show]
-  before_action :check_if_exam_already_taken, only: [:show]
+  before_action :check_quiz_availability, only: [:show]
   before_action :load_stats_data, only: [:index]
   before_action :authenticate_user!
+  before_action :set_no_cache_headers, only: [:show]
 
   def index
     @quizzes = @course.quizzes
-    @practice_quizzes = @quizzes
+    @practice_quizzes = @quizzes.where(is_exam: false)
     @exam_quizzes = @quizzes.where(is_exam: true)
+
+    @available_quizzes = @quizzes.select { |quiz| quiz_available?(quiz) }
+    @upcoming_quizzes = @quizzes.select { |quiz| quiz_upcoming?(quiz) }
+    @expired_quizzes = @quizzes.select { |quiz| quiz_expired?(quiz) }
   end
 
   def show
@@ -20,7 +25,7 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
 
     if @quiz.is_exam? && QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).exists?
       latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
-      redirect_to dashboard_course_quiz_quiz_attempts_path(@course, @quiz, latest_attempt),
+      redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, latest_attempt),
                   notice: 'You have completed this test. Here are your results.'
       return
     end
@@ -41,29 +46,12 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
         time_spent: 0
       )
 
-      @quiz_attempt.log_action('start_quiz', {
-                                 start_time: @quiz_attempt.start_time,
+      @quiz_attempt.log_action({
                                  client_ip: client_ip,
                                  device_info: request.user_agent
                                })
     end
   end
-
-  def new
-    @quiz = @course.quizzes.build
-  end
-
-  def create
-    @quiz = @course.quizzes.build(quiz_params)
-
-    if @quiz.save
-      redirect_to dashboard_course_quiz_path(@course, @quiz), notice: 'Quiz was successfully created.'
-    else
-      render :new, status: :unprocessable_entity
-    end
-  end
-
-  def edit; end
 
   def update
     if @quiz.update(quiz_params)
@@ -80,6 +68,12 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
 
   private
 
+  def set_no_cache_headers
+    response.headers['Cache-Control'] = 'no-cache, no-store, max-age=0, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = 'Fri, 01 Jan 1990 00:00:00 GMT'
+  end
+
   def set_course
     @course = Course.find(params[:course_id])
   end
@@ -95,24 +89,38 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
                 alert: 'You need to enroll in this course to take quizzes.'
   end
 
-  def check_if_exam_already_taken
-    return unless @quiz.is_exam?
-
-    if QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).exists?
-      latest_attempt = QuizAttempt.where(quiz: @quiz,
-                                         user: current_user).where.not(completed_at: nil).order(created_at: :desc).first
-      redirect_to dashboard_course_quiz_quiz_attempts_path(@course, @quiz, latest_attempt),
-                  notice: 'You have completed this test. Here are your results.'
-      return
+  def check_quiz_availability
+    unless quiz_available?(@quiz)
+      if quiz_upcoming?(@quiz)
+        redirect_to dashboard_course_quizzes_path(@course),
+                    alert: "This quiz is not available yet. It will open on #{@quiz.start_time.strftime('%d/%m/%Y %H:%M')}."
+      else
+        redirect_to dashboard_course_quizzes_path(@course),
+                    alert: "This quiz is no longer available. It closed on #{@quiz.end_time.strftime('%d/%m/%Y %H:%M')}."
+      end
     end
+  end
 
-    if !(params[:start] == 'true' || params[:force] == 'true') && QuizAttempt.where(quiz: @quiz, user: current_user,
-                                                                                    completed_at: nil).exists?
-      QuizAttempt.where(quiz: @quiz, user: current_user,
-                        completed_at: nil).order(created_at: :desc).first
-      redirect_to dashboard_course_quiz_path(@course, @quiz, start: true),
-                  notice: 'You have an exam in progress. Please continue working on it.'
-    end
+  def quiz_available?(quiz)
+    return true unless quiz.start_time || quiz.end_time
+
+    current_time = Time.current
+    start_available = quiz.start_time.nil? || current_time >= quiz.start_time
+    end_available = quiz.end_time.nil? || current_time <= quiz.end_time
+
+    start_available && end_available
+  end
+
+  def quiz_upcoming?(quiz)
+    return false unless quiz.start_time
+
+    Time.current < quiz.start_time
+  end
+
+  def quiz_expired?(quiz)
+    return false unless quiz.end_time
+
+    Time.current > quiz.end_time
   end
 
   def load_stats_data
@@ -200,6 +208,6 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   end
 
   def quiz_params
-    params.require(:quiz).permit(:title, :is_exam, :time_limit)
+    params.require(:quiz).permit(:title, :is_exam, :time_limit, :start_time, :end_time, :notify_cheating)
   end
 end

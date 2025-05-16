@@ -67,10 +67,37 @@
                         Xem kết quả (<%= latest_attempt.score %>%)
                       <% end %>
                     <% else %>
-                      <%= link_to dashboard_course_quiz_path(@course, quiz, start: true),
-                          class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white text-sm md:text-base rounded-lg transition block font-medium",
-                          data: { quiz_id: quiz.id, quiz_type: 'practice' } do %>
-                        <span class="quiz-action-text">Bắt đầu làm bài</span>
+                      <%
+                        current_time = Time.current
+                        quiz_available = true
+                        quiz_upcoming = false
+                        quiz_expired = false
+
+                        if quiz.start_time.present? && current_time < quiz.start_time
+                          quiz_available = false
+                          quiz_upcoming = true
+                        end
+
+                        if quiz.end_time.present? && current_time > quiz.end_time
+                          quiz_available = false
+                          quiz_expired = true
+                        end
+                      %>
+
+                      <% if quiz_available %>
+                        <%= link_to dashboard_course_quiz_path(@course, quiz, start: true),
+                            class: "w-full text-center px-3 py-2 md:px-4 md:py-2 #{quiz.is_exam? ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700'} text-white text-sm md:text-base rounded-lg transition block font-medium",
+                            data: { quiz_id: quiz.id, quiz_type: quiz.is_exam? ? 'exam' : 'practice' } do %>
+                          <span class="quiz-action-text"><%= quiz.is_exam? ? 'Làm bài thi' : 'Bắt đầu làm bài' %></span>
+                        <% end %>
+                      <% elsif quiz_upcoming %>
+                        <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">
+                          Mở từ <%= quiz.start_time.strftime("%d/%m/%Y %H:%M") %>
+                        </span>
+                      <% elsif quiz_expired %>
+                        <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">
+                          Đã kết thúc
+                        </span>
                       <% end %>
                     <% end %>
                   <% else %>
@@ -127,10 +154,37 @@
                         Xem kết quả (<%= latest_attempt.score %>%)
                       <% end %>
                     <% else %>
-                      <%= link_to dashboard_course_quiz_path(@course, quiz , start: true),
-                            class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-red-600 hover:bg-red-700 text-white text-sm md:text-base rounded-lg transition block font-medium",
-                            data: { quiz_id: quiz.id, quiz_type: 'exam' } do %>
-                        <span class="quiz-action-text">Làm bài thi</span>
+                      <%
+                        current_time = Time.current
+                        quiz_available = true
+                        quiz_upcoming = false
+                        quiz_expired = false
+
+                        if quiz.start_time.present? && current_time < quiz.start_time
+                          quiz_available = false
+                          quiz_upcoming = true
+                        end
+
+                        if quiz.end_time.present? && current_time > quiz.end_time
+                          quiz_available = false
+                          quiz_expired = true
+                        end
+                      %>
+
+                      <% if quiz_available %>
+                        <%= link_to dashboard_course_quiz_path(@course, quiz, start: true),
+                            class: "w-full text-center px-3 py-2 md:px-4 md:py-2 #{quiz.is_exam? ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700'} text-white text-sm md:text-base rounded-lg transition block font-medium",
+                            data: { quiz_id: quiz.id, quiz_type: quiz.is_exam? ? 'exam' : 'practice' } do %>
+                          <span class="quiz-action-text"><%= quiz.is_exam? ? 'Làm bài thi' : 'Bắt đầu làm bài' %></span>
+                        <% end %>
+                      <% elsif quiz_upcoming %>
+                        <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">
+                          Mở từ <%= quiz.start_time.strftime("%d/%m/%Y %H:%M") %>
+                        </span>
+                      <% elsif quiz_expired %>
+                        <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">
+                          Đã kết thúc
+                        </span>
                       <% end %>
                     <% end %>
                   <% else %>
@@ -154,6 +208,7 @@
       <p class="text-gray-600 dark:text-gray-400">Khóa học này hiện chưa có bài kiểm tra hoặc bài thi nào. Vui lòng quay lại sau.</p>
     </div>
   <% end %>
+
 
   <div class="mt-8">
     <%= link_to dashboard_course_path(@course), class: "inline-flex items-center text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-purple-400 " do %>
