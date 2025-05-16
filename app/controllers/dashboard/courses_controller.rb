@@ -6,31 +6,11 @@ class Dashboard::CoursesController < Dashboard::DashboardController
   def index
     @categories = Category.all
 
-    courses = if current_user&.has_role?(:instructor)
-                current_user.courses
-              else
-                Course.all
-              end
-
-    courses = courses.where('title ILIKE ?', "%#{params[:search]}%") if params[:search].present?
-
-    if params[:category_id].present?
-      courses = courses.joins(:course_categories).where(course_categories: { category_id: params[:category_id] })
-    end
-
-    courses = courses.where('price >= ?', params[:min_price]) if params[:min_price].present?
-    courses = courses.where('price <= ?', params[:max_price]) if params[:max_price].present?
-
-    courses = case params[:sort_by]
-              when 'newest'
-                courses.order(created_at: :desc)
-              when 'price_low'
-                courses.order(price: :asc)
-              when 'price_high'
-                courses.order(price: :desc)
-              else
-                courses.order(created_at: :desc)
-              end
+    courses = base_courses
+    courses = apply_search_filter(courses, params[:search])
+    courses = apply_category_filter(courses, params[:category_id])
+    courses = apply_price_filters(courses, params[:min_price], params[:max_price])
+    courses = apply_sort(courses, params[:sort_by])
 
     @courses = courses.page(params[:page]).per(12)
 
@@ -88,6 +68,53 @@ class Dashboard::CoursesController < Dashboard::DashboardController
 
   private
 
+  def base_courses
+    if current_user&.has_role?(:instructor)
+      current_user.courses
+    else
+      Course.all
+    end
+  end
+
+  def apply_search_filter(courses, search_term)
+    return courses unless search_term.present?
+
+    courses.where('title ILIKE ?', "%#{search_term}%")
+  end
+
+  def apply_category_filter(courses, category_id)
+    return courses unless category_id.present?
+
+    courses.joins(:course_categories).where(course_categories: { category_id: category_id })
+  end
+
+  def apply_price_filters(courses, min_price, max_price)
+    result = courses
+
+    if min_price.present?
+      result = result.where('price >= ?', min_price.to_i)
+    end
+
+    if max_price.present?
+      result = result.where('price <= ?', max_price.to_i)
+    end
+
+    result
+  end
+
+  def apply_sort(courses, sort_by)
+    case sort_by
+    when 'newest'
+      courses.order(created_at: :desc)
+    when 'price_low'
+      courses.order(price: :asc)
+    when 'price_high'
+      courses.order(price: :desc)
+    else
+      courses.order(created_at: :desc)
+    end
+  end
+
   def set_course
     @course = Course.find(params[:id])
   end
@@ -101,7 +128,6 @@ class Dashboard::CoursesController < Dashboard::DashboardController
     total_duration = 0
 
     @videos.each do |video|
-      total_duration += video.upload.duration if video.upload&.duration
       total_duration += video.upload.duration if video.upload&.duration
     end
 

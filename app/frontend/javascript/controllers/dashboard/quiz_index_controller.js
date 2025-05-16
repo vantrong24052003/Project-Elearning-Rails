@@ -1,41 +1,68 @@
 import { Controller } from "@hotwired/stimulus"
+import { QuizApi } from "../../services/quiz_api"
 
 export default class extends Controller {
   connect() {
-    this.checkInProgressQuizzes();
+    this.updateContinueButtons();
+    this.updateStartButtons();
+
+    this.updateInterval = setInterval(() => {
+      this.updateContinueButtons();
+      this.updateStartButtons();
+    }, 2000);
   }
 
-  checkInProgressQuizzes() {
+  async checkInProgressQuizzes() {
     const quizLinks = document.querySelectorAll('a[data-quiz-id]');
+    const courseId = window.location.pathname.match(/\/courses\/([^\/]+)/)?.[1];
 
-    quizLinks.forEach(link => {
-      const quizId = link.dataset.quizId;
-      const storageKey = `quiz_${quizId}`;
-      const quizType = link.dataset.quizType || '';
+    if (!courseId) return;
 
-      const isSubmitted = localStorage.getItem(`${storageKey}_submitted`) === 'true';
+    try {
+      const inProgressAttempts = await QuizApi.checkQuizStatus(courseId);
 
-      const savedData = sessionStorage.getItem(storageKey);
+      quizLinks.forEach(link => {
+        const quizId = link.dataset.quizId;
+        const quizType = link.dataset.quizType || '';
+        const textElement = link.querySelector('.quiz-action-text');
 
-      const textElement = link.querySelector('.quiz-action-text');
-      if (!textElement) return;
+        if (!textElement) return;
 
-      if (isSubmitted) {
-        if (quizType !== 'exam') {
-          textElement.textContent = 'Làm lại bài';
+        const hasInProgressAttempt = inProgressAttempts.some(attempt =>
+          attempt.quiz_id === quizId && attempt.completed_at === null
+        );
 
-          const currentHref = link.getAttribute('href');
-          if (currentHref && !currentHref.includes('force=true')) {
-            link.setAttribute('href', `${currentHref}?force=true`);
+        const currentHref = link.getAttribute('href');
+
+        if (hasInProgressAttempt) {
+          textElement.textContent = 'Tiếp tục làm bài';
+
+          if (currentHref) {
+            const url = new URL(currentHref, window.location.origin);
+            url.searchParams.set('start', 'true');
+            if (url.searchParams.has('force')) {
+              url.searchParams.delete('force');
+            }
+            link.setAttribute('href', url.pathname + url.search);
+          }
+        } else if (quizType !== 'exam') {
+          const hasCompletedAttempt = inProgressAttempts.some(attempt =>
+            attempt.quiz_id === quizId && attempt.completed_at !== null
+          );
+
+          if (hasCompletedAttempt) {
+            textElement.textContent = 'Làm lại bài';
+
+            if (currentHref) {
+              const url = new URL(currentHref, window.location.origin);
+              url.searchParams.set('force', 'true');
+              link.setAttribute('href', url.pathname + url.search);
+            }
           }
         }
-      } else if (savedData) {
-        textElement.textContent = 'Tiếp tục làm bài';
-        const currentHref = link.getAttribute('href');
-        if (currentHref && currentHref.includes('force=true')) {
-          link.setAttribute('href', currentHref.replace('?force=true', ''));
-        }
-      }
-    });
+      });
+    } catch (error) {
+      console.error('Lỗi khi kiểm tra bài làm đang dở:', error);
+    }
   }
 }

@@ -12,6 +12,7 @@ import course_filter_controller from "./dashboard/course_filter_controller"
 import lazy_loading_controller from "./shared/lazy_loading_controller"
 import course_viewer_controller from "./dashboard/course_viewer_controller"
 import quiz_timer_controller from "./dashboard/quiz_timer_controller"
+import quiz_proctor_controller from "./dashboard/quiz_proctor_controller"
 import quiz_index_controller from "./dashboard/quiz_index_controller"
 import drawer_controller from "./shared/drawer_controller"
 import ManageCoursesController from "./manage/courses_controller"
@@ -23,6 +24,10 @@ import ManageUploadFormController from "./manage/upload_form_controller"
 import VideoPlayerController from "./shared/video_player_controller"
 import QuizAiGeneratorController from "./manage/quiz_ai_generator_controller"
 import OverviewController from "./manage/overview_controller"
+import toaster_controller from "./shared/toaster_controller"
+import QuizFlagController from "./dashboard/quiz_flag_controller"
+import QuizRedirectController from "./dashboard/quiz_redirect_controller"
+import QuizTimerController from "./dashboard/quiz_timer_controller"
 
 // home
 application.register("home--faq", faq_controller)
@@ -38,13 +43,18 @@ application.register("shared--countdown", countdown_controller)
 application.register("shared--drawer", drawer_controller)
 application.register("shared--pagination", PaginationController)
 application.register("shared--video-player", VideoPlayerController)
+application.register("shared--toaster", toaster_controller)
 
 // dashboard
 application.register("dashboard--course-filter", course_filter_controller)
 application.register("dashboard--course-viewer", course_viewer_controller)
 application.register("dashboard--quiz-timer", quiz_timer_controller)
+application.register("dashboard--quiz-proctor", quiz_proctor_controller)
 application.register("dashboard--quiz-index", quiz_index_controller)
 application.register("dashboard--video-player", VideoPlayerController)
+application.register("dashboard--quiz-flag", QuizFlagController)
+application.register("dashboard--quiz-redirect", QuizRedirectController)
+application.register("dashboard--quiz-timer", QuizTimerController)
 
 // manage
 application.register("manage--courses", ManageCoursesController)

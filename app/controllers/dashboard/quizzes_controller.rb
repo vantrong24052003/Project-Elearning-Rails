@@ -17,6 +17,32 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   def show
     @questions = @quiz.questions
     @mode = @quiz.is_exam ? 'exam' : 'practice'
+
+    if @quiz.is_exam? && QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).exists?
+      latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
+      redirect_to dashboard_course_quiz_quiz_attempts_path(@course, @quiz, latest_attempt),
+                  notice: 'You have completed this test. Here are your results.'
+      return
+    end
+
+    @quiz_attempt = @quiz.quiz_attempts
+                         .where(user: current_user)
+                         .where(completed_at: nil)
+                         .order(created_at: :desc)
+                         .first
+
+    if params[:start] == 'true'
+      unless @quiz_attempt
+        @quiz_attempt = @quiz.quiz_attempts.create!(
+          user: current_user,
+          start_time: Time.current,
+          device_info: request.user_agent,
+          ip_address: request.remote_ip,
+          score: 0,
+          time_spent: 0
+        )
+      end
+    end
   end
 
   def new
@@ -66,21 +92,23 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   end
 
   def check_if_exam_already_taken
-    return unless @quiz.is_exam? && QuizAttempt.exists?(quiz: @quiz, user: current_user)
+    return unless @quiz.is_exam?
 
-    latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
-    redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, latest_attempt),
-                notice: 'You have already completed this exam. Here are your results.'
-  end
 
-  def check_if_quiz_already_submitted
-    return if params[:force] == 'true' && !@quiz.is_exam?
+    if QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).exists?
+      latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).where.not(completed_at: nil).order(created_at: :desc).first
+      redirect_to dashboard_course_quiz_quiz_attempts_path(@course, @quiz, latest_attempt),
+                  notice: 'You have completed this test. Here are your results.'
+      return
+    end
 
-    return unless @quiz.is_exam? && QuizAttempt.exists?(quiz: @quiz, user: current_user)
-
-    latest_attempt = QuizAttempt.where(quiz: @quiz, user: current_user).order(created_at: :desc).first
-    redirect_to dashboard_course_quiz_attempt_path(@course, @quiz, latest_attempt),
-                notice: 'You have already completed this exam. Here are your results.'
+    unless params[:start] == 'true' || params[:force] == 'true'
+      if QuizAttempt.where(quiz: @quiz, user: current_user, completed_at: nil).exists?
+        incomplete_attempt = QuizAttempt.where(quiz: @quiz, user: current_user, completed_at: nil).order(created_at: :desc).first
+        redirect_to dashboard_course_quiz_path(@course, @quiz, start: true),
+                    notice: 'You have an exam in progress. Please continue working on it.'
+      end
+    end
   end
 
   def load_stats_data
@@ -139,37 +167,32 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
 
     @total_user_attempts = QuizAttempt.joins(:quiz).where(quizzes: { course_id: @course.id }).distinct.count('user_id')
 
-    all_course_attempts = QuizAttempt.joins(:quiz)
-                                     .where(quizzes: { course_id: @course.id })
-                                     .includes(:quiz, :user)
-                                     .to_a
+    highest_score_attempt = QuizAttempt.joins(:quiz, :user)
+                                       .where(quizzes: { course_id: @course.id })
+                                       .order(score: :desc)
+                                       .select('quiz_attempts.*, users.id as user_id, users.name as user_name')
+                                       .first
 
-    @highest_score_attempt = all_course_attempts.max_by(&:score)
-    if @highest_score_attempt
-      @highest_score = @highest_score_attempt.score
-      @highest_score_user = @highest_score_attempt.user
+    if highest_score_attempt
+      @highest_score = highest_score_attempt.score
+      @highest_score_user = highest_score_attempt.user
     end
 
-    user_stats = {}
-    all_course_attempts.each do |attempt|
-      user_id = attempt.user_id
-      user_stats[user_id] ||= {
-        user: attempt.user,
-        best_score: 0,
-        attempts_count: 0,
-        last_attempt_at: nil
+    top_users_data = QuizAttempt.joins(:quiz, :user)
+                                .where(quizzes: { course_id: @course.id })
+                                .select('quiz_attempts.user_id, MAX(quiz_attempts.score) as best_score, COUNT(quiz_attempts.id) as attempts_count, MAX(quiz_attempts.created_at) as last_attempt_at, users.name as user_name')
+                                .group('quiz_attempts.user_id, users.name')
+                                .order('best_score DESC')
+                                .limit(50)
+
+    @top_users = top_users_data.map do |data|
+      {
+        user: User.new(id: data.user_id, name: data.user_name),
+        best_score: data.best_score,
+        attempts_count: data.attempts_count,
+        last_attempt_at: data.last_attempt_at
       }
-
-      user_stats[user_id][:best_score] = [user_stats[user_id][:best_score], attempt.score].max
-      user_stats[user_id][:attempts_count] += 1
-
-      if user_stats[user_id][:last_attempt_at].nil? ||
-         (attempt.created_at && attempt.created_at > user_stats[user_id][:last_attempt_at])
-        user_stats[user_id][:last_attempt_at] = attempt.created_at
-      end
     end
-
-    @top_users = user_stats.values.sort_by { |stat| -stat[:best_score] }.take(50)
   end
 
   def quiz_params

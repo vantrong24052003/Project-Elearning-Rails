@@ -27,7 +27,7 @@ end
 
 admin = begin
   user = User.new(
-    email: 'admin@gmail.com', password: 'Admin123@',
+    email: 'trongdn24052003@gmail.com', password: 'Admin123@',
     name: 'Admin User', phone: '1234567890', address: 'Admin Address',
     bio: 'This is an admin user', date_of_birth: '1985-05-10'
   )
@@ -39,7 +39,7 @@ end
 
 instructor = begin
   user = User.new(
-    email: 'instructor@gmail.com', password: 'Admin123@',
+    email: 'trongtk24052003@gmail.com', password: 'Admin123@',
     name: 'Instructor User', phone: '0987654321', address: 'Instructor Address',
     bio: 'This is an instructor user', date_of_birth: '1990-07-15'
   )
@@ -180,7 +180,7 @@ course_descriptions = [
 
 categories = [category1, category2, category3, category4]
 languages = %w[English Vietnamese Japanese]
-prices = [29.99, 49.99, 99.99, 149.99, 199.99]
+prices = [299000, 499000, 999000, 1499000, 1999000]
 
 100.times do |i|
   title_index = rand(0..course_titles.length - 1)
