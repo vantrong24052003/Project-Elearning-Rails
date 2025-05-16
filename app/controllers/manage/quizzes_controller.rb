@@ -141,7 +141,6 @@ class Manage::QuizzesController < Manage::BaseController
       end
     end
 
-    # Xử lý cập nhật thông tin cơ bản của quiz
     if @quiz.update(quiz_params)
       redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully updated.'
     else

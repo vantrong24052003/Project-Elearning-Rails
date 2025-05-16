@@ -531,7 +531,6 @@ export default class extends Controller {
     this.questionsContainerTarget.classList.add("hidden")
     this.controlsTarget.classList.add("hidden")
 
-    // Submit form
     form.submit()
   }
 
