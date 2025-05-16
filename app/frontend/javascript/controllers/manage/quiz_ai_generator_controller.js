@@ -18,8 +18,6 @@ export default class extends Controller {
     const formData = new FormData(this.formTarget)
     const courseId = formData.get('quiz[course_id]')
     const numQuestions = formData.get('num_questions')
-    const difficulty = formData.get('difficulty')
-    const questionTypes = formData.getAll('question_types[]')
 
     if (!courseId) {
       alert('Please select a course')

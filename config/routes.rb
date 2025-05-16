@@ -15,8 +15,12 @@ Rails.application.routes.draw do
       resources :quizzes do
         resources :attempts
         resources :quiz_attempts, only: %i[index show new create edit update destroy]
+        resources :quiz_statuses, only: %i[index update] do
+          collection do
+            get 'get_ip'
+          end
+        end
       end
-      resources :quiz_statuses, only: %i[index update]
       resources :payments
       resources :viewers
     end
@@ -47,9 +51,12 @@ Rails.application.routes.draw do
         get 'lesson_videos/:lesson_id', to: 'quizzes#lesson_videos', as: :lesson_videos
         get 'video_details/:video_id', to: 'quizzes#video_details', as: :video_details
       end
+
+      resources :quiz_attempts, only: [:index]
     end
     resources :questions
     resources :quiz_attempts
+    get 'quiz_dashboard', to: 'quiz_attempts#dashboard', as: :quiz_dashboard
     resources :uploads do
       member do
         get :progress

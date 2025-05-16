@@ -84,7 +84,8 @@ export default class extends Controller {
       'document:contextmenu': this.handleRightClick.bind(this),
       'document:dragstart': this.handleDragStart.bind(this),
       'document:drop': this.handleDrop.bind(this),
-      'document:mousedown': this.handleMouseDown.bind(this)
+      'document:mousedown': this.handleMouseDown.bind(this),
+      'document:printscreen': this.handleScreenshot.bind(this),
     };
 
     document.addEventListener("visibilitychange", this.eventHandlers['document:visibilitychange']);
@@ -107,32 +108,20 @@ export default class extends Controller {
       window.addEventListener("resize", this.eventHandlers['window:resize']);
 
       window.addEventListener("beforeprint", () => {
-        console.log("Print attempt detected");
         this.screenshotCount++;
         this.logAction("screenshot");
-        this.showCheatingAlert("In màn hình", "không được phép khi làm bài thi");
+        this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi")
       });
 
       this.devtoolsCheckInterval = setInterval(() => {
         this.checkDevTools();
       }, 1000);
 
-      const style = document.createElement('style');
-      style.id = 'quiz-proctor-style';
-      style.innerHTML = `
-        .question-container * {
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-        }
-      `;
-      document.head.appendChild(style);
-
       this.syncInterval = setInterval(() => {
         this.syncBehaviorCounts();
       }, 30000);
     }
+
   }
 
   setupGlobalScreenshotDetection() {
@@ -152,7 +141,7 @@ export default class extends Controller {
                 this.lastScreenshotTime = now;
                 this.screenshotCount++;
                 this.logAction("screenshot");
-                this.showCheatingAlert("Chụp màn hình phát hiện qua clipboard", "không được phép khi làm bài thi");
+                this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi")
               }
             }
           })
@@ -226,17 +215,16 @@ export default class extends Controller {
       (e.key === "S" && e.shiftKey && e.getModifierState("Meta")) ||
       (e.shiftKey && e.key === "s")
     ) {
-      console.log("Screenshot key combination detected:", e.key, e.code);
-      const now = Date.now();
-      if (now - this.lastScreenshotTime < 3000) {
-        return false;
+      const now = Date.now()
+      if (now - this.lastScreenshotTime < 1000) {
+        return false
       }
-      this.lastScreenshotTime = now;
-      this.screenshotCount++;
-      this.logAction("screenshot");
-      this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi");
-      e.preventDefault();
-      return false;
+      this.lastScreenshotTime = now
+      this.screenshotCount++
+      this.logAction("screenshot")
+      this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi")
+      e.preventDefault()
+      return false
     }
   }
 
@@ -250,86 +238,76 @@ export default class extends Controller {
   }
 
   handleCopy(e) {
-    console.log("Copy detected");
-    this.copyPasteCount++;
-    this.logAction("copy");
-    this.showCheatingAlert("Sao chép (copy)", "không được phép khi làm bài thi");
-    e.preventDefault();
-    return false;
+    this.copyPasteCount++
+    this.logAction("copy")
+    this.showCheatingAlert("Sao chép (copy)", "không được phép khi làm bài thi")
+    e.preventDefault()
+    return false
   }
 
   handlePaste(e) {
-    console.log("Paste detected");
-    this.copyPasteCount++;
-    this.logAction("paste");
-    this.showCheatingAlert("Dán (paste)", "không được phép khi làm bài thi");
-    e.preventDefault();
-    return false;
+    this.copyPasteCount++
+    this.logAction("paste")
+    this.showCheatingAlert("Dán (paste)", "không được phép khi làm bài thi")
+    e.preventDefault()
+    return false
   }
 
   handleCut(e) {
-    console.log("Cut detected");
-    this.copyPasteCount++;
-    this.logAction("cut");
-    this.showCheatingAlert("Cắt (cut)", "không được phép khi làm bài thi");
-    e.preventDefault();
-    return false;
+    this.copyPasteCount++
+    this.logAction("cut")
+    this.showCheatingAlert("Cắt (cut)", "không được phép khi làm bài thi")
+    e.preventDefault()
+    return false
   }
 
   handleVisibilityChange() {
-    console.log("Visibility changed:", document.hidden);
-    const now = Date.now();
+    const now = Date.now()
 
     if (document.hidden) {
-      this.tabSwitchCount++;
-      this.logAction("tab_switch");
-      this.tabSwitchTime = new Date();
-      this.lastVisibilityChangeTime = now;
-
+      this.tabSwitchCount++
+      this.logAction("tab_switch")
+      this.tabSwitchTime = new Date()
+      this.lastVisibilityChangeTime = now
     } else if (this.tabSwitchTime) {
-      const timeAway = new Date() - this.tabSwitchTime;
+      const timeAway = new Date() - this.tabSwitchTime
 
-      const visibilityDuration = now - this.lastVisibilityChangeTime;
+      const visibilityDuration = now - this.lastVisibilityChangeTime
       if (this.lastVisibilityChangeTime && visibilityDuration < 300) {
-        console.log("Quick visibility change detected, possible screenshot, duration:", visibilityDuration);
-        const screenshotTime = Date.now();
+        const screenshotTime = Date.now()
         if (screenshotTime - this.lastScreenshotTime < 3000) {
-          this.tabSwitchTime = null;
-          return;
+          this.tabSwitchTime = null
+          return
         }
-        this.lastScreenshotTime = screenshotTime;
-        this.screenshotCount++;
-        this.logAction("screenshot");
-        this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi");
+        this.lastScreenshotTime = screenshotTime
+        this.screenshotCount++
+        this.logAction("screenshot")
+        this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi")
       } else if (timeAway > 2000) {
-        this.showCheatingAlert("Chuyển tab", `trong ${Math.round(timeAway/1000)} giây`);
+        this.showCheatingAlert("Chuyển tab", `trong ${Math.round(timeAway/1000)} giây`)
       }
 
-      this.tabSwitchTime = null;
+      this.tabSwitchTime = null
     }
   }
 
   handleWindowBlur() {
-    console.log("Window blur detected");
-    this.tabSwitchCount++;
-    this.logAction("window_blur");
-    this.windowBlurTime = new Date();
+    this.tabSwitchCount++
+    this.logAction("window_blur")
+    this.windowBlurTime = new Date()
   }
 
   handleWindowFocus() {
-    console.log("Window focus detected");
     if (this.windowBlurTime) {
-      const timeAway = new Date() - this.windowBlurTime;
+      const timeAway = new Date() - this.windowBlurTime
       if (timeAway > 2000) {
-        this.showCheatingAlert("Rời khỏi trang", `trong ${Math.round(timeAway/1000)} giây`);
+        this.showCheatingAlert("Rời khỏi trang", `trong ${Math.round(timeAway/1000)} giây`)
       }
-      this.windowBlurTime = null;
+      this.windowBlurTime = null
     }
   }
 
   handleAllKeyDown(e) {
-    console.log("Key pressed:", e.key, e.code, e.ctrlKey, e.altKey, e.shiftKey, e.metaKey);
-
     if (
       e.key === "PrintScreen" ||
       e.code === "PrintScreen" ||
@@ -349,17 +327,16 @@ export default class extends Controller {
       (e.shiftKey && e.key === "Snapshot") ||
       (e.code === "Snapshot")
     ) {
-      console.log("Screenshot key combination detected:", e.key, e.code);
-      const now = Date.now();
+      const now = Date.now()
       if (now - this.lastScreenshotTime < 3000) {
-        return false;
+        return false
       }
-      this.lastScreenshotTime = now;
-      this.screenshotCount++;
-      this.logAction("screenshot");
-      this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi");
-      e.preventDefault();
-      return false;
+      this.lastScreenshotTime = now
+      this.screenshotCount++
+      this.logAction("screenshot")
+      this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi")
+      e.preventDefault()
+      return false
     }
 
     if (this.modeValue === 'exam' && e.key === 'F12') {
@@ -395,20 +372,17 @@ export default class extends Controller {
   }
 
   handleAllKeyUp(e) {
-    console.log("Key released:", e.key, e.code);
-
     if (e.key === "PrintScreen" || e.code === "PrintScreen") {
-      console.log("PrintScreen key released");
-      const now = Date.now();
-      if (now - this.lastScreenshotTime < 3000) {
-        return false;
+      const now = Date.now()
+      if (now - this.lastScreenshotTime < 1000) {
+        return false
       }
-      this.lastScreenshotTime = now;
-      this.screenshotCount++;
-      this.logAction("screenshot");
-      this.showCheatingAlert("Chụp màn hình (PrtSc)", "không được phép khi làm bài thi");
-      e.preventDefault();
-      return false;
+      this.lastScreenshotTime = now
+      this.screenshotCount++
+      this.logAction("screenshot")
+      this.showCheatingAlert("Chụp màn hình (PrtSc)", "không được phép khi làm bài thi")
+      e.preventDefault()
+      return false
     }
   }
 
@@ -416,7 +390,7 @@ export default class extends Controller {
     if (this.modeValue !== 'exam') return;
 
     let type = "warning";
-    
+
     if (action === "Nộp bài tự động") {
       type = "error";
       duration = 10000;
@@ -430,82 +404,23 @@ export default class extends Controller {
   }
 
   async logAction(actionType) {
+    const courseId = this.courseIdValue
+    const quizId = this.quizIdValue
+    const attemptId = this.attemptIdValue
+
     try {
-      if (!this.courseIdValue || !this.quizIdValue || !this.attemptIdValue) {
-        return;
-      }
-
-      if (!this.cheatingBehaviors) {
-        this.cheatingBehaviors = {};
-      }
-
-      this.cheatingBehaviors[actionType] = (this.cheatingBehaviors[actionType] || 0) + 1;
-
-      const totalCheatingCount =
-        this.rightClickCount +
-        this.devtoolsOpenCount * 2 +
-        this.screenshotCount * 2 +
-        this.copyPasteCount +
-        Math.floor(this.tabSwitchCount / 2);
-
-      console.log("Tổng số hành vi gian lận:", totalCheatingCount);
-      console.log("DevTools mở:", this.devtoolsOpenCount, "lần");
-      console.log("Screenshot:", this.screenshotCount, "lần");
-      console.log("Chuột phải:", this.rightClickCount, "lần");
-      console.log("Chuyển tab:", this.tabSwitchCount, "lần");
-      console.log("Copy/Paste:", this.copyPasteCount, "lần");
-
-      if (this.modeValue === 'exam') {
-        let autoSubmitReason = null;
-
-        if (this.devtoolsOpenCount >= 5) {
-          autoSubmitReason = "mở DevTools nhiều lần";
-        }
-        else if (this.screenshotCount >= 3) {
-          autoSubmitReason = "chụp màn hình nhiều lần";
-        }
-        else if (this.rightClickCount >= 8) {
-          autoSubmitReason = "click chuột phải nhiều lần";
-        }
-        else if (this.copyPasteCount >= 5) {
-          autoSubmitReason = "sao chép hoặc dán nhiều lần";
-        }
-        else if (this.tabSwitchCount >= 10) {
-          autoSubmitReason = "chuyển tab nhiều lần";
-        }
-        else if (totalCheatingCount >= 15) {
-          autoSubmitReason = "nhiều hành vi gian lận";
+      let clientIp = ''
+        try {
+          const response = QuizApi.getIpAddress()
+          const data = await response.json();
+          clientIp = data.ip
+        } catch (error) {
+          console.error("Lỗi khi lấy IP từ ipify:", error)
         }
 
-        if (autoSubmitReason) {
-          this.showCheatingAlert("Nộp bài tự động", `Do phát hiện ${autoSubmitReason}, bài thi của bạn sẽ bị nộp tự động`);
-          this.syncBehaviorCounts();
-          this.notifyAutoSubmit();
-
-          setTimeout(() => {
-            const event = new CustomEvent('quiz:auto-submit', {
-              detail: { reason: `Phát hiện ${autoSubmitReason}` }
-            });
-            document.dispatchEvent(event);
-          }, 3000);
-
-          return;
-        }
-
-        if (totalCheatingCount >= 10 && !this.warningShown) {
-          this.warningShown = true;
-          this.showCheatingAlert("Cảnh báo", "Hệ thống đã phát hiện nhiều hành vi bất thường. Tiếp tục có thể dẫn đến việc tự động nộp bài!");
-        }
-      }
-
-      await QuizApi.logAction(
-        this.courseIdValue,
-        this.quizIdValue,
-        this.attemptIdValue,
-        actionType
-      );
+      QuizApi.logAction(courseId, quizId, attemptId, actionType)
     } catch (error) {
-      console.error("Lỗi khi ghi nhận hành động:", error);
+      console.error("Lỗi khi ghi log:", error)
     }
   }
 

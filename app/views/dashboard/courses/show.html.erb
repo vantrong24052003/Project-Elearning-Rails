@@ -277,48 +277,6 @@
           <% quizzes = @course.quizzes.order(created_at: :desc).limit(3) %>
 
           <% if quizzes.any? %>
-            <div class="space-y-4 mb-6">
-              <% quizzes.each do |quiz| %>
-                <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 flex flex-wrap md:flex-nowrap justify-between items-center">
-                  <div class="flex-1 mb-3 md:mb-0">
-                    <h3 class="font-semibold text-lg text-gray-900 dark:text-white"><%= quiz.title %></h3>
-                    <div class="flex flex-wrap gap-4 mt-2 text-gray-600 dark:text-gray-300 text-sm">
-                      <span class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-blue-500 dark:text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <%= quiz.questions.count %> câu hỏi
-                      </span>
-                      <span class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-blue-500 dark:text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <%= quiz.time_limit %> phút
-                      </span>
-                    </div>
-                  </div>
-
-                  <% if user_signed_in? && current_user.enrollments.active.exists?(course: @course) %>
-                    <% already_attempted = QuizAttempt.exists?(quiz: quiz, user: current_user) %>
-                    <% if already_attempted %>
-                      <% latest_attempt = QuizAttempt.where(quiz: quiz, user: current_user).order(created_at: :desc).first %>
-                      <%= link_to dashboard_course_quiz_quiz_attempt_path(@course, quiz, latest_attempt), class: "px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white font-medium text-sm whitespace-nowrap" do %>
-                        Xem kết quả (<%= latest_attempt.score %>%)
-                      <% end %>
-                    <% else %>
-                      <%= link_to dashboard_course_quiz_path(@course, quiz), class: "px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-medium text-sm whitespace-nowrap" do %>
-                        Làm bài kiểm tra
-                      <% end %>
-                    <% end %>
-                  <% else %>
-                    <span class="px-4 py-2 rounded-lg bg-gray-400 text-white font-medium text-sm whitespace-nowrap cursor-not-allowed">
-                      Cần đăng ký khóa học
-                    </span>
-                  <% end %>
-                </div>
-              <% end %>
-            </div>
-
             <%= link_to dashboard_course_quizzes_path(@course), class: "inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500  text-sm" do %>
               Xem tất cả bài kiểm tra
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">

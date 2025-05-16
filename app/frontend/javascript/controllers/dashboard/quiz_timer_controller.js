@@ -4,7 +4,7 @@ import { QuizApi } from "../../services/quiz_api"
 export default class extends Controller {
   static targets = [
     "display", "form", "timeSpent", "progress", "submitBtn", "cancelBtn",
-    "pauseBtn", "resumeBtn", "questionContainer", "questionNav", "flagBtn",
+    "pauseBtn", "resumeBtn", "questionContainer", "questionNav",
     "questionNavItem", "questionCount", "currentQuestionDisplay", "timer",
     "progressBar"
   ]
@@ -30,15 +30,7 @@ export default class extends Controller {
     document.addEventListener('turbo:before-render', this.handleTurboBeforeRender.bind(this));
     document.addEventListener('quiz:auto-submit', this.autoSubmit.bind(this));
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const startingNewQuiz = urlParams.get('start') === 'true';
-    const forceRetake = urlParams.get('force') === 'true';
-
-    if (this.modeValue === 'exam') {
-      this.checkQuizStatus();
-    } else {
-      this.initializeQuizTimer();
-    }
+    this.checkQuizStatus();
   }
 
   async checkQuizStatus() {
@@ -72,11 +64,9 @@ export default class extends Controller {
   }
 
   async initializeQuizTimer() {
-    this.flaggedQuestions = new Set();
     this.isPaused = false;
     this.isSubmitted = false;
 
-    // Phòng trường hợp không load được questions
     if (!this.hasQuestionContainerTarget) {
       console.error("Không tìm thấy container câu hỏi");
       return;
@@ -88,20 +78,18 @@ export default class extends Controller {
       return;
     }
 
-    // Time limit từ HTML
     if (this.hasDisplayTarget && this.displayTarget.dataset.timeLimit) {
       this.timeLimit = parseInt(this.displayTarget.dataset.timeLimit, 10) * 60;
       this.remainingSeconds = this.timeLimit;
       this.elapsedTime = 0;
     } else {
       console.error("Không tìm thấy thông tin time limit");
-      this.timeLimit = 3600; // Default 60 phút
+      this.timeLimit = 3600;
       this.remainingSeconds = 3600;
       this.elapsedTime = 0;
     }
 
     try {
-      // Tải trạng thái từ database
       if (this.courseIdValue && this.quizIdValue && this.attemptIdValue) {
         const state = await QuizApi.getAttemptState(
           this.courseIdValue,
@@ -122,10 +110,6 @@ export default class extends Controller {
           if (state.answers) {
             this.applyStoredAnswers(state.answers);
           }
-
-          if (state.flagged_questions) {
-            this.flaggedQuestions = new Set(state.flagged_questions);
-          }
         }
       }
     } catch (error) {
@@ -134,16 +118,13 @@ export default class extends Controller {
 
     this.startTime = new Date(new Date() - this.elapsedTime * 1000);
     this.startTimer();
-    this.showQuestion(this.currentQuestionValue);
     this.setupFormListeners();
     this.updateAnsweredQuestions();
-    this.updateNavigation();
     this.updateDisplay();
 
     history.pushState(null, null, location.href);
     window.addEventListener('popstate', this.handleBackButton.bind(this));
 
-    // Lưu trạng thái ban đầu
     this.saveStateDebounced = this.debounce(this.saveState.bind(this), 1000);
   }
 
@@ -232,16 +213,6 @@ export default class extends Controller {
       radio.addEventListener('change', (e) => {
         this.updateAnsweredQuestions();
         this.saveStateDebounced();
-
-        const questionIdMatch = e.target.name.match(/\[(\w+)\]/);
-        if (questionIdMatch && questionIdMatch[1]) {
-          const questionId = questionIdMatch[1];
-          const navItem = this.findNavItemByQuestionId(questionId);
-          if (navItem) {
-            navItem.classList.remove('bg-gray-500', 'bg-yellow-500');
-            navItem.classList.add('bg-green-500');
-          }
-        }
       });
     });
 
@@ -254,18 +225,14 @@ export default class extends Controller {
     });
   }
 
-  findNavItemByQuestionId(questionId) {
-    if (!this.hasQuestionNavItemTarget) return null;
-
-    return this.questionNavItemTargets.find(item => item.dataset.questionId === questionId);
-  }
-
   updateAnsweredQuestions() {
-    if (!this.hasFormTarget || !this.hasProgressTarget) return;
+    if (!this.hasFormTarget) return;
 
     const radioGroups = this.getAnsweredQuestions();
-    this.progressTarget.textContent = radioGroups.length;
-    this.updateNavigation();
+
+    if (this.hasProgressTarget) {
+      this.progressTarget.textContent = radioGroups.length;
+    }
   }
 
   getAnsweredQuestions() {
@@ -290,31 +257,38 @@ export default class extends Controller {
       return;
     }
 
-    if (!this.hasFormTarget || !this.hasTimeSpentTarget || !this.hasTotalQuestionsValue) return;
+    if (!this.hasFormTarget || !this.hasTimeSpentTarget) return;
 
     this.timeSpentTarget.value = this.elapsedTime;
 
-    const answeredQuestions = parseInt(this.progressTarget.textContent, 10);
+    const answeredQuestions = this.getAnsweredQuestions().length;
 
-    if (answeredQuestions < this.totalQuestionsValue) {
-      if (this.modeValue === 'exam') {
-        if (confirm(`Bạn chỉ mới trả lời ${answeredQuestions}/${this.totalQuestionsValue} câu hỏi. Bạn có chắc muốn nộp bài?`)) {
-          this.isSubmitted = true;
-          window.quizSubmitted = true;
-          this.formTarget.submit();
-        }
-      } else {
-        if (confirm(`Bạn chỉ mới trả lời ${answeredQuestions}/${this.totalQuestionsValue} câu hỏi. Bạn vẫn muốn nộp bài?`)) {
-          this.isSubmitted = true;
-          window.quizSubmitted = true;
-          this.formTarget.submit();
-        }
-      }
-    } else {
+    const submitTheForm = () => {
       this.isSubmitted = true;
       window.quizSubmitted = true;
       this.formTarget.submit();
-    }
+    };
+
+    const confirmAndSubmit = () => {
+      if (answeredQuestions < this.totalQuestionsValue) {
+        if (this.modeValue === 'exam') {
+          if (confirm(`Bạn chỉ mới trả lời ${answeredQuestions}/${this.totalQuestionsValue} câu hỏi. Bạn có chắc muốn nộp bài?`)) {
+            this.isSubmitted = true;
+            this.getIpAndSubmit(submitTheForm);
+          }
+        } else {
+          if (confirm(`Bạn chỉ mới trả lời ${answeredQuestions}/${this.totalQuestionsValue} câu hỏi. Bạn vẫn muốn nộp bài?`)) {
+            this.isSubmitted = true;
+            this.getIpAndSubmit(submitTheForm);
+          }
+        }
+      } else {
+        this.isSubmitted = true;
+        this.getIpAndSubmit(submitTheForm);
+      }
+    };
+
+    confirmAndSubmit();
   }
 
   autoSubmit(event) {
@@ -329,10 +303,52 @@ export default class extends Controller {
     }
 
     this.timeSpentTarget.value = this.elapsedTime;
-    this.isSubmitted = true;
-    window.quizSubmitted = true;
 
-    this.formTarget.submit();
+    this.getIpAndSubmit(() => {
+      this.isSubmitted = true;
+      window.quizSubmitted = true;
+      this.formTarget.submit();
+    });
+  }
+
+  async getIpAndSubmit(callback) {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const clientIp = urlParams.get('client_ip');
+
+      if (clientIp) {
+        console.log("Using IP from URL:", clientIp);
+        const ipInput = document.createElement('input');
+        ipInput.type = 'hidden';
+        ipInput.name = 'client_ip';
+        ipInput.value = clientIp;
+        this.formTarget.appendChild(ipInput);
+        callback();
+      } else {
+        try {
+          const ipData = await QuizApi.getIpAddress();
+          console.log("IP from API:", ipData);
+
+          const ipInput = document.createElement('input');
+          ipInput.type = 'hidden';
+          ipInput.name = 'client_ip';
+          ipInput.value = ipData.ip || "0.0.0.0";
+          this.formTarget.appendChild(ipInput);
+          callback();
+        } catch (ipError) {
+          console.error("Error getting IP from API:", ipError);
+          const ipInput = document.createElement('input');
+          ipInput.type = 'hidden';
+          ipInput.name = 'client_ip';
+          ipInput.value = "0.0.0.0";
+          this.formTarget.appendChild(ipInput);
+          callback();
+        }
+      }
+    } catch (error) {
+      console.error("Error in getIpAndSubmit:", error);
+      callback();
+    }
   }
 
   cancel(event) {
@@ -359,149 +375,18 @@ export default class extends Controller {
     }
   }
 
-  flagCurrentQuestion() {
-    if (!this.hasQuestionContainerTarget || !this.hasFlagBtnTarget) return;
 
-    const questionIndex = this.currentQuestionValue;
-    const questions = this.questionContainerTarget.querySelectorAll('.question');
-
-    if (questionIndex < 0 || questionIndex >= questions.length) {
-      console.error("Chỉ số câu hỏi không hợp lệ:", questionIndex);
-      return;
-    }
-
-    const currentQuestion = questions[questionIndex];
-    if (!currentQuestion || !currentQuestion.dataset.questionId) {
-      console.error("Không tìm thấy question-id cho câu hỏi hiện tại");
-      return;
-    }
-
-    const questionId = currentQuestion.dataset.questionId;
-    const navItem = this.findNavItemByQuestionId(questionId);
-
-    if (this.flaggedQuestions.has(questionId)) {
-      this.flaggedQuestions.delete(questionId);
-      this.flagBtnTarget.classList.remove('bg-yellow-500');
-      this.flagBtnTarget.classList.add('bg-gray-500');
-      if (navItem) {
-        navItem.classList.remove('bg-yellow-500');
-      }
-    } else {
-      this.flaggedQuestions.add(questionId);
-      this.flagBtnTarget.classList.remove('bg-gray-500');
-      this.flagBtnTarget.classList.add('bg-yellow-500');
-      if (navItem) {
-        navItem.classList.add('bg-yellow-500');
-      }
-    }
-
-    this.saveStateDebounced();
+  updatePauseButtonUI() {
+    this.pauseBtnTarget.classList.add('hidden');
+    this.resumeBtnTarget.classList.remove('hidden');
+    this.displayTarget.classList.add('text-yellow-500');
   }
 
-  getCurrentQuestion() {
-    return this.currentQuestionValue;
-  }
-
-  showQuestion(index) {
-    if (!this.hasQuestionContainerTarget) {
-      console.error("Không tìm thấy container câu hỏi");
-      return;
+  handleTurboBeforeRender(event) {
+    const currentUrl = window.location.pathname;
+    if (!currentUrl.includes('/quiz_attempts/') && !currentUrl.includes('/results')) {
+      this.saveState();
     }
-
-    const questions = this.questionContainerTarget.querySelectorAll('.question');
-    if (questions.length === 0) {
-      console.error("Không có câu hỏi nào trong container");
-      return;
-    }
-
-    if (index < 0 || index >= questions.length) {
-      console.error("Chỉ số câu hỏi không hợp lệ:", index);
-      return;
-    }
-
-    questions.forEach((q, i) => {
-      q.classList.toggle('hidden', i !== index);
-    });
-
-    this.currentQuestionValue = index;
-
-    if (this.hasCurrentQuestionDisplayTarget) {
-      this.currentQuestionDisplayTarget.textContent = index + 1;
-    }
-
-    const currentQuestion = questions[index];
-    if (!currentQuestion || !currentQuestion.dataset.questionId) {
-      console.error("Không tìm thấy question-id cho câu hỏi hiện tại");
-      return;
-    }
-
-    const questionId = currentQuestion.dataset.questionId;
-
-    if (this.hasFlagBtnTarget) {
-      this.flagBtnTarget.classList.toggle('bg-yellow-500', this.flaggedQuestions.has(questionId));
-      this.flagBtnTarget.classList.toggle('bg-gray-500', !this.flaggedQuestions.has(questionId));
-    }
-
-    this.updateNavigation();
-    this.saveStateDebounced();
-  }
-
-  nextQuestion() {
-    if (!this.hasQuestionContainerTarget) return;
-
-    const questions = this.questionContainerTarget.querySelectorAll('.question');
-    if (this.currentQuestionValue < questions.length - 1) {
-      this.showQuestion(this.currentQuestionValue + 1);
-    }
-  }
-
-  prevQuestion() {
-    if (this.currentQuestionValue > 0) {
-      this.showQuestion(this.currentQuestionValue - 1);
-    }
-  }
-
-  goToQuestion(event) {
-    const index = parseInt(event.currentTarget.dataset.index, 10);
-    this.showQuestion(index);
-  }
-
-  updateNavigation() {
-    if (!this.hasQuestionNavItemTarget || !this.hasFormTarget) return;
-
-    const answeredMap = {};
-
-    const radioGroups = this.formTarget.querySelectorAll('input[type="radio"]:checked');
-    radioGroups.forEach(radio => {
-      const name = radio.getAttribute('name');
-      const questionIdMatch = name.match(/\[(\w+)\]/);
-      if (questionIdMatch && questionIdMatch[1]) {
-        const questionId = questionIdMatch[1];
-        answeredMap[questionId] = true;
-      }
-    });
-
-    this.questionNavItemTargets.forEach((item, index) => {
-      if (!item.dataset.questionId) return;
-
-      const questionId = item.dataset.questionId;
-
-      item.classList.remove('bg-green-500', 'bg-gray-500', 'bg-yellow-500');
-
-      if (answeredMap[questionId]) {
-        item.classList.add('bg-green-500');
-      } else if (this.flaggedQuestions.has(questionId)) {
-        item.classList.add('bg-yellow-500');
-      } else {
-        item.classList.add('bg-gray-500');
-      }
-
-      if (index === this.currentQuestionValue) {
-        item.classList.add('ring-2', 'ring-blue-500');
-      } else {
-        item.classList.remove('ring-2', 'ring-blue-500');
-      }
-    });
   }
 
   async saveState() {
@@ -524,8 +409,7 @@ export default class extends Controller {
       const state = {
         current_question: this.currentQuestionValue,
         elapsed_time: this.elapsedTime,
-        answers,
-        flagged_questions: Array.from(this.flaggedQuestions)
+        answers
       };
 
       await QuizApi.saveAttemptState(
@@ -539,31 +423,6 @@ export default class extends Controller {
     }
   }
 
-  handleBackButton(e) {
-    e.preventDefault();
-    history.pushState(null, null, location.href);
-
-    if (!this.isSubmitted && confirm('Bạn có chắc muốn rời khỏi trang này? Tiến trình làm bài sẽ được lưu lại.')) {
-      window.removeEventListener('popstate', this.handleBackButton);
-      this.saveState();
-      history.back();
-    }
-  }
-
-  updatePauseButtonUI() {
-    this.pauseBtnTarget.classList.add('hidden');
-    this.resumeBtnTarget.classList.remove('hidden');
-    this.displayTarget.classList.add('text-yellow-500');
-  }
-
-  handleTurboBeforeRender(event) {
-    const currentUrl = window.location.pathname;
-    if (!currentUrl.includes('/quiz_attempts/') && !currentUrl.includes('/results')) {
-      this.saveState();
-    }
-  }
-
-  // Hàm debounce để tránh lưu quá nhiều
   debounce(func, wait) {
     return (...args) => {
       if (this.saveStateTimeout) {
