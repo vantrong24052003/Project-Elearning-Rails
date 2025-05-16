@@ -491,6 +491,7 @@ DEPENDENCIES
   debug
   devise
   enumerize
+  faraday
   jbuilder
   kamal
   kaminari
