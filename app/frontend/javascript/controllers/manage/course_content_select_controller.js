@@ -464,7 +464,16 @@ export default class extends Controller {
       if (optionsContainer) {
         optionsContainer.innerHTML = ''
 
-        question.options.forEach((option, optionIndex) => {
+        // Xử lý options dù là object hay array
+        let optionsArray = [];
+        if (Array.isArray(question.options)) {
+          optionsArray = question.options;
+        } else if (typeof question.options === 'object' && question.options !== null) {
+          // Chuyển đổi từ object sang array
+          optionsArray = Object.values(question.options);
+        }
+
+        optionsArray.forEach((option, optionIndex) => {
           const optionItem = document.createElement('div')
           optionItem.className = 'option-item flex items-start gap-2'
           optionItem.innerHTML = `
@@ -564,7 +573,16 @@ export default class extends Controller {
       if (optionsContainer) {
         optionsContainer.innerHTML = ''
 
-        newQuestion.options.forEach((option, optionIndex) => {
+        // Xử lý options dù là object hay array
+        let optionsArray = [];
+        if (Array.isArray(newQuestion.options)) {
+          optionsArray = newQuestion.options;
+        } else if (typeof newQuestion.options === 'object' && newQuestion.options !== null) {
+          // Chuyển đổi từ object sang array
+          optionsArray = Object.values(newQuestion.options);
+        }
+
+        optionsArray.forEach((option, optionIndex) => {
           const optionItem = document.createElement('div')
           optionItem.className = 'option-item flex items-start gap-2'
           optionItem.innerHTML = `
@@ -686,8 +704,15 @@ export default class extends Controller {
       })
     })
 
-    this.questionsDataTarget.value = JSON.stringify(questionsData)
+    const questionsDataField = this.element.querySelector('[data-manage--course-content-select-target="questionsData"]')
+    if (questionsDataField) {
+      questionsDataField.value = JSON.stringify(questionsData)
+    } else {
+      console.error("Không tìm thấy trường questionsData")
+      return
+    }
 
+    console.log("Submitting form with questions data:", questionsData)
     form.submit()
   }
 }
