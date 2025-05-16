@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus'
 import { CourseContentApi } from '../../services/course_content_api'
+import { QuizApi } from '../../services/quiz_api'
 
 export default class extends Controller {
   static targets = [
@@ -22,10 +23,8 @@ export default class extends Controller {
   // Phương thức load các chương khi chọn khóa học
   loadChapters() {
     console.log("loadChapters called")
-    // Kiểm tra xem courseSelect có phải là selector select trong DOM không
     console.log("courseSelect element:", this.courseSelectTarget)
 
-    // Trong trường hợp courseSelect là một phần tử khác, tìm select trong form của quiz
     let courseId = this.courseSelectTarget.value
     if (!courseId) {
       const formElement = document.querySelector('form[data-manage--course-content-select-target="form"]')
@@ -64,7 +63,6 @@ export default class extends Controller {
       })
   }
 
-  // Phương thức load các bài học khi chọn chương
   loadLessons() {
     const chapterId = this.chapterSelectTarget.value
     if (!chapterId) {
@@ -90,7 +88,6 @@ export default class extends Controller {
       })
   }
 
-  // Phương thức load các video khi chọn bài học
   loadVideos() {
     const lessonId = this.lessonSelectTarget.value
     if (!lessonId) {
@@ -237,7 +234,6 @@ export default class extends Controller {
     const courseId = formData.get('quiz[course_id]')
     const numQuestions = formData.get('num_questions') || 5
     const difficulty = formData.get('difficulty') || 'medium'
-    const questionTypes = formData.getAll('question_types[]')
     const videoId = this.hasVideoSelectTarget ? this.videoSelectTarget.value : null
 
     if (!courseId) {
@@ -253,7 +249,6 @@ export default class extends Controller {
     this.controlsTarget.classList.add("hidden")
 
     if (videoId) {
-      // Nếu có video được chọn, sử dụng transcription
       this.showToast('Đang lấy dữ liệu phiên âm từ video...', 'success')
 
       this.createQuestionsFromVideo(videoId, numQuestions, difficulty)
@@ -264,34 +259,6 @@ export default class extends Controller {
         })
         .catch(error => {
           console.error('Lỗi khi tạo câu hỏi từ video:', error)
-          this.createSampleQuestions(numQuestions)
-            .then(questions => {
-              this.questions = questions
-              this.displayQuestionsAndAnalysis()
-              this.showToast('Lỗi khi tạo câu hỏi từ phiên âm, sử dụng mô tả người dùng thay thế', 'warning')
-            })
-            .catch(err => {
-              console.error('Lỗi khi tạo câu hỏi mẫu:', err)
-              this.showToast('Đã xảy ra lỗi khi tạo câu hỏi', 'error')
-              this.loadingTarget.classList.add("hidden")
-              this.isGenerating = false
-            })
-        })
-    } else {
-      // Nếu không có video, sử dụng mô tả người dùng
-      this.showToast('Đang tạo câu hỏi từ mô tả của bạn...', 'success')
-
-      this.createSampleQuestions(numQuestions)
-        .then(questions => {
-          this.questions = questions
-          this.displayQuestionsAndAnalysis()
-          this.showToast('Đã tạo câu hỏi thành công!', 'success')
-        })
-        .catch(error => {
-          console.error('Lỗi khi tạo câu hỏi:', error)
-          this.showToast('Đã xảy ra lỗi khi tạo câu hỏi', 'error')
-          this.loadingTarget.classList.add("hidden")
-          this.isGenerating = false
         })
     }
   }
@@ -330,116 +297,31 @@ export default class extends Controller {
           const title = video.title || 'Video không có tiêu đề'
           const transcription = video.transcription
 
-          // Kiểm tra nếu không có transcription hoặc là message mặc định
           if (!transcription || transcription === "Chưa có phiên âm cho video này.") {
-            console.warn('Không có dữ liệu phiên âm, sử dụng câu hỏi mẫu')
-            resolve(this.createSampleQuestions(numQuestions))
-            return
+            this.showToast('Không có phiên âm cho video này.', 'error')
+            return []
           }
 
-          // Hiển thị thông báo đang tạo câu hỏi
-          this.showToast('Đang tạo câu hỏi từ phiên âm...', 'success')
 
-          // Có transcription, gửi đến server để tạo câu hỏi
-          fetch('/manage/quizzes.json', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-              title: title,
-              description: transcription,
-              num_questions: numQuestions,
-              difficulty: difficulty || 'medium'
+          QuizApi.generateQuestions(title, transcription, numQuestions, difficulty)
+            .then(questions => {
+              console.log('Câu hỏi từ AI:', questions)
+              if (!questions || !Array.isArray(questions) || questions.length === 0) {
+                throw new Error('Không nhận được câu hỏi hợp lệ từ AI')
+              }
+              this.showToast('Đã tạo câu hỏi thành công từ phiên âm!', 'success')
+              resolve(questions)
             })
-          })
-          .then(response => {
-            if (!response.ok) {
-              return response.json().then(errorData => {
-                throw new Error(errorData.error || 'Lỗi khi tạo câu hỏi từ phiên âm')
-              })
-            }
-            return response.json()
-          })
-          .then(data => {
-            console.log('Câu hỏi từ AI:', data)
-            if (!data || !Array.isArray(data) || data.length === 0) {
-              throw new Error('Không nhận được câu hỏi hợp lệ từ AI')
-            }
-            this.showToast('Đã tạo câu hỏi thành công từ phiên âm!', 'success')
-            resolve(data)
-          })
-          .catch(error => {
-            console.error('Lỗi khi gọi API tạo câu hỏi:', error.message)
-            this.showToast(`Lỗi: ${error.message}`, 'error')
-            reject(error)
-          })
+            .catch(error => {
+              console.error('Lỗi khi gọi API tạo câu hỏi:', error.message)
+              this.showToast(`Lỗi: ${error.message}`, 'error')
+              reject(error)
+            })
         })
         .catch(error => {
           console.error('Lỗi khi lấy thông tin video:', error)
           reject(error)
         })
-    })
-  }
-
-  createSampleQuestions(count) {
-    const questionContent = document.querySelector('textarea[name="user_description"]')?.value || 'Nội dung mẫu khóa học'
-    const courseTitle = document.querySelector('select[name="quiz[course_id]"] option:checked')?.text || 'Khóa học'
-    const difficulty = document.querySelector('select[name="difficulty"]')?.value || 'medium'
-
-    return fetch('/manage/quizzes.json', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-      },
-      body: JSON.stringify({
-        title: courseTitle,
-        description: questionContent,
-        num_questions: count,
-        difficulty: difficulty
-      })
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Lỗi khi tạo câu hỏi')
-      }
-      return response.json()
-    })
-    .catch(error => {
-      console.error('Lỗi khi gọi API tạo câu hỏi:', error)
-
-      // Trả về dữ liệu mẫu nếu API lỗi
-      const questions = []
-      const questionTypes = [
-        "Khái niệm chính của khóa học là gì?",
-        "Đâu là ví dụ tốt nhất minh họa cho nguyên tắc này?",
-        "Trong trường hợp nào phương pháp này không áp dụng được?",
-        "Điểm khác biệt chính giữa hai khái niệm là gì?",
-        "Đâu là thứ tự đúng của các bước trong quy trình này?",
-        "Yếu tố nào quan trọng nhất trong việc áp dụng lý thuyết này?",
-        "Đâu là kết quả dự kiến khi áp dụng phương pháp này?"
-      ]
-
-      for (let i = 0; i < count; i++) {
-        const options = [
-          `Đáp án A mẫu cho câu hỏi ${i+1}`,
-          `Đáp án B mẫu cho câu hỏi ${i+1}`,
-          `Đáp án C mẫu cho câu hỏi ${i+1}`,
-          `Đáp án D mẫu cho câu hỏi ${i+1}`
-        ]
-
-        questions.push({
-          content: `${questionTypes[i % questionTypes.length]} (Câu hỏi mẫu ${i+1})`,
-          options: options,
-          correct_option: Math.floor(Math.random() * 4),
-          explanation: `Giải thích mẫu cho câu hỏi ${i+1}. Đáp án đúng là vì nó phù hợp với các nguyên tắc đã học trong khóa học. Các đáp án khác không chính xác vì chúng không đáp ứng điều kiện hoặc ngữ cảnh của vấn đề.`,
-          difficulty: ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)]
-        })
-      }
-
-      return questions
     })
   }
 
@@ -464,13 +346,15 @@ export default class extends Controller {
       if (optionsContainer) {
         optionsContainer.innerHTML = ''
 
-        // Xử lý options dù là object hay array
         let optionsArray = [];
-        if (Array.isArray(question.options)) {
+
+        if (question.options && typeof question.options === 'object' && !Array.isArray(question.options)) {
+          optionsArray = Object.keys(question.options)
+            .sort()
+            .map(key => question.options[key]);
+        }
+        else if (Array.isArray(question.options)) {
           optionsArray = question.options;
-        } else if (typeof question.options === 'object' && question.options !== null) {
-          // Chuyển đổi từ object sang array
-          optionsArray = Object.values(question.options);
         }
 
         optionsArray.forEach((option, optionIndex) => {
@@ -509,57 +393,15 @@ export default class extends Controller {
       const numQuestions = 1
       const difficulty = document.querySelector('select[name="difficulty"]')?.value || 'medium'
 
-      this.showToast(`Đang tạo lại câu hỏi #${index + 1} từ phiên âm video...`, 'success')
-
       this.createQuestionsFromVideo(videoId, numQuestions, difficulty).then(questions => {
         if (questions && questions.length > 0) {
           this.questions[index] = questions[0]
           this.updateQuestionItem(index, questions[0])
           this.showToast(`Đã tạo lại câu hỏi #${index + 1} thành công!`, 'success')
-        } else {
-          // Fallback to sample question if no questions returned
-          this.showToast('Không nhận được câu hỏi từ AI, sử dụng câu hỏi mẫu', 'error')
-          this.createSampleQuestions(1)
-            .then(questions => {
-              if (questions && questions.length > 0) {
-                this.questions[index] = questions[0]
-                this.updateQuestionItem(index, questions[0])
-              }
-            })
-            .catch(error => {
-              console.error('Lỗi khi tạo câu hỏi mẫu:', error)
-            })
         }
       }).catch(error => {
         console.error('Lỗi khi tạo lại câu hỏi từ video:', error)
-        this.showToast('Lỗi khi tạo câu hỏi từ phiên âm, sử dụng câu hỏi mẫu thay thế', 'error')
-        this.createSampleQuestions(1)
-          .then(questions => {
-            if (questions && questions.length > 0) {
-              this.questions[index] = questions[0]
-              this.updateQuestionItem(index, questions[0])
-            }
-          })
-          .catch(err => {
-            console.error('Lỗi khi tạo câu hỏi mẫu:', err)
-          })
       })
-    } else {
-      this.showToast('Không có video được chọn, sử dụng mô tả người dùng', 'info')
-      this.createSampleQuestions(1)
-        .then(questions => {
-          if (questions && questions.length > 0) {
-            this.questions[index] = questions[0]
-            this.updateQuestionItem(index, questions[0])
-            this.showToast('Đã tạo lại câu hỏi thành công', 'success')
-          } else {
-            this.showToast('Không thể tạo câu hỏi mẫu', 'error')
-          }
-        })
-        .catch(error => {
-          console.error('Lỗi khi tạo câu hỏi mẫu:', error)
-          this.showToast('Đã xảy ra lỗi khi tạo câu hỏi', 'error')
-        })
     }
   }
 
@@ -573,13 +415,15 @@ export default class extends Controller {
       if (optionsContainer) {
         optionsContainer.innerHTML = ''
 
-        // Xử lý options dù là object hay array
         let optionsArray = [];
-        if (Array.isArray(newQuestion.options)) {
+
+        if (newQuestion.options && typeof newQuestion.options === 'object' && !Array.isArray(newQuestion.options)) {
+          optionsArray = Object.keys(newQuestion.options)
+            .sort()
+            .map(key => newQuestion.options[key]);
+        }
+        else if (Array.isArray(newQuestion.options)) {
           optionsArray = newQuestion.options;
-        } else if (typeof newQuestion.options === 'object' && newQuestion.options !== null) {
-          // Chuyển đổi từ object sang array
-          optionsArray = Object.values(newQuestion.options);
         }
 
         optionsArray.forEach((option, optionIndex) => {
@@ -609,7 +453,6 @@ export default class extends Controller {
     const difficulty = document.querySelector('select[name="difficulty"]')?.value || 'medium'
 
     if (videoId) {
-      this.showToast('Đang tạo lại câu hỏi từ phiên âm video...', 'success')
 
       this.createQuestionsFromVideo(videoId, numQuestions, difficulty).then(questions => {
         this.questions = questions
@@ -620,41 +463,8 @@ export default class extends Controller {
         this.showToast(`Đã tạo lại ${questions.length} câu hỏi từ phiên âm video thành công!`, 'success')
       }).catch(error => {
         console.error('Lỗi khi tạo lại câu hỏi từ video:', error)
-        this.showToast('Lỗi khi tạo câu hỏi từ phiên âm, sử dụng mô tả người dùng thay thế', 'error')
-
-        this.createSampleQuestions(numQuestions)
-          .then(questions => {
-            this.questions = questions
-            this.renderQuestions()
-            this.loadingTarget.classList.add("hidden")
-            this.questionsContainerTarget.classList.remove("hidden")
-            this.isGenerating = false
-          })
-          .catch(err => {
-            console.error('Lỗi khi tạo câu hỏi mẫu:', err)
-            this.loadingTarget.classList.add("hidden")
-            this.isGenerating = false
-            this.showToast('Đã xảy ra lỗi khi tạo câu hỏi', 'error')
-          })
+        return []
       })
-    } else {
-      this.showToast('Sử dụng mô tả người dùng để tạo câu hỏi...', 'info')
-
-      this.createSampleQuestions(numQuestions)
-        .then(questions => {
-          this.questions = questions
-          this.renderQuestions()
-          this.loadingTarget.classList.add("hidden")
-          this.questionsContainerTarget.classList.remove("hidden")
-          this.isGenerating = false
-          this.showToast('Đã tạo lại câu hỏi thành công', 'success')
-        })
-        .catch(error => {
-          console.error('Lỗi khi tạo câu hỏi mẫu:', error)
-          this.loadingTarget.classList.add("hidden")
-          this.isGenerating = false
-          this.showToast('Đã xảy ra lỗi khi tạo câu hỏi', 'error')
-        })
     }
   }
 
@@ -681,10 +491,11 @@ export default class extends Controller {
       const explanation = item.querySelector('.explanation').value
       const difficulty = item.querySelector('.question-difficulty').value
 
-      const options = []
       const optionElements = item.querySelectorAll('.option-text')
-      optionElements.forEach(el => {
-        options.push(el.value)
+
+      const options = {}
+      optionElements.forEach((el, idx) => {
+        options[idx.toString()] = el.value
       })
 
       let correctOption = 0
@@ -704,15 +515,23 @@ export default class extends Controller {
       })
     })
 
-    const questionsDataField = this.element.querySelector('[data-manage--course-content-select-target="questionsData"]')
-    if (questionsDataField) {
-      questionsDataField.value = JSON.stringify(questionsData)
-    } else {
-      console.error("Không tìm thấy trường questionsData")
-      return
-    }
+    const questionsDataField = form.querySelector('input[name="questions_data"]')
+    questionsDataField.value = JSON.stringify(questionsData)
 
-    console.log("Submitting form with questions data:", questionsData)
+    let sourceTypeField = form.querySelector('input[name="source_type"]')
+    if (!sourceTypeField) {
+      sourceTypeField = document.createElement('input')
+      sourceTypeField.type = 'hidden'
+      sourceTypeField.name = 'source_type'
+      form.appendChild(sourceTypeField)
+    }
+    sourceTypeField.value = 'ai_generated'
+
+    this.loadingTarget.classList.remove("hidden")
+    this.questionsContainerTarget.classList.add("hidden")
+    this.controlsTarget.classList.add("hidden")
+
+    // Submit form
     form.submit()
   }
 }
