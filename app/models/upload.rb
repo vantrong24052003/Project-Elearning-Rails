@@ -20,9 +20,9 @@ class Upload < ApplicationRecord
 
   def should_start_transcription?
     saved_change_to_status? &&
-    status == 'success' &&
-    transcription.blank? &&
-    cdn_url.present? &&
-    !cdn_url.include?('placeholder')
+      status == 'success' &&
+      transcription.blank? &&
+      cdn_url.present? &&
+      !cdn_url.include?('placeholder')
   end
 end

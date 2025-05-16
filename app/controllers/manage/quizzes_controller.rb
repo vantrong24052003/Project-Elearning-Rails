@@ -23,16 +23,17 @@ class Manage::QuizzesController < Manage::BaseController
   def new
     @quiz = Quiz.new
 
-     respond_to do |format|
+    respond_to do |format|
       format.html
       format.json do
-        if params[:get_content_type] == 'course_chapters'
+        case params[:get_content_type]
+        when 'course_chapters'
           render json: get_course_chapters
-        elsif params[:get_content_type] == 'chapter_lessons'
+        when 'chapter_lessons'
           render json: get_chapter_lessons
-        elsif params[:get_content_type] == 'lesson_videos'
+        when 'lesson_videos'
           render json: get_lesson_videos
-        elsif params[:get_content_type] == 'video_details'
+        when 'video_details'
           render json: get_video_details
         else
           render json: { error: 'Invalid content type' }, status: :unprocessable_entity
@@ -130,7 +131,7 @@ class Manage::QuizzesController < Manage::BaseController
       end
 
       render json: questions, status: :ok
-    rescue => e
+    rescue StandardError => e
       Rails.logger.error("Lỗi khi tạo câu hỏi từ phiên âm: #{e.message}")
       render json: { error: "Không thể tạo câu hỏi: #{e.message}" }, status: :unprocessable_entity
     end
@@ -161,11 +162,11 @@ class Manage::QuizzesController < Manage::BaseController
       upload = video.upload
 
       transcription_value = upload.transcription
-      if transcription_value.present?
-        result[:transcription] = transcription_value
-      else
-        result[:transcription] = "Chưa có phiên âm cho video này."
-      end
+      result[:transcription] = if transcription_value.present?
+                                 transcription_value
+                               else
+                                 'Chưa có phiên âm cho video này.'
+                               end
     end
 
     result
