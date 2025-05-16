@@ -35,7 +35,6 @@ class TranscribeJob < ApplicationJob
       else
         update_transcription_status(upload, 'failed')
       end
-
     rescue StandardError => e
       handle_error(upload, e)
     end
@@ -46,6 +45,7 @@ class TranscribeJob < ApplicationJob
   def load_s3_config
     s3_config = YAML.safe_load(ERB.new(File.read(Rails.root.join('config', 'storage.yml'))).result)['amazon']
     raise 'Cấu hình S3 không hợp lệ' if s3_config.nil? || s3_config['access_key_id'].blank?
+
     s3_config
   end
 
@@ -59,8 +59,8 @@ class TranscribeJob < ApplicationJob
 
   def select_video_url(upload)
     return upload.cdn_url if upload.cdn_url.present? &&
-                            !upload.cdn_url.include?('placeholder') &&
-                            upload.cdn_url.end_with?('.mp4')
+                             !upload.cdn_url.include?('placeholder') &&
+                             upload.cdn_url.end_with?('.mp4')
 
     mp4_url_from_log = extract_mp4_url_from_log(upload)
     return mp4_url_from_log if mp4_url_from_log.present?
@@ -75,8 +75,6 @@ class TranscribeJob < ApplicationJob
       upload.quality_360p_url
     elsif upload.quality_720p_url.present?
       upload.quality_720p_url
-    else
-      nil
     end
   end
 
@@ -87,7 +85,7 @@ class TranscribeJob < ApplicationJob
     mp4_line = log_lines.find { |line| line.include?('/video.mp4') && line.include?('amazonaws.com') }
 
     if mp4_line.present?
-      mp4_line.match(/https:\/\/.*\.mp4/).to_s
+      mp4_line.match(%r{https://.*\.mp4}).to_s
     else
       bucket = load_s3_config['bucket']
       region = load_s3_config['region']
@@ -101,17 +99,17 @@ class TranscribeJob < ApplicationJob
     Rails.logger.info "Bắt đầu transcribe job với URL: #{video_url}"
 
     client.start_transcription_job({
-      transcription_job_name: job_name,
-      media: { media_file_uri: video_url },
-      language_code: language_code,
-      output_bucket_name: s3_config['bucket'],
-      output_key: "#{output_path}/transcript.json",
-      settings: {
-        show_speaker_labels: true,
-        max_speaker_labels: 2,
-        show_alternatives: false
-      }
-    })
+                                     transcription_job_name: job_name,
+                                     media: { media_file_uri: video_url },
+                                     language_code: language_code,
+                                     output_bucket_name: s3_config['bucket'],
+                                     output_key: "#{output_path}/transcript.json",
+                                     settings: {
+                                       show_speaker_labels: true,
+                                       max_speaker_labels: 2,
+                                       show_alternatives: false
+                                     }
+                                   })
 
     Rails.logger.info "Đã bắt đầu transcribe job: #{job_name} cho video: #{video_url}"
   end
@@ -140,7 +138,7 @@ class TranscribeJob < ApplicationJob
       attempts += 1
       if attempts >= max_attempts
         update_transcription_status(upload, 'failed')
-        raise "Timeout waiting for transcription job to complete"
+        raise 'Timeout waiting for transcription job to complete'
       end
 
       sleep 30
