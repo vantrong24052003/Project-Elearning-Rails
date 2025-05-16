@@ -89,6 +89,52 @@ class Manage::QuizzesController < Manage::BaseController
   end
 
   def update
+    if params[:update_questions].present? && params[:questions_data].present?
+      begin
+        questions_data = JSON.parse(params[:questions_data])
+
+        # Xử lý xóa câu hỏi
+        if params[:delete_question_id].present?
+          question_to_delete = Question.find_by(id: params[:delete_question_id])
+          if question_to_delete && question_to_delete.quizzes.include?(@quiz)
+            QuizQuestion.where(quiz: @quiz, question: question_to_delete).destroy_all
+            # Nếu câu hỏi này chỉ thuộc về quiz này, xóa luôn câu hỏi
+            if question_to_delete.quizzes.count == 0
+              question_to_delete.destroy
+            end
+            flash[:notice] = 'Câu hỏi đã được xóa khỏi bài kiểm tra.'
+          end
+        end
+
+        # Cập nhật các câu hỏi
+        questions_data.each do |q_data|
+          question = Question.find_by(id: q_data['id'])
+          next unless question && question.quizzes.include?(@quiz)
+
+          question.update(
+            content: q_data['content'],
+            options: q_data['options'],
+            correct_option: q_data['correct_option'],
+            explanation: q_data['explanation'],
+            difficulty: q_data['difficulty']
+          )
+        end
+
+        redirect_to manage_quiz_path(@quiz), notice: 'Bài kiểm tra đã được cập nhật thành công.'
+        return
+      rescue JSON::ParserError
+        flash[:alert] = 'Dữ liệu câu hỏi không hợp lệ.'
+        redirect_to manage_quiz_path(@quiz)
+        return
+      rescue => e
+        Rails.logger.error("Lỗi khi cập nhật câu hỏi: #{e.message}")
+        flash[:alert] = "Lỗi khi cập nhật câu hỏi: #{e.message}"
+        redirect_to manage_quiz_path(@quiz)
+        return
+      end
+    end
+
+    # Xử lý cập nhật thông tin cơ bản của quiz
     if @quiz.update(quiz_params)
       redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully updated.'
     else
