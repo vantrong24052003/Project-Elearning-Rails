@@ -19,27 +19,68 @@ class Manage::QuestionsController < Manage::BaseController
     @questions = @questions.page(params[:page]).per(12)
   end
 
-  def show; end
+  def show
+    # Đảm bảo câu hỏi được tải đầy đủ
+    @question = Question.includes(:course, :user).find(params[:id])
+  end
 
-  def new; end
+  def new
+    @question = Question.new
+    @courses = Course.all.order(:title)
+  end
 
-  def edit; end
+  def edit
+    @courses = Course.all.order(:title)
+  end
 
-  def destroy; end
+  def create
+    @question = Question.new(question_params)
+    @question.user_id = current_user.id
 
-  def create; end
+    if @question.save
+      redirect_to manage_question_path(@question), notice: 'Question created successfully'
+    else
+      @courses = Course.all.order(:title)
+      render :new, status: :unprocessable_entity
+    end
+  end
 
-  def update; end
+  def update
+    if @question.update(question_params)
+      redirect_to manage_question_path(@question), notice: 'Question updated successfully'
+    else
+      @courses = Course.all.order(:title)
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    quiz_questions = QuizQuestion.where(question_id: @question.id)
+
+    if quiz_questions.any?
+      redirect_to manage_questions_path, alert: 'This question is being used in quizzes and cannot be deleted.'
+    else
+      @question.destroy
+      redirect_to manage_questions_path, notice: 'Question deleted successfully'
+    end
+  end
 
   private
 
   def set_question
-    @question = Question.find(params[:id])
+    @question = Question.includes(:course, :user).find(params[:id])
   end
 
   def question_params
-    params.require(:question).permit(:content, :correct_option, :explanation, :difficulty, :course_id, :topic,
-                                     :learning_goal, options: {})
+    params_with_options = params.require(:question).permit(:content, :correct_option, :explanation, :difficulty, :course_id, :topic, :learning_goal, :options_0, :options_1, :options_2, :options_3)
+
+    options = {}
+    (0..3).each do |i|
+      options[i.to_s] = params_with_options.delete("options_#{i}")
+    end
+
+    params_with_options[:options] = options
+    params_with_options
   end
 
   def filter_questions(questions)
