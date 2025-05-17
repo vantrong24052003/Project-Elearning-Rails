@@ -40,11 +40,11 @@ export class ApiService {
       });
 
       if (!response.ok) {
-        throw new Error(`POST request failed: ${response.status} ${response.statusText}`);
+        throw new Error(`GET request failed: ${response.status} ${response.statusText}`);
       }
 
       return await response.json();
-    } catch (error) {
+    } catch (error) { 
       console.error('API POST error:', error);
       throw error;
     }
