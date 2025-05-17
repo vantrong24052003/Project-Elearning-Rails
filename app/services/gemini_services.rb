@@ -26,18 +26,18 @@ class GeminiServices
     rescue Faraday::ClientError => e
       if e.response && e.response[:status] == 429 && retry_count < MAX_RETRIES
         retry_count += 1
-        Rails.logger.warn("Gemini API 429 detected. Retrying #{retry_count}/#{MAX_RETRIES} after #{RETRY_DELAY} seconds...")
         sleep RETRY_DELAY
         retry
       else
-        Rails.logger.error("Gemini API error: #{e.message}")
         raise
       end
     end
   end
 
-  def generate_quiz(title:, description:, num_questions:, difficulty: nil)
-    difficulty_level = difficulty.presence || %w[easy medium hard].sample
+  def generate_quiz(title:, description:, num_questions:, difficulty: nil, topic: nil, learning_goal: nil)
+    difficulty_level = difficulty.presence
+    selected_topic = topic.presence
+    selected_learning_goal = learning_goal.presence
 
     prompt = <<~PROMPT
       Bạn là một chuyên gia tạo đề trắc nghiệm với 50 năm kinh nghiệm, chuyên xây dựng câu hỏi dựa trên mô tả nội dung bài học.
@@ -47,6 +47,8 @@ class GeminiServices
       - Mô tả nội dung: #{description}
       - Số lượng câu hỏi: #{num_questions}
       - Mức độ: #{difficulty_level}
+      - Chủ đề: #{selected_topic}
+      - Mục tiêu học tập: #{selected_learning_goal}
 
       Hãy tạo #{num_questions} câu hỏi trắc nghiệm theo định dạng JSON với schema sau:
       {
@@ -59,8 +61,12 @@ class GeminiServices
         },
         "correct_option": 1,
         "explanation": "Giải thích vì sao đáp án đúng.",
-        "difficulty": "#{difficulty_level}"
+        "difficulty": "#{difficulty_level}",
+        "topic": "#{selected_topic || 'other'}",
+        "learning_goal": "#{selected_learning_goal || 'other'}"
       }
+
+      QUAN TRỌNG: Hãy trả về JSON thuần túy, KHÔNG sử dụng định dạng Markdown hay ```json, chỉ trả về mảng JSON không có định dạng bổ sung.
 
       Kết quả trả về phải là một mảng JSON gồm các object câu hỏi, không kèm bất kỳ nội dung mô tả, nhận xét hay chú thích nào khác ngoài chính mảng JSON đó.
       Tất cả câu hỏi phải liên quan chặt chẽ đến mô tả nội dung bài học.
@@ -77,21 +83,7 @@ class GeminiServices
     }
 
     response = generate(prompt: prompt, options: options)
-
-    begin
-      if response.include?('[') && response.include?(']')
-        json_start = response.index('[')
-        json_end = response.rindex(']') + 1
-        json_string = response[json_start...json_end]
-        JSON.parse(json_string)
-      else
-        JSON.parse(response)
-      end
-    rescue JSON::ParserError => e
-      Rails.logger.error("Failed to parse quiz JSON: #{e.message}")
-      Rails.logger.error("Response was: #{response}")
-      raise 'Không thể tạo câu hỏi trắc nghiệm. Lỗi định dạng JSON.'
-    end
+    JSON.parse(response)
   end
 
   def analyze_lecture_content(title:, description:, duration: nil, language: 'Vietnamese')
@@ -192,24 +184,21 @@ class GeminiServices
   end
 
   def parse_response(response)
-    if response.status != 200
-      Rails.logger.error("Gemini API error: #{response.status} - #{response.body.inspect}")
-      raise "Gemini API error: #{response.status}"
-    end
+    raise "Gemini API error: #{response.status}" if response.status != 200
 
     body = response.body
 
-    if body['error'].present?
-      Rails.logger.error("Gemini API error: #{body['error'].inspect}")
-      raise "Gemini API error: #{body['error']['message']}"
-    end
+    raise "Gemini API error: #{body['error']['message']}" if body['error'].present?
 
     if body['candidates'].present? && body['candidates'].first['content'].present?
       content = body['candidates'].first['content']
 
       if content['parts'].present?
         text_parts = content['parts'].map { |part| part['text'] }.compact
-        return text_parts.join("\n")
+        result = text_parts.join("\n")
+
+        result = result.gsub(/```json\n?/, '').gsub(/```\n?/, '')
+        return result
       end
 
       content
