@@ -265,7 +265,8 @@
               <%= render partial: 'shared/pagination',
                 locals: {
                   collection: @questions,
-                  pagination_label: 'question'
+                  pagination_label: 'question',
+                  turbo_frame_id: "questions_data"
                 } %>
             </div>
           <% else %>

@@ -31,6 +31,7 @@ import QuizRedirectController from "./dashboard/quiz_redirect_controller"
 import QuizTimerController from "./dashboard/quiz_timer_controller"
 import course_content_select_controller from "./manage/course_content_select_controller"
 import questions_controller from "./manage/questions_controller"
+import questions_import_controller from "./manage/questions_import_controller"
 
 // home
 application.register("home--faq", faq_controller)
@@ -70,3 +71,4 @@ application.register("manage--upload-form", ManageUploadFormController)
 application.register("manage--overview", OverviewController)
 application.register("manage--course-content-select", course_content_select_controller)
 application.register("manage--questions", questions_controller)
+application.register("manage--questions-import", questions_import_controller)

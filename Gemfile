@@ -39,11 +39,13 @@ gem 'aws-sdk-s3'
 gem 'aws-sdk-transcribeservice'
 gem 'caxlsx'
 gem 'caxlsx_rails'
+gem 'csv'
 gem 'faraday'
 gem 'omniauth'
 gem 'omniauth-google-oauth2'
 gem 'pagy'
 gem 'redis'
+gem 'roo'
 gem 'sidekiq'
 
 # Xử lý video

@@ -33,6 +33,42 @@ class Manage::QuestionsController < Manage::BaseController
   end
 
   def create
+    if params[:file].present?
+      unless File.extname(params[:file].original_filename) == ".xlsx"
+        flash[:alert] = "Chỉ hỗ trợ file Excel (.xlsx)"
+        @question = Question.new
+        @courses = Course.all.order(:title)
+        render :new, status: :unprocessable_entity
+        return
+      end
+
+      if params[:course_id].blank?
+        flash[:alert] = "Vui lòng chọn khóa học trước khi import"
+        @question = Question.new
+        @courses = Course.all.order(:title)
+        render :new, status: :unprocessable_entity
+        return
+      end
+
+      begin
+        importer = QuestionsImportService.new(params[:file], params[:course_id], current_user.id)
+        results = importer.import
+
+        if results[:error].present?
+          flash[:alert] = results[:error]
+        elsif results[:failed] && results[:failed] > 0
+          flash[:alert] = "Import hoàn tất với #{results[:success]}/#{results[:total]} câu hỏi thành công. #{results[:failed]} lỗi: #{results[:errors].join('; ')}"
+        else
+          flash[:notice] = "Import hoàn tất. Đã thêm #{results[:success]} câu hỏi mới."
+        end
+      rescue StandardError => e
+        flash[:alert] = "Đã xảy ra lỗi khi import: #{e.message}"
+      end
+
+      redirect_to manage_questions_path
+      return
+    end
+
     @question = Question.new(question_params)
     @question.user_id = current_user.id
 
