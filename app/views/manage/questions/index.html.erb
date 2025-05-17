@@ -1,4 +1,4 @@
-<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8" data-controller="manage--questions">
+<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8" data-controller="manage__questions">
   <div class="flex flex-col gap-4">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Ngân Hàng Câu Hỏi</h1>
@@ -22,7 +22,7 @@
                           autocomplete: "off",
                           data: {
                             manage__questions_target: "searchInput",
-                            action: "input->manage--questions#search"
+                            action: "input->manage__questions#search"
                           }
                       %>
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -32,7 +32,7 @@
                   </div>
                   <div class="absolute inset-y-0 right-0 flex items-center">
                     <% if params[:search].present? %>
-                      <button type="button" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white px-2" data-action="manage--questions#clearSearch">
+                      <button type="button" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white px-2" data-action="manage__questions#clearSearch">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -56,7 +56,7 @@
                             class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
                             data: {
                               manage__questions_target: "courseSelect",
-                              action: "change->manage--questions#filterByCourse"
+                              action: "change->manage__questions#filterByCourse"
                             }
                           }
                       %>
@@ -70,7 +70,7 @@
                               class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
                               data: {
                                 manage__questions_target: "difficultySelect",
-                                action: "change->manage--questions#filterByDifficulty"
+                                action: "change->manage__questions#filterByDifficulty"
                               }
                             }
                         %>
@@ -93,7 +93,7 @@
                             class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
                             data: {
                               manage__questions_target: "topicSelect",
-                              action: "change->manage--questions#filterByTopic"
+                              action: "change->manage__questions#filterByTopic"
                             }
                           }
                       %>
@@ -113,7 +113,7 @@
                             class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
                             data: {
                               manage__questions_target: "learningGoalSelect",
-                              action: "change->manage--questions#filterByLearningGoal"
+                              action: "change->manage__questions#filterByLearningGoal"
                             }
                           }
                       %>
@@ -122,7 +122,7 @@
                 <div class="w-full md:w-auto">
                   <button type="button"
                           class="w-full rounded-md hover:opacity-70 bg-gray-50 dark:bg-gray-700 flex items-center justify-center h-10 px-4"
-                          data-action="manage--questions#resetAllFilters">
+                          data-action="manage__questions#resetAllFilters">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <polyline points="1 4 1 10 7 10"></polyline>
                       <polyline points="23 20 23 14 17 14"></polyline>
@@ -151,7 +151,7 @@
               id="create-quiz-btn"
               class="btn btn-secondary btn-sm"
               data-manage__questions_target="createQuizBtn"
-              data-action="manage--questions#createQuiz">
+              data-action="manage__questions#createQuiz">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 01-2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
               </svg>
@@ -168,102 +168,99 @@
         </div>
       </div>
 
-      <%= turbo_frame_tag "questions_data" do %>
-        <div class="p-4 md:p-6">
-          <div class="overflow-x-auto overflow-y-auto max-h-[70vh]">
-            <% if @questions.any? %>
-              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                <% @questions.each do |question| %>
-                  <div class="card bg-base-100 border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-shadow">
-                    <div class="card-body p-4">
-                      <div class="flex justify-between items-start">
-                        <div class="flex gap-2 mb-2">
-                          <span class="badge badge-<%= question.difficulty == 'easy' ? 'success' : (question.difficulty == 'medium' ? 'warning' : 'error') %>">
-                            <%= question.difficulty %>
-                          </span>
-                          <span class="badge badge-primary"><%= question.topic %></span>
-                          <span class="badge badge-secondary"><%= question.learning_goal %></span>
-                        </div>
-                        <div class="flex-shrink-0">
-                          <input type="checkbox" class="checkbox checkbox-primary question-checkbox" data-question-id="<%= question.id %>" data-action="change->manage--questions#toggleQuestionSelection">
-                        </div>
+      <div class="p-4 md:p-6">
+        <div class="overflow-x-auto overflow-y-auto max-h-[70vh]">
+          <% if @questions.any? %>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <% @questions.each do |question| %>
+                <div class="card bg-base-100 border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-shadow">
+                  <div class="card-body p-4">
+                    <div class="flex justify-between items-start">
+                      <div class="flex gap-2 mb-2">
+                        <span class="badge badge-<%= question.difficulty == 'easy' ? 'success' : (question.difficulty == 'medium' ? 'warning' : 'error') %>">
+                          <%= question.difficulty %>
+                        </span>
+                        <span class="badge badge-primary"><%= question.topic %></span>
+                        <span class="badge badge-secondary"><%= question.learning_goal %></span>
                       </div>
-
-                      <h3 class="card-title text-base font-medium text-gray-900 dark:text-white line-clamp-2">
-                        <%= truncate(question.content, length: 100) %>
-                      </h3>
-
-                      <div class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        <p class="mb-1"><strong>Khóa học:</strong> <%= question.course.title %></p>
-                        <p class="mb-1"><strong>Đáp án đúng:</strong> <%= question.options.is_a?(Hash) ? (question.options[question.correct_option.to_s] || "Tùy chọn #{question.correct_option}") : "Tùy chọn #{question.correct_option}" %></p>
-                      </div>
-
-                      <div class="card-actions justify-end mt-3">
-                        <%= link_to manage_question_path(question), class: "btn btn-sm btn-outline" do %>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                          </svg>
-                          Xem
-                        <% end %>
-                        
-                        <%= link_to edit_manage_question_path(question), class: "btn btn-sm btn-outline" do %>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                          </svg>
-                          Sửa
-                        <% end %>
-                        
-                        <%= button_to manage_question_path(question), method: :delete, 
-                                class: "btn btn-sm btn-outline btn-error", 
-                                form: { data: { turbo_confirm: "Bạn có chắc chắn muốn xóa câu hỏi này không?" } } do %>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"></path>
-                          </svg>
-                          Xóa
-                        <% end %>
+                      <div class="flex-shrink-0">
+                        <input type="checkbox" class="checkbox checkbox-primary question-checkbox" data-question-id="<%= question.id %>" data-action="change->manage__questions#toggleQuestionSelection">
                       </div>
                     </div>
-                  </div>
-                <% end %>
-              </div>
 
-              <div class="mt-6">
-                <%= render partial: 'shared/pagination',
-                  locals: {
-                    collection: @questions,
-                    pagination_label: 'question',
-                    turbo_frame_id: 'questions_data'
-                  } %>
-              </div>
-            <% else %>
-              <div class="text-center py-8">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-white">Không tìm thấy câu hỏi</h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Không có câu hỏi nào phù hợp với điều kiện tìm kiếm hoặc bộ lọc của bạn.</p>
-                <div class="mt-6">
-                  <%= link_to new_manage_question_path, class: "btn btn-primary" do %>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 5v14M5 12h14"/>
-                    </svg>
-                    Thêm câu hỏi mới
-                  <% end %>
-                  <button type="button" class="btn btn-outline ml-2" data-action="manage--questions#resetAllFilters">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="1 4 1 10 7 10"></polyline>
-                      <polyline points="23 20 23 14 17 14"></polyline>
-                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
-                    </svg>
-                    Xóa bộ lọc
-                  </button>
+                    <h3 class="card-title text-base font-medium text-gray-900 dark:text-white line-clamp-2">
+                      <%= truncate(question.content, length: 100) %>
+                    </h3>
+
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      <p class="mb-1"><strong>Khóa học:</strong> <%= question.course.title %></p>
+                      <p class="mb-1"><strong>Đáp án đúng:</strong> <%= question.options.is_a?(Hash) ? (question.options[question.correct_option.to_s] || "Tùy chọn #{question.correct_option}") : "Tùy chọn #{question.correct_option}" %></p>
+                    </div>
+
+                    <div class="card-actions justify-end mt-3">
+                      <%= link_to manage_question_path(question), class: "btn btn-sm btn-outline" do %>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        Xem
+                      <% end %>
+                      
+                      <%= link_to edit_manage_question_path(question), class: "btn btn-sm btn-outline" do %>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                        </svg>
+                        Sửa
+                      <% end %>
+                      
+                      <%= button_to manage_question_path(question), method: :delete, 
+                              class: "btn btn-sm btn-outline btn-error", 
+                              form: { data: { turbo_confirm: "Bạn có chắc chắn muốn xóa câu hỏi này không?" } } do %>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"></path>
+                        </svg>
+                        Xóa
+                      <% end %>
+                    </div>
+                  </div>
                 </div>
+              <% end %>
+            </div>
+
+            <div class="mt-6">
+              <%= render partial: 'shared/pagination',
+                locals: {
+                  collection: @questions,
+                  pagination_label: 'question'
+                } %>
+            </div>
+          <% else %>
+            <div class="text-center py-8">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-white">Không tìm thấy câu hỏi</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Không có câu hỏi nào phù hợp với điều kiện tìm kiếm hoặc bộ lọc của bạn.</p>
+              <div class="mt-6">
+                <%= link_to new_manage_question_path, class: "btn btn-primary" do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                  Thêm câu hỏi mới
+                <% end %>
+                <button type="button" class="btn btn-outline ml-2" data-action="manage__questions#resetAllFilters">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <polyline points="23 20 23 14 17 14"></polyline>
+                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                  </svg>
+                  Xóa bộ lọc
+                </button>
               </div>
-            <% end %>
-          </div>
+            </div>
+          <% end %>
         </div>
-      <% end %>
+      </div>
     </div>
   </div>
 </div>

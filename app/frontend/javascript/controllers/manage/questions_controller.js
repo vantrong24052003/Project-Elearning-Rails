@@ -73,6 +73,7 @@ export default class extends Controller {
     if (this.hasSelectedQuestionsInputTarget) {
       this.selectedQuestionsInputTarget.value = JSON.stringify(this.selectedQuestions)
     }
+
   }
 
   createQuiz(event) {
