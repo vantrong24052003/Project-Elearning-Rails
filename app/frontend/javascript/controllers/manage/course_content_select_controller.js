@@ -522,7 +522,6 @@ export default class extends Controller {
       sourceTypeField.name = 'source_type'
       form.appendChild(sourceTypeField)
     }
-    sourceTypeField.value = 'ai_generated'
 
     this.loadingTarget.classList.remove("hidden")
     this.questionsContainerTarget.classList.add("hidden")

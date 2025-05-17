@@ -34,6 +34,16 @@ class Manage::QuizzesController < Manage::BaseController
       @course = Course.find_by(id: params[:course_id])
     end
 
+    if params[:selected_questions].present?
+        @selected_question_ids = JSON.parse(params[:selected_questions])
+        @selected_questions = Question.where(id: @selected_question_ids).includes(:course)
+
+        if @selected_questions.first&.course_id.present?
+          @quiz.course_id = @selected_questions.first.course_id
+          @course = @selected_questions.first.course
+        end
+    end
+
     respond_to do |format|
       format.html
       format.json do
@@ -63,8 +73,23 @@ class Manage::QuizzesController < Manage::BaseController
 
     @quiz = Quiz.new(quiz_params)
 
-    if params[:source_type] == 'ai_generated' && params[:questions_data].present?
-      begin
+    if params[:selected_questions].present?
+        selected_question_ids = JSON.parse(params[:selected_questions])
+
+        if @quiz.save
+          selected_question_ids.each do |question_id|
+            question = Question.find_by(id: question_id)
+            QuizQuestion.create(quiz: @quiz, question: question) if question
+          end
+
+          redirect_to manage_quiz_path(@quiz), notice: 'Bài kiểm tra đã được tạo thành công'
+        else
+          @selected_question_ids = selected_question_ids
+          @selected_questions = Question.where(id: selected_question_ids).includes(:course)
+          set_courses
+          render :new, status: :unprocessable_entity
+        end
+    elsif params[:questions_data].present?
         questions_data = JSON.parse(params[:questions_data])
 
         if @quiz.save
@@ -89,11 +114,7 @@ class Manage::QuizzesController < Manage::BaseController
           set_courses
           render :new, status: :unprocessable_entity
         end
-      rescue JSON::ParserError
-        set_courses
-        @quiz.errors.add(:base, 'Invalid questions data format')
-        render :new, status: :unprocessable_entity
-      end
+
     elsif @quiz.save
       redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully created.'
     else
