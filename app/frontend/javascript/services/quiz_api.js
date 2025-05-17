@@ -5,13 +5,15 @@ export class QuizApi {
     return ApiService.get(`/dashboard/courses/${courseId}/quiz_statuses`);
   }
 
-  static async generateQuestions(title, description, numQuestions, difficulty) {
+  static async generateQuestions(title, description, numQuestions, difficulty, topic , learningGoal ) {
     try {
       return await ApiService.post('/manage/quizzes.json', {
         title,
         description,
         num_questions: numQuestions,
-        difficulty: difficulty || 'medium'
+        difficulty: difficulty || 'medium',
+        topic: topic || 'other',
+        learning_goal: learningGoal || 'other'
       });
     } catch (error) {
       console.error('API Error - generateQuestions:', error.message);

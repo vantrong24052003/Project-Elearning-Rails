@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 20_250_513_084_528) do
+ActiveRecord::Schema[8.0].define(version: 20_250_517_030_053) do
   # These are extensions that must be enabled in order to support this database
   enable_extension 'pg_catalog.plpgsql'
   enable_extension 'pgcrypto'
@@ -111,6 +111,8 @@ ActiveRecord::Schema[8.0].define(version: 20_250_513_084_528) do
     t.uuid 'user_id', null: false
     t.datetime 'created_at', null: false
     t.datetime 'updated_at', null: false
+    t.string 'topic', null: false
+    t.string 'learning_goal', null: false
     t.index ['course_id'], name: 'index_questions_on_course_id'
     t.index ['user_id'], name: 'index_questions_on_user_id'
   end
@@ -181,14 +183,14 @@ ActiveRecord::Schema[8.0].define(version: 20_250_513_084_528) do
     t.uuid 'user_id', null: false
     t.datetime 'created_at', null: false
     t.datetime 'updated_at', null: false
+    t.text 'transcription'
+    t.string 'transcription_status'
     t.string 'formats', default: [], array: true
     t.integer 'progress', default: 0
     t.text 'processing_log'
     t.string 'quality_360p_url'
     t.string 'quality_480p_url'
     t.string 'quality_720p_url'
-    t.text 'transcription'
-    t.string 'transcription_status'
     t.index ['user_id'], name: 'index_uploads_on_user_id'
   end
 

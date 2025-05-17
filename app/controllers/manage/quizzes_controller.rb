@@ -75,6 +75,8 @@ class Manage::QuizzesController < Manage::BaseController
               correct_option: q_data['correct_option'],
               explanation: q_data['explanation'],
               difficulty: q_data['difficulty'],
+              topic: q_data['topic'],
+              learning_goal: q_data['learning_goal'],
               course_id: @quiz.course_id,
               user_id: current_user.id
             )
@@ -123,7 +125,9 @@ class Manage::QuizzesController < Manage::BaseController
             options: q_data['options'],
             correct_option: q_data['correct_option'],
             explanation: q_data['explanation'],
-            difficulty: q_data['difficulty']
+            difficulty: q_data['difficulty'],
+            topic: q_data['topic'],
+            learning_goal: q_data['learning_goal']
           )
         end
 
@@ -170,6 +174,8 @@ class Manage::QuizzesController < Manage::BaseController
     description = params[:description]
     num_questions = params[:num_questions].to_i || 5
     difficulty = params[:difficulty] || 'medium'
+    topic = params[:topic] || 'other'
+    learning_goal = params[:learning_goal] || 'other'
 
     if description.blank? || title.blank?
       render json: { error: 'Thiếu thông tin cần thiết' }, status: :bad_request
@@ -182,7 +188,9 @@ class Manage::QuizzesController < Manage::BaseController
         title: title,
         description: description,
         num_questions: num_questions,
-        difficulty: difficulty
+        difficulty: difficulty,
+        topic: topic,
+        learning_goal: learning_goal
       )
 
       if questions.blank? || !questions.is_a?(Array) || questions.empty?

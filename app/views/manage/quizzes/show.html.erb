@@ -87,6 +87,27 @@
                           <option value="hard" <%= question.difficulty == 'hard' ? 'selected' : '' %>>Khó</option>
                         </select>
 
+                        <select class="question-topic select select-sm select-bordered hidden edit-only" data-default="<%= question.topic %>">
+                          <option value="math" <%= question.topic == 'math' ? 'selected' : '' %>>Toán học</option>
+                          <option value="physics" <%= question.topic == 'physics' ? 'selected' : '' %>>Vật lý</option>
+                          <option value="chemistry" <%= question.topic == 'chemistry' ? 'selected' : '' %>>Hóa học</option>
+                          <option value="biology" <%= question.topic == 'biology' ? 'selected' : '' %>>Sinh học</option>
+                          <option value="history" <%= question.topic == 'history' ? 'selected' : '' %>>Lịch sử</option>
+                          <option value="geography" <%= question.topic == 'geography' ? 'selected' : '' %>>Địa lý</option>
+                          <option value="literature" <%= question.topic == 'literature' ? 'selected' : '' %>>Văn học</option>
+                          <option value="programming" <%= question.topic == 'programming' ? 'selected' : '' %>>Lập trình</option>
+                          <option value="other" <%= question.topic == 'other' ? 'selected' : '' %>>Khác</option>
+                        </select>
+
+                        <select class="question-learning-goal select select-sm select-bordered hidden edit-only" data-default="<%= question.learning_goal %>">
+                          <option value="remember" <%= question.learning_goal == 'remember' ? 'selected' : '' %>>Ghi nhớ</option>
+                          <option value="understand" <%= question.learning_goal == 'understand' ? 'selected' : '' %>>Hiểu</option>
+                          <option value="apply" <%= question.learning_goal == 'apply' ? 'selected' : '' %>>Vận dụng</option>
+                          <option value="analyze" <%= question.learning_goal == 'analyze' ? 'selected' : '' %>>Phân tích</option>
+                          <option value="create" <%= question.learning_goal == 'create' ? 'selected' : '' %>>Sáng tạo</option>
+                          <option value="other" <%= question.learning_goal == 'other' ? 'selected' : '' %>>Khác</option>
+                        </select>
+
                         <span class="inline-block px-2 py-1 text-xs font-medium rounded-full view-only
                               <%= case question.difficulty
                                when 'easy'
@@ -97,6 +118,14 @@
                                  'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:text-red-400 dark:border-red-600/30'
                                end %>">
                           <%= question.difficulty.capitalize %>
+                        </span>
+
+                        <span class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-600/20 dark:text-blue-400 dark:border-blue-600/30 view-only">
+                          <%= question.topic&.capitalize || 'Không có chủ đề' %>
+                        </span>
+
+                        <span   class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-600 border border-purple-200 dark:bg-purple-600/20 dark:text-purple-400 dark:border-purple-600/30 view-only">
+                          <%= question.learning_goal&.capitalize || 'Không có mục tiêu' %>
                         </span>
 
                         <button type="button" class="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 delete-question hidden edit-only" data-action="click->manage--course-content-select#deleteQuestion" data-question-id="<%= question.id %>">
@@ -226,6 +255,33 @@
                   <span>Trung bình: <%= difficulty_counts['medium'] %></span>
                   <span>Khó: <%= difficulty_counts['hard'] %></span>
                 </div>
+              </div>
+
+              <div>
+                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Phân loại theo chủ đề</h4>
+                <%
+                  topic_counts = {}
+                  @quiz.questions.each do |q|
+                    topic = q.topic.presence || 'other'
+                    topic_counts[topic] ||= 0
+                    topic_counts[topic] += 1
+                  end
+
+                  top_topics = topic_counts.sort_by { |k, v| -v }.first(5)
+                %>
+                
+                <% if top_topics.any? %>
+                  <div class="grid grid-cols-2 gap-2 text-sm">
+                    <% top_topics.each do |topic, count| %>
+                      <div class="flex items-center justify-between">
+                        <span class="text-gray-700 dark:text-gray-300"><%= topic.capitalize %></span>
+                        <span class="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-0.5 rounded-full text-xs"><%= count %></span>
+                      </div>
+                    <% end %>
+                  </div>
+                <% else %>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">Không có dữ liệu</p>
+                <% end %>
               </div>
 
               <div>
