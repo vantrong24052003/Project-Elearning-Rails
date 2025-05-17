@@ -187,6 +187,8 @@ ActiveRecord::Schema[8.0].define(version: 20_250_513_084_528) do
     t.string 'quality_360p_url'
     t.string 'quality_480p_url'
     t.string 'quality_720p_url'
+    t.text 'transcription'
+    t.string 'transcription_status'
     t.index ['user_id'], name: 'index_uploads_on_user_id'
   end
 
