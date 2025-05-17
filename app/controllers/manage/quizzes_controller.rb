@@ -3,9 +3,15 @@
 class Manage::QuizzesController < Manage::BaseController
   before_action :set_quiz, only: %i[show edit update destroy]
   before_action :set_courses, only: %i[new edit]
-
   def index
-    @quizzes = Quiz.includes(:course, :questions).order(created_at: :desc).page(params[:page]).per(10)
+    @quizzes = if params[:course_id].present?
+                 Quiz.includes(:course,
+                               :questions).where(course_id: params[:course_id]).order(created_at: :desc).page(params[:page]).per(10)
+               else
+                 Quiz.includes(:course, :questions).order(created_at: :desc).page(params[:page]).per(10)
+               end
+
+    @course = Course.find_by(id: params[:course_id]) if params[:course_id].present?
   end
 
   def show
@@ -22,6 +28,11 @@ class Manage::QuizzesController < Manage::BaseController
 
   def new
     @quiz = Quiz.new
+
+    if params[:course_id].present?
+      @quiz.course_id = params[:course_id]
+      @course = Course.find_by(id: params[:course_id])
+    end
 
     respond_to do |format|
       format.html
@@ -90,6 +101,46 @@ class Manage::QuizzesController < Manage::BaseController
   end
 
   def update
+    if params[:update_questions].present? && params[:questions_data].present?
+      begin
+        questions_data = JSON.parse(params[:questions_data])
+
+        if params[:delete_question_id].present?
+          question_to_delete = Question.find_by(id: params[:delete_question_id])
+          if question_to_delete&.quizzes&.include?(@quiz)
+            QuizQuestion.where(quiz: @quiz, question: question_to_delete).destroy_all
+            question_to_delete.destroy if question_to_delete.quizzes.count.zero?
+            flash[:notice] = 'Câu hỏi đã được xóa khỏi bài kiểm tra.'
+          end
+        end
+
+        questions_data.each do |q_data|
+          question = Question.find_by(id: q_data['id'])
+          next unless question&.quizzes&.include?(@quiz)
+
+          question.update(
+            content: q_data['content'],
+            options: q_data['options'],
+            correct_option: q_data['correct_option'],
+            explanation: q_data['explanation'],
+            difficulty: q_data['difficulty']
+          )
+        end
+
+        redirect_to manage_quiz_path(@quiz), notice: 'Bài kiểm tra đã được cập nhật thành công.'
+        return
+      rescue JSON::ParserError
+        flash[:alert] = 'Dữ liệu câu hỏi không hợp lệ.'
+        redirect_to manage_quiz_path(@quiz)
+        return
+      rescue StandardError => e
+        Rails.logger.error("Lỗi khi cập nhật câu hỏi: #{e.message}")
+        flash[:alert] = "Lỗi khi cập nhật câu hỏi: #{e.message}"
+        redirect_to manage_quiz_path(@quiz)
+        return
+      end
+    end
+
     if @quiz.update(quiz_params)
       redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully updated.'
     else
@@ -99,8 +150,17 @@ class Manage::QuizzesController < Manage::BaseController
   end
 
   def destroy
+    questions = @quiz.questions.to_a
+    QuizQuestion.where(quiz_id: @quiz.id).destroy_all
+
+    questions.each do |question|
+      count = QuizQuestion.where(question_id: question.id).count
+      question.destroy if count.zero?
+    end
+
     @quiz.destroy!
-    redirect_to manage_quizzes_path, notice: 'Quiz was successfully destroyed.'
+
+    redirect_to manage_quizzes_path, notice: 'Bài kiểm tra đã được xóa thành công.'
   end
 
   private

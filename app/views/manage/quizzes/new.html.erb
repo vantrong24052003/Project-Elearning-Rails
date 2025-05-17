@@ -43,6 +43,9 @@
                     }
                   }
                 %>
+                <% if @course.present? %>
+                  <p class="mt-1 text-xs text-green-600 dark:text-green-400">Đã chọn khóa học: <%= @course.title %></p>
+                <% end %>
               </div>
 
               <!-- Chọn Chapter -->
@@ -304,9 +307,16 @@
                 { include_blank: 'Chọn khóa học' },
                 {
                   class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
-                  required: true
+                  required: true,
+                  data: {
+                    manage__course_content_select_target: "courseSelect",
+                    action: "change->manage--course-content-select#loadChapters"
+                  }
                 }
               %>
+              <% if @course.present? %>
+                <p class="mt-1 text-xs text-green-600 dark:text-green-400">Đã chọn khóa học: <%= @course.title %></p>
+              <% end %>
             </div>
 
             <div class="mb-4">
