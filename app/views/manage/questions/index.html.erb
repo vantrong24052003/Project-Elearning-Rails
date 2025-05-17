@@ -1,4 +1,4 @@
-<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8" data-controller="manage--questions">
+<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8" data-controller="manage--questions manage--questions-import">
   <div class="flex flex-col gap-4">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Ngân Hàng Câu Hỏi</h1>
@@ -146,6 +146,19 @@
                     </svg>
                     Xóa bộ lọc
                   </button>
+                </div>
+
+                <div class="w-full md:w-auto">
+                  <%= f.button type: :button, 
+                          class: "w-full rounded-md hover:opacity-70 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-800 flex items-center justify-center h-10 px-4",
+                          data: { action: "manage--questions-import#exportToExcel" } do %>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Xuất Excel
+                  <% end %>
                 </div>
               </div>
             </div>
