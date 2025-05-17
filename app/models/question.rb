@@ -11,6 +11,7 @@ class Question < ApplicationRecord
   enumerize :topic, in: %i[math physics chemistry biology history geography literature programming other],
                     default: :other
   enumerize :difficulty, in: %i[easy medium hard]
+  enumerize :status, in: %i[active inactive deprecated], default: :active, scope: true, predicates: true
 
   validates :content, :options, :correct_option, :explanation, :difficulty, presence: true
 end

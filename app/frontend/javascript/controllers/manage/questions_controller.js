@@ -1,4 +1,4 @@
-import { Controller } from '@hotwired/stimulus'
+import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = [
@@ -8,6 +8,7 @@ export default class extends Controller {
     "difficultySelect",
     "topicSelect",
     "learningGoalSelect",
+    "statusSelect",
     "createQuizBtn",
     "selectedQuestionsInput"
   ]
@@ -45,12 +46,17 @@ export default class extends Controller {
     this.submitForm()
   }
 
+  filterByStatus() {
+    this.submitForm()
+  }
+
   resetAllFilters() {
     this.searchInputTarget.value = ''
     this.courseSelectTarget.value = ''
     this.difficultySelectTarget.value = ''
     this.topicSelectTarget.value = ''
     this.learningGoalSelectTarget.value = ''
+    this.statusSelectTarget.value = ''
     this.submitForm()
   }
 
