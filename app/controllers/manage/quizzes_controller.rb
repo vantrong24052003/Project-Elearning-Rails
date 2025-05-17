@@ -35,13 +35,13 @@ class Manage::QuizzesController < Manage::BaseController
     end
 
     if params[:selected_questions].present?
-        @selected_question_ids = JSON.parse(params[:selected_questions])
-        @selected_questions = Question.where(id: @selected_question_ids).includes(:course)
+      @selected_question_ids = JSON.parse(params[:selected_questions])
+      @selected_questions = Question.where(id: @selected_question_ids).includes(:course)
 
-        if @selected_questions.first&.course_id.present?
-          @quiz.course_id = @selected_questions.first.course_id
-          @course = @selected_questions.first.course
-        end
+      if @selected_questions.first&.course_id.present?
+        @quiz.course_id = @selected_questions.first.course_id
+        @course = @selected_questions.first.course
+      end
     end
 
     respond_to do |format|
@@ -74,46 +74,46 @@ class Manage::QuizzesController < Manage::BaseController
     @quiz = Quiz.new(quiz_params)
 
     if params[:selected_questions].present?
-        selected_question_ids = JSON.parse(params[:selected_questions])
+      selected_question_ids = JSON.parse(params[:selected_questions])
 
-        if @quiz.save
-          selected_question_ids.each do |question_id|
-            question = Question.find_by(id: question_id)
-            QuizQuestion.create(quiz: @quiz, question: question) if question
-          end
-
-          redirect_to manage_quiz_path(@quiz), notice: 'Bài kiểm tra đã được tạo thành công'
-        else
-          @selected_question_ids = selected_question_ids
-          @selected_questions = Question.where(id: selected_question_ids).includes(:course)
-          set_courses
-          render :new, status: :unprocessable_entity
+      if @quiz.save
+        selected_question_ids.each do |question_id|
+          question = Question.find_by(id: question_id)
+          QuizQuestion.create(quiz: @quiz, question: question) if question
         end
+
+        redirect_to manage_quiz_path(@quiz), notice: 'Bài kiểm tra đã được tạo thành công'
+      else
+        @selected_question_ids = selected_question_ids
+        @selected_questions = Question.where(id: selected_question_ids).includes(:course)
+        set_courses
+        render :new, status: :unprocessable_entity
+      end
     elsif params[:questions_data].present?
-        questions_data = JSON.parse(params[:questions_data])
+      questions_data = JSON.parse(params[:questions_data])
 
-        if @quiz.save
-          questions_data.each do |q_data|
-            question = Question.new(
-              content: q_data['content'],
-              options: q_data['options'],
-              correct_option: q_data['correct_option'],
-              explanation: q_data['explanation'],
-              difficulty: q_data['difficulty'],
-              topic: q_data['topic'],
-              learning_goal: q_data['learning_goal'],
-              course_id: @quiz.course_id,
-              user_id: current_user.id
-            )
+      if @quiz.save
+        questions_data.each do |q_data|
+          question = Question.new(
+            content: q_data['content'],
+            options: q_data['options'],
+            correct_option: q_data['correct_option'],
+            explanation: q_data['explanation'],
+            difficulty: q_data['difficulty'],
+            topic: q_data['topic'],
+            learning_goal: q_data['learning_goal'],
+            course_id: @quiz.course_id,
+            user_id: current_user.id
+          )
 
-            QuizQuestion.create(quiz: @quiz, question: question) if question.save
-          end
-
-          redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully created with AI generated questions.'
-        else
-          set_courses
-          render :new, status: :unprocessable_entity
+          QuizQuestion.create(quiz: @quiz, question: question) if question.save
         end
+
+        redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully created with AI generated questions.'
+      else
+        set_courses
+        render :new, status: :unprocessable_entity
+      end
 
     elsif @quiz.save
       redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully created.'

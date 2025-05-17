@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Manage::QuestionsController < Manage::BaseController
   before_action :set_question, only: %i[show edit update destroy]
 
@@ -7,7 +9,7 @@ class Manage::QuestionsController < Manage::BaseController
     @questions = if params[:course_id].present?
                    Question.where(course_id: params[:course_id])
                  elsif params[:search].present?
-                   Question.where("content ILIKE ?", "%#{params[:search]}%")
+                   Question.where('content ILIKE ?', "%#{params[:search]}%")
                  else
                    Question.all
                  end
@@ -17,23 +19,17 @@ class Manage::QuestionsController < Manage::BaseController
     @questions = @questions.page(params[:page]).per(12)
   end
 
-  def show
-  end
+  def show; end
 
-  def new
-  end
+  def new; end
 
-  def edit
-  end
+  def edit; end
 
-  def destroy
-  end
+  def destroy; end
 
-  def create
-  end
+  def create; end
 
-  def update
-  end
+  def update; end
 
   private
 
@@ -42,7 +38,8 @@ class Manage::QuestionsController < Manage::BaseController
   end
 
   def question_params
-    params.require(:question).permit(:content, :correct_option, :explanation, :difficulty, :course_id, :topic, :learning_goal, options: {})
+    params.require(:question).permit(:content, :correct_option, :explanation, :difficulty, :course_id, :topic,
+                                     :learning_goal, options: {})
   end
 
   def filter_questions(questions)
