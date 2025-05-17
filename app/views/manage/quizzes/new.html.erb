@@ -15,14 +15,14 @@
 
     <% if params[:ai] %>
       <!-- Giao diện tạo bài kiểm tra bằng AI -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" data-controller="manage--quiz-ai-generator manage--course-content-select">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" data-controller="manage--course-content-select">
         <!-- Phần 1: Thiết lập bài kiểm tra -->
         <div class="lg:col-span-1 space-y-6">
           <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Thiết lập bài kiểm tra</h2>
 
-            <%= form_with model: @quiz, url: manage_quizzes_path, method: :post, data: { manage__quiz_ai_generator_target: "form" } do |f| %>
-              <%= hidden_field_tag :questions_data, '', data: { manage__quiz_ai_generator_target: "questionsData" } %>
+            <%= form_with model: @quiz, url: manage_quizzes_path, method: :post, data: { manage__course_content_select_target: "form" } do |f| %>
+              <%= hidden_field_tag :questions_data, '', data: { manage__course_content_select_target: "questionsData" } %>
 
               <div class="mb-4">
                 <%= f.label :title, 'Tiêu đề bài kiểm tra', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
@@ -38,7 +38,7 @@
                     class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
                     required: true,
                     data: {
-                      manage__quiz_ai_generator_target: "courseSelect",
+                      manage__course_content_select_target: "courseSelect",
                       action: "change->manage--course-content-select#loadChapters"
                     }
                   }
@@ -81,24 +81,28 @@
               <!-- Video Preview -->
               <div class="mb-6 hidden" data-manage--course-content-select-target="videoPreview">
                 <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                  <div class="relative" style="padding-top: 56.25%;">
-                    <div id="video-player-container" class="absolute inset-0 w-full h-full bg-gray-800">
-                      <!-- Video player sẽ được thêm tại đây -->
-                    </div>
-                  </div>
                   <div class="p-3 bg-gray-50 dark:bg-gray-800">
                     <div class="flex justify-between items-center">
                       <h4 class="text-sm font-medium text-gray-800 dark:text-white truncate mr-2" data-manage--course-content-select-target="videoTitle"></h4>
-                      <button type="button"
-                              class="btn btn-sm btn-primary"
-                              data-action="manage--course-content-select#extractVideoContent">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M14 3v4a1 1 0 0 0 1 1h4"></path>
-                          <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path>
-                          <path d="M9 9l1 6l3 -4l3 4l1 -6"></path>
-                        </svg>
-                        Lấy nội dung từ video
-                      </button>
+                      <div class="flex gap-2">
+                        <a href="#" class="btn btn-sm btn-outline" data-manage--course-content-select-target="videoDetailLink">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                          </svg>
+                          Xem chi tiết video
+                        </a>
+                        <button type="button"
+                                class="btn btn-sm btn-primary"
+                                data-action="manage--course-content-select#extractVideoContent">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 3v4a1 1 0 0 0 1 1h4"></path>
+                            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path>
+                            <path d="M9 9l1 6l3 -4l3 4l1 -6"></path>
+                          </svg>
+                          Lấy nội dung từ video
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -131,8 +135,8 @@
                   Mô tả của bạn
                   <span class="text-green-600 dark:text-green-400">(Ưu tiên sử dụng)</span>
                 </label>
-                <textarea name="user_description" rows="4" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="Mô tả chi tiết nội dung, khái niệm chính, hoặc điều bạn muốn kiểm tra"></textarea>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">AI sẽ ưu tiên sử dụng mô tả này để tạo câu hỏi. Hãy cung cấp thông tin càng chi tiết càng tốt.</p>
+                <textarea name="user_description" rows="4" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="Mô tả chi tiết các khái niệm, định nghĩa, quy trình, ví dụ, ứng dụng thực tế và các điểm quan trọng cần kiểm tra"></textarea>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Nhập đầy đủ chi tiết về nội dung muốn kiểm tra. Ví dụ: định nghĩa, công thức, quy trình, các bước thực hiện, điểm khác biệt giữa các khái niệm, ví dụ thực tế, v.v. Nội dung chi tiết sẽ giúp AI tạo câu hỏi chất lượng cao.</p>
               </div>
 
               <div class="mb-4">
@@ -172,7 +176,7 @@
               </div>
 
               <div class="pt-3 border-t border-gray-200 dark:border-gray-700">
-                <button type="button" class="w-full btn btn-primary" data-action="manage--quiz-ai-generator#generateQuestions">
+                <button type="button" class="w-full btn btn-primary" data-action="manage--course-content-select#generateQuestions">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21.05 4.03a9 9 0 0 0-4.17 2.44 8 8 0 1 0 2.83 13.93"></path>
                     <path d="M18 2v4h-4"></path>
@@ -190,23 +194,23 @@
           <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Phân tích nội dung</h3>
 
-            <div data-manage--quiz-ai-generator-target="analysis" class="hidden">
+            <div data-manage--course-content-select-target="analysis" class="hidden">
               <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
                 <div class="space-y-3">
                   <div>
                     <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Số lượng khái niệm chính:</h4>
-                    <p class="text-gray-900 dark:text-white" data-manage--quiz-ai-generator-target="conceptCount">-</p>
+                    <p class="text-gray-900 dark:text-white" data-manage--course-content-select-target="conceptCount">-</p>
                   </div>
                   <div>
                     <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Mức độ bao phủ nội dung:</h4>
                     <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                      <div class="bg-blue-600 h-2.5 rounded-full dark:bg-blue-500" data-manage--quiz-ai-generator-target="coverageBar" style="width: 0%"></div>
+                      <div class="bg-blue-600 h-2.5 rounded-full dark:bg-blue-500" data-manage--course-content-select-target="coverageBar" style="width: 0%"></div>
                     </div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" data-manage--quiz-ai-generator-target="coverageText">0%</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" data-manage--course-content-select-target="coverageText">0%</p>
                   </div>
                   <div>
                     <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Đề xuất cải thiện:</h4>
-                    <ul class="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1 mt-1" data-manage--quiz-ai-generator-target="suggestions">
+                    <ul class="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1 mt-1" data-manage--course-content-select-target="suggestions">
                       <li>Đang phân tích...</li>
                     </ul>
                   </div>
@@ -214,7 +218,7 @@
               </div>
             </div>
 
-            <div data-manage--quiz-ai-generator-target="analysisLoading" class="text-center py-4">
+            <div data-manage--course-content-select-target="analysisLoading" class="text-center py-4">
               <p class="text-gray-500 dark:text-gray-400 text-sm">Chọn khóa học và nhấn "Tạo câu hỏi với AI" để phân tích nội dung</p>
             </div>
           </div>
@@ -226,16 +230,9 @@
             <div class="flex items-center justify-between mb-6">
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Câu hỏi được tạo ra</h2>
 
-              <div class="flex items-center gap-3 hidden" data-manage--quiz-ai-generator-target="controls">
-                <button type="button" class="btn btn-sm btn-outline" data-action="manage--quiz-ai-generator#regenerateQuestions">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 12a9 9 0 1 1 18 0 9 9 0 0 1-18 0Z"></path>
-                    <path d="M12 7v5l2.5 2.5"></path>
-                  </svg>
-                  Tạo lại
-                </button>
+              <div class="flex items-center gap-3 hidden" data-manage--course-content-select-target="controls">
 
-                <button type="button" class="btn btn-sm btn-primary" data-action="manage--quiz-ai-generator#saveQuiz">
+                <button type="button" class="btn btn-sm btn-primary" data-action="manage--course-content-select#saveQuiz">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
                     <polyline points="17 21 17 13 7 13 7 21"></polyline>
@@ -246,17 +243,17 @@
               </div>
             </div>
 
-            <div data-manage--quiz-ai-generator-target="loading" class="text-center py-12 hidden">
+            <div data-manage--course-content-select-target="loading" class="text-center py-12 hidden">
               <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 dark:border-blue-500"></div>
               <p class="mt-4 text-gray-600 dark:text-gray-400">Đang tạo câu hỏi...</p>
             </div>
 
-            <div data-manage--quiz-ai-generator-target="questionsContainer" class="hidden space-y-8 max-h-[calc(100vh-220px)] overflow-y-auto pr-2">
+            <div data-manage--course-content-select-target="questionsContainer" class="hidden space-y-8 max-h-[calc(100vh-220px)] overflow-y-auto pr-2">
               <!-- Nội dung câu hỏi sẽ được thêm vào bằng Stimulus -->
             </div>
 
             <!-- Template cho câu hỏi -->
-            <template data-manage--quiz-ai-generator-target="questionTemplate">
+            <template data-manage--course-content-select-target="questionTemplate">
               <div class="question-item border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                 <div class="bg-gray-50 dark:bg-gray-800 px-4 py-3 flex justify-between items-center">
                   <h3 class="font-medium text-gray-800 dark:text-white">Câu hỏi <span class="question-number"></span></h3>
@@ -266,12 +263,7 @@
                       <option value="medium" selected>Trung bình</option>
                       <option value="hard">Khó</option>
                     </select>
-                    <button type="button" class="btn btn-sm btn-ghost text-gray-500 regenerate-btn" title="Tạo lại câu hỏi này">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 12a9 9 0 1 1 18 0 9 9 0 0 1-18 0Z"></path>
-                        <path d="M12 7v5l2.5 2.5"></path>
-                      </svg>
-                    </button>
+
                   </div>
                 </div>
                 <div class="p-4">

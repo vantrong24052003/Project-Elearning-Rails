@@ -5,6 +5,20 @@ export class QuizApi {
     return ApiService.get(`/dashboard/courses/${courseId}/quiz_statuses`);
   }
 
+  static async generateQuestions(title, description, numQuestions, difficulty) {
+    try {
+      return await ApiService.post('/manage/quizzes.json', {
+        title,
+        description,
+        num_questions: numQuestions,
+        difficulty: difficulty || 'medium'
+      });
+    } catch (error) {
+      console.error('API Error - generateQuestions:', error.message);
+      throw error;
+    }
+  }
+
   static async logAction(courseId, quizId, attemptId, actionType, extraData = {}) {
     return ApiService.put(
       `/dashboard/courses/${courseId}/quiz_statuses/${attemptId}`,
@@ -73,7 +87,7 @@ export class QuizApi {
     } catch (error) {
       console.error("Error getting IP for saveAttemptState:", error);
     }
-    
+
     return ApiService.put(
       `/dashboard/courses/${courseId}/quiz_statuses/${attemptId}`,
       {
@@ -106,11 +120,11 @@ export class QuizApi {
         mode: 'cors',
         cache: 'no-cache',
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       return data;
     } catch (error) {

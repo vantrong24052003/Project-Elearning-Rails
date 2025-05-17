@@ -22,11 +22,34 @@ class Manage::QuizzesController < Manage::BaseController
 
   def new
     @quiz = Quiz.new
+
+    respond_to do |format|
+      format.html
+      format.json do
+        case params[:get_content_type]
+        when 'course_chapters'
+          render json: get_course_chapters
+        when 'chapter_lessons'
+          render json: get_chapter_lessons
+        when 'lesson_videos'
+          render json: get_lesson_videos
+        when 'video_details'
+          render json: get_video_details
+        else
+          render json: { error: 'Invalid content type' }, status: :unprocessable_entity
+        end
+      end
+    end
   end
 
   def edit; end
 
   def create
+    if request.format.json? && params[:title].present? && params[:description].present?
+      create_questions_from_transcription
+      return
+    end
+
     @quiz = Quiz.new(quiz_params)
 
     if params[:source_type] == 'ai_generated' && params[:questions_data].present?
@@ -81,6 +104,73 @@ class Manage::QuizzesController < Manage::BaseController
   end
 
   private
+
+  def create_questions_from_transcription
+    title = params[:title]
+    description = params[:description]
+    num_questions = params[:num_questions].to_i || 5
+    difficulty = params[:difficulty] || 'medium'
+
+    if description.blank? || title.blank?
+      render json: { error: 'Thiếu thông tin cần thiết' }, status: :bad_request
+      return
+    end
+
+    gemini_service = GeminiServices.new
+    begin
+      questions = gemini_service.generate_quiz(
+        title: title,
+        description: description,
+        num_questions: num_questions,
+        difficulty: difficulty
+      )
+
+      if questions.blank? || !questions.is_a?(Array) || questions.empty?
+        render json: { error: 'Không thể tạo câu hỏi từ nội dung phiên âm này' }, status: :unprocessable_entity
+        return
+      end
+
+      render json: questions, status: :ok
+    rescue StandardError => e
+      Rails.logger.error("Lỗi khi tạo câu hỏi từ phiên âm: #{e.message}")
+      render json: { error: "Không thể tạo câu hỏi: #{e.message}" }, status: :unprocessable_entity
+    end
+  end
+
+  def get_course_chapters
+    course = Course.find(params[:course_id])
+    course.chapters.order(position: :asc).map { |chapter| { id: chapter.id, title: chapter.title } }
+  end
+
+  def get_chapter_lessons
+    chapter = Chapter.find(params[:chapter_id])
+    chapter.lessons.order(position: :asc).map { |lesson| { id: lesson.id, title: lesson.title } }
+  end
+
+  def get_lesson_videos
+    lesson = Lesson.find(params[:lesson_id])
+    lesson.videos.order(position: :asc).map { |video| { id: video.id, title: video.title } }
+  end
+
+  def get_video_details
+    video = Video.find_by(id: params[:video_id])
+    return if video.nil?
+
+    result = { id: video.id, title: video.title }
+
+    if video.upload.present?
+      upload = video.upload
+
+      transcription_value = upload.transcription
+      result[:transcription] = if transcription_value.present?
+                                 transcription_value
+                               else
+                                 'Chưa có phiên âm cho video này.'
+                               end
+    end
+
+    result
+  end
 
   def set_quiz
     @quiz = Quiz.includes(questions: [:quiz_questions]).find(params[:id])

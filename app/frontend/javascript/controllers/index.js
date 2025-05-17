@@ -24,12 +24,12 @@ import UploadFormController from "./manage/upload_form_controller"
 import UploadTranscodingController from "./manage/upload_transcoding_controller"
 import ManageUploadFormController from "./manage/upload_form_controller"
 import VideoPlayerController from "./shared/video_player_controller"
-import QuizAiGeneratorController from "./manage/quiz_ai_generator_controller"
 import OverviewController from "./manage/overview_controller"
 import toaster_controller from "./shared/toaster_controller"
 import QuizFlagController from "./dashboard/quiz_flag_controller"
 import QuizRedirectController from "./dashboard/quiz_redirect_controller"
 import QuizTimerController from "./dashboard/quiz_timer_controller"
+import course_content_select_controller from "./manage/course_content_select_controller"
 
 // home
 application.register("home--faq", faq_controller)
@@ -66,5 +66,5 @@ application.register("manage--video-filter", VideoFilterController)
 application.register("manage--upload-form", UploadFormController)
 application.register("manage--upload-transcoding", UploadTranscodingController)
 application.register("manage--upload-form", ManageUploadFormController)
-application.register("manage--quiz-ai-generator", QuizAiGeneratorController)
 application.register("manage--overview", OverviewController)
+application.register("manage--course-content-select", course_content_select_controller)
