@@ -27,9 +27,7 @@ class Manage::QuizzesController < Manage::BaseController
   end
 
   def new_with_preview
-    if params[:preview_questions_data].present?
-      session[:preview_questions_data] = params[:preview_questions_data]
-    end
+    session[:preview_questions_data] = params[:preview_questions_data] if params[:preview_questions_data].present?
     redirect_to new_manage_quiz_path
   end
 

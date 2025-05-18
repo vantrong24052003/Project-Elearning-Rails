@@ -216,7 +216,6 @@ export default class extends Controller {
     this.questions.push(newQuestion);
     this.renderQuestions();
 
-    // Open edit modal for the new question
     this.openEditModal(this.questions.length - 1);
   }
 

@@ -33,13 +33,13 @@ class Manage::QuestionsController < Manage::BaseController
   end
 
   def create
-    # Xử lý preview từ file Excel (format JSON)
     if request.format.json? && params[:file].present? && params[:course_id].present?
       file = params[:file]
       course_id = params[:course_id]
 
-      unless file.content_type.match?(/application\/(vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet|vnd\.ms-excel|csv)/)
-        render json: { error: 'Định dạng file không hỗ trợ. Vui lòng sử dụng Excel (.xlsx, .xls) hoặc CSV (.csv)' }, status: :bad_request
+      unless file.content_type.match?(%r{application/(vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet|vnd\.ms-excel|csv)})
+        render json: { error: 'Định dạng file không hỗ trợ. Vui lòng sử dụng Excel (.xlsx, .xls) hoặc CSV (.csv)' },
+               status: :bad_request
         return
       end
 
@@ -81,7 +81,8 @@ class Manage::QuestionsController < Manage::BaseController
         end
 
         if request.format.json?
-          render json: { notice: true, message: "Đã lưu thành công #{success_count} câu hỏi", success_count: success_count, total: questions_data.size, errors: error_messages }
+          render json: { notice: true, message: "Đã lưu thành công #{success_count} câu hỏi",
+                         success_count: success_count, total: questions_data.size, errors: error_messages }
           return
         end
 
@@ -96,7 +97,7 @@ class Manage::QuestionsController < Manage::BaseController
         flash[:alert] = "Đã xảy ra lỗi khi lưu câu hỏi: #{e.message}"
         redirect_to manage_questions_path
       end
-      return
+      nil
     else
       @question = Question.new(question_params)
       @question.user_id = current_user.id

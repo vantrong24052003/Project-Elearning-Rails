@@ -113,55 +113,48 @@ class QuestionsImportService
       }
 
       (2..sheet.last_row).each do |i|
-        begin
-          row_data = sheet.row(i)
-          next if row_data.compact.empty?
+        row_data = sheet.row(i)
+        next if row_data.compact.empty?
 
-          # Map headers to row data
-          row = {}
-          headers.each_with_index do |header, index|
-            row[header] = row_data[index] if header.present?
-          end
+        row = {}
+        headers.each_with_index do |header, index|
+          row[header] = row_data[index] if header.present?
+        end
 
-          # Tạo các options
-          options = {}
-          (0..3).each do |j|
-            option_key = "Đáp án #{('A'.ord + j).chr}"
-            options[j.to_s] = row[option_key].presence || ''
-          end
+        options = {}
+        (0..3).each do |j|
+          option_key = "Đáp án #{('A'.ord + j).chr}"
+          options[j.to_s] = row[option_key].presence || ''
+        end
 
-          # Validate nội dung
-          if row['Nội dung câu hỏi'].blank?
-            preview_results[:validation_errors] << {
-              row: i,
-              message: "Dòng #{i}: Nội dung câu hỏi không được để trống"
-            }
-            next
-          end
-
-          # Tạo đối tượng câu hỏi (không lưu vào DB)
-          question_data = {
-            content: row['Nội dung câu hỏi'],
-            options: options,
-            correct_option: row['Đáp án đúng (0-3)'].to_i,
-            explanation: row['Giải thích'].presence || 'Không có giải thích',
-            difficulty: row['Độ khó'].presence || 'medium',
-            topic: row['Chủ đề'].presence || 'other',
-            learning_goal: row['Mục tiêu học tập'].presence || 'other',
-            course_id: course_id,
-            user_id: user_id,
-            status: row['Trạng thái'].presence || 'active',
-            valid_until: parse_date_to_string(row['Thời hạn hiệu lực'])
-          }
-
-          # Thêm vào danh sách câu hỏi
-          preview_results[:questions] << question_data
-        rescue StandardError => e
+        if row['Nội dung câu hỏi'].blank?
           preview_results[:validation_errors] << {
             row: i,
-            message: "Dòng #{i}: Lỗi xử lý - #{e.message}"
+            message: "Dòng #{i}: Nội dung câu hỏi không được để trống"
           }
+          next
         end
+
+        question_data = {
+          content: row['Nội dung câu hỏi'],
+          options: options,
+          correct_option: row['Đáp án đúng (0-3)'].to_i,
+          explanation: row['Giải thích'].presence || 'Không có giải thích',
+          difficulty: row['Độ khó'].presence || 'medium',
+          topic: row['Chủ đề'].presence || 'other',
+          learning_goal: row['Mục tiêu học tập'].presence || 'other',
+          course_id: course_id,
+          user_id: user_id,
+          status: row['Trạng thái'].presence || 'active',
+          valid_until: parse_date_to_string(row['Thời hạn hiệu lực'])
+        }
+
+        preview_results[:questions] << question_data
+      rescue StandardError => e
+        preview_results[:validation_errors] << {
+          row: i,
+          message: "Dòng #{i}: Lỗi xử lý - #{e.message}"
+        }
       end
 
       preview_results
@@ -195,16 +188,16 @@ class QuestionsImportService
 
     begin
       date = case date_value
-            when String
-              Date.parse(date_value)
-            when Numeric
-              base_date = Date.new(1899, 12, 30)
-              base_date + date_value.to_i
-            when Date
-              date_value
-            when DateTime, Time
-              date_value.to_date
-            end
+             when String
+               Date.parse(date_value)
+             when Numeric
+               base_date = Date.new(1899, 12, 30)
+               base_date + date_value.to_i
+             when Date
+               date_value
+             when DateTime, Time
+               date_value.to_date
+             end
       date&.to_s
     rescue StandardError
       nil
