@@ -33,51 +33,80 @@ class Manage::QuestionsController < Manage::BaseController
   end
 
   def create
-    if params[:file].present?
-      unless File.extname(params[:file].original_filename) == '.xlsx'
-        flash[:alert] = 'Chỉ hỗ trợ file Excel (.xlsx)'
-        @question = Question.new
-        @courses = Course.all.order(:title)
-        render :new, status: :unprocessable_entity
+    # Xử lý preview từ file Excel (format JSON)
+    if request.format.json? && params[:file].present? && params[:course_id].present?
+      file = params[:file]
+      course_id = params[:course_id]
+
+      unless file.content_type.match?(/application\/(vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet|vnd\.ms-excel|csv)/)
+        render json: { error: 'Định dạng file không hỗ trợ. Vui lòng sử dụng Excel (.xlsx, .xls) hoặc CSV (.csv)' }, status: :bad_request
         return
       end
 
-      if params[:course_id].blank?
-        flash[:alert] = 'Vui lòng chọn khóa học trước khi import'
-        @question = Question.new
-        @courses = Course.all.order(:title)
-        render :new, status: :unprocessable_entity
-        return
-      end
+      importer = QuestionsImportService.new(file, course_id, current_user.id)
+      preview_results = importer.preview_import
 
-      begin
-        importer = QuestionsImportService.new(params[:file], params[:course_id], current_user.id)
-        results = importer.import
-
-        if results[:error].present?
-          flash[:alert] = results[:error]
-        elsif results[:failed]&.positive?
-          flash[:alert] =
-            "Import hoàn tất với #{results[:success]}/#{results[:total]} câu hỏi thành công. #{results[:failed]} lỗi: #{results[:errors].join('; ')}"
-        else
-          flash[:notice] = "Import hoàn tất. Đã thêm #{results[:success]} câu hỏi mới."
-        end
-      rescue StandardError => e
-        flash[:alert] = "Đã xảy ra lỗi khi import: #{e.message}"
-      end
-
-      redirect_to manage_questions_path
+      render json: preview_results
       return
     end
 
-    @question = Question.new(question_params)
-    @question.user_id = current_user.id
+    if params[:preview_questions].present?
+      begin
+        questions_data = JSON.parse(params[:preview_questions])
+        course_id = params[:selected_course_id]
 
-    if @question.save
-      redirect_to manage_question_path(@question), notice: 'Question created successfully'
+        success_count = 0
+        error_messages = []
+
+        questions_data.each do |question_data|
+          question = Question.new(
+            content: question_data['content'],
+            options: question_data['options'],
+            correct_option: question_data['correct_option'],
+            explanation: question_data['explanation'],
+            difficulty: question_data['difficulty'],
+            topic: question_data['topic'] || 'other',
+            learning_goal: question_data['learning_goal'] || 'other',
+            course_id: course_id,
+            user_id: current_user.id,
+            status: question_data['status'] || 'active',
+            valid_until: question_data['valid_until'].present? ? Date.parse(question_data['valid_until'].to_s) : nil
+          )
+
+          if question.save
+            success_count += 1
+          else
+            error_messages << "Câu hỏi '#{question.content[0..50]}...' lỗi: #{question.errors.full_messages.join(', ')}"
+          end
+        end
+
+        if request.format.json?
+          render json: { notice: true, message: "Đã lưu thành công #{success_count} câu hỏi", success_count: success_count, total: questions_data.size, errors: error_messages }
+          return
+        end
+
+        if error_messages.any?
+          flash[:alert] = "Đã lưu #{success_count}/#{questions_data.size} câu hỏi. Lỗi: #{error_messages.join('; ')}"
+        else
+          flash[:notice] = "Đã lưu thành công #{success_count} câu hỏi."
+        end
+
+        redirect_to manage_questions_path
+      rescue StandardError => e
+        flash[:alert] = "Đã xảy ra lỗi khi lưu câu hỏi: #{e.message}"
+        redirect_to manage_questions_path
+      end
+      return
     else
-      @courses = Course.all.order(:title)
-      render :new, status: :unprocessable_entity
+      @question = Question.new(question_params)
+      @question.user_id = current_user.id
+
+      if @question.save
+        redirect_to manage_question_path(@question), notice: 'Question created successfully'
+      else
+        @courses = Course.all.order(:title)
+        render :new, status: :unprocessable_entity
+      end
     end
   end
 

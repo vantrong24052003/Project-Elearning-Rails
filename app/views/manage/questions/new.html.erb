@@ -1,4 +1,4 @@
-<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8" data-controller="manage--questions-import">
+<div class="md:container mx-auto py-6 px-4 sm:px-6 lg:px-8" data-controller="manage--questions-import manage--questions-preview">
   <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg">
     <div class="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -31,16 +31,16 @@
       <div class="hidden mb-6 border border-gray-200 dark:border-gray-700 rounded-lg p-5 bg-gray-50 dark:bg-gray-800" data-manage--questions-import-target="importForm">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Import câu hỏi từ Excel</h2>
 
-        <%= form_with url: manage_questions_path, method: :post, multipart: true, class: "space-y-4" do |form| %>
+        <%= form_with url: '#', html: { id: 'excel-upload-form' }, multipart: true, class: "space-y-4" do |form| %>
           <div class="form-control">
             <%= form.label :course_id, "Khóa học", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
-            <%= form.select :course_id, @courses.map { |c| [c.title, c.id] }, { include_blank: "Chọn khóa học" }, { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true } %>
+            <%= form.select :course_id, @courses.map { |c| [c.title, c.id] }, { include_blank: "Chọn khóa học" }, { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true, data: { manage__questions_preview_target: "courseSelect" } } %>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tất cả câu hỏi sẽ được gán vào khóa học này.</p>
           </div>
 
           <div class="form-control">
-            <%= form.label :file, "File Excel (.xlsx)", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
-            <%= form.file_field :file, accept: ".xlsx", class: "file-input file-input-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true %>
+            <%= form.label :file, "File Excel (.xlsx, .xls, .csv)", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+            <%= form.file_field :file, accept: ".xlsx,.xls,.csv", class: "file-input file-input-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true, data: { manage__questions_preview_target: "fileInput" } %>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tải file mẫu:
               <a href="<%= manage_questions_template_path(format: :xlsx) %>" class="text-blue-600 dark:text-blue-400 hover:underline">template_import_cau_hoi.xlsx</a>
             </p>
@@ -50,20 +50,217 @@
             <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">Lưu ý:</h3>
             <ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-400 space-y-1">
               <li>File Excel phải có đúng định dạng như file mẫu</li>
-              <li>Các trường bắt buộc: Nội dung câu hỏi, Đáp án A, Đáp án B, Đáp án C, Đáp án D, Đáp án đúng</li>
+              <li>Các trường <span class="font-semibold">bắt buộc</span>: Nội dung câu hỏi, Đáp án A, B, C, D, Đáp án đúng, Giải thích, Độ khó, Chủ đề, Mục tiêu học tập</li>
               <li>Đáp án đúng: Nhập 0 cho A, 1 cho B, 2 cho C, 3 cho D</li>
+              <li>Độ khó: easy, medium, hard</li>
+              <li>Chủ đề: math, physics, chemistry, biology, history, geography, literature, programming, other</li>
+              <li>Mục tiêu học tập: remember, understand, apply, analyze, create, other</li>
               <li>Mỗi dòng là một câu hỏi</li>
             </ul>
           </div>
 
           <div class="flex justify-end space-x-3">
             <button type="button" class="btn btn-outline" data-action="manage--questions-import#toggleForms">Hủy</button>
-            <%= form.submit "Import", class: "btn btn-primary" %>
+            <button type="button" class="btn btn-primary" data-action="manage--questions-preview#importQuestions">Đọc file và Preview</button>
           </div>
         <% end %> 
       </div>
 
-      <div data-manage--questions-import-target="normalForm">
+      <div class="hidden mb-6" data-manage--questions-preview-target="previewContainer">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Preview câu hỏi (chưa lưu vào hệ thống)</h2>
+
+          <div class="flex gap-2">
+            <button class="btn btn-outline btn-sm" data-action="manage--questions-preview#cancelPreview">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              Hủy
+            </button>
+            <button class="btn btn-primary btn-sm" data-action="manage--questions-preview#addNewQuestion">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+              Thêm câu hỏi
+            </button>
+            <button class="btn btn-secondary btn-sm bg-indigo-500 hover:bg-indigo-600 border-0 shadow-md" data-action="manage--questions-preview#createQuiz">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 01-2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Tạo Quizzz
+            </button>
+            <button class="btn btn-success btn-sm" data-action="manage--questions-preview#saveAllQuestions">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              Lưu tất cả
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-lg p-4 mb-4 hidden" data-manage--questions-preview-target="errorContainer">
+          <h3 class="text-sm font-medium text-red-800 dark:text-red-300 mb-2">Lỗi khi đọc file:</h3>
+          <div class="text-sm text-red-700 dark:text-red-400" data-manage--questions-preview-target="errorMessage"></div>
+        </div>
+
+        <div class="overflow-x-auto overflow-y-auto max-h-[60vh] border border-gray-200 dark:border-gray-700 rounded-lg">
+          <table class="table table-zebra w-full">
+            <thead class="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">
+              <tr>
+                <th class="w-10">#</th>
+                <th>Nội dung câu hỏi</th>
+                <th>Đáp án A</th>
+                <th>Đáp án B</th>
+                <th>Đáp án C</th>
+                <th>Đáp án D</th>
+                <th>Đáp án đúng</th>
+                <th>Độ khó</th>
+                <th>Chủ đề</th>
+                <th>Mục tiêu học tập</th>
+                <th class="w-32 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody data-manage--questions-preview-target="questionsList"></tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 text-right">
+          <template data-manage--questions-preview-target="questionRowTemplate">
+            <tr class="border-b border-gray-200 dark:border-gray-700">
+              <td class="py-2 px-3 question-index"></td>
+              <td class="py-2 px-3 question-content"></td>
+              <td class="py-2 px-3 question-option-0"></td>
+              <td class="py-2 px-3 question-option-1"></td>
+              <td class="py-2 px-3 question-option-2"></td>
+              <td class="py-2 px-3 question-option-3"></td>
+              <td class="py-2 px-3 question-correct-option"></td>
+              <td class="py-2 px-3 question-difficulty"></td>
+              <td class="py-2 px-3 question-topic"></td>
+              <td class="py-2 px-3 question-learning-goal"></td>
+              <td class="py-2 px-3 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button type="button" class="btn btn-ghost btn-xs edit-question">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-xs text-red-500 delete-question">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      <line x1="10" y1="11" x2="10" y2="17"></line>
+                      <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </template>
+
+          <template data-manage--questions-preview-target="emptyStateTemplate">
+            <tr>
+              <td colspan="11" class="py-8 text-center text-gray-500 dark:text-gray-400">
+                <p>Chưa có câu hỏi nào. Vui lòng nhập file Excel hợp lệ.</p>
+              </td>
+            </tr>
+          </template>
+
+          <template data-manage--questions-preview-target="editModalTemplate">
+            <div class="modal-box max-w-4xl">
+              <h3 class="font-bold text-lg mb-4">Chỉnh sửa câu hỏi</h3>
+              <form class="edit-question-form space-y-4">
+                <div class="form-control">
+                  <label class="label font-medium">Nội dung câu hỏi</label>
+                  <textarea class="textarea textarea-bordered h-24 w-full" name="content" required></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="form-control">
+                    <label class="label font-medium">Đáp án A</label>
+                    <input type="text" class="input input-bordered w-full" name="options_0" required>
+                  </div>
+                  <div class="form-control">
+                    <label class="label font-medium">Đáp án B</label>
+                    <input type="text" class="input input-bordered w-full" name="options_1" required>
+                  </div>
+                  <div class="form-control">
+                    <label class="label font-medium">Đáp án C</label>
+                    <input type="text" class="input input-bordered w-full" name="options_2" required>
+                  </div>
+                  <div class="form-control">
+                    <label class="label font-medium">Đáp án D</label>
+                    <input type="text" class="input input-bordered w-full" name="options_3" required>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="form-control">
+                    <label class="label font-medium">Đáp án đúng</label>
+                    <select class="select select-bordered w-full" name="correct_option" required>
+                      <option value="0">A</option>
+                      <option value="1">B</option>
+                      <option value="2">C</option>
+                      <option value="3">D</option>
+                    </select>
+                  </div>
+                  <div class="form-control">
+                    <label class="label font-medium">Độ khó</label>
+                    <select class="select select-bordered w-full" name="difficulty">
+                      <option value="easy">Dễ</option>
+                      <option value="medium">Trung bình</option>
+                      <option value="hard">Khó</option>
+                    </select>
+                  </div>
+                  <div class="form-control">
+                    <label class="label font-medium">Chủ đề</label>
+                    <select class="select select-bordered w-full" name="topic" required>
+                      <option value="math">Toán học</option>
+                      <option value="physics">Vật lý</option>
+                      <option value="chemistry">Hóa học</option>
+                      <option value="biology">Sinh học</option>
+                      <option value="history">Lịch sử</option>
+                      <option value="geography">Địa lý</option>
+                      <option value="literature">Văn học</option>
+                      <option value="programming">Lập trình</option>
+                      <option value="other">Khác</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-control mb-4">
+                  <label class="label font-medium">Mục tiêu học tập</label>
+                  <select class="select select-bordered w-full" name="learning_goal" required>
+                    <option value="remember">Ghi nhớ</option>
+                    <option value="understand">Hiểu</option>
+                    <option value="apply">Áp dụng</option>
+                    <option value="analyze">Phân tích</option>
+                    <option value="create">Sáng tạo</option>
+                    <option value="other">Khác</option>
+                  </select>
+                </div>
+
+                <div class="form-control">
+                  <label class="label font-medium">Giải thích đáp án</label>
+                  <textarea class="textarea textarea-bordered h-24 w-full" name="explanation"></textarea>
+                </div>
+
+                <div class="modal-action flex justify-end mt-6">
+                  <button type="button" class="btn btn-outline cancel-edit">Hủy</button>
+                  <button type="submit" class="btn btn-primary save-question-edit">Lưu thay đổi</button>
+                </div>
+              </form>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <div data-manage--questions-import-target="normalForm" data-manage--questions-preview-target="normalForm">
         <%= render "form", question: @question %>
       </div>
     </div>
