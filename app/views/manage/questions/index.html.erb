@@ -1,12 +1,12 @@
 <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8" data-controller="manage--questions manage--questions-import">
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-5">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Ngân Hàng Câu Hỏi</h1>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Ngân Hàng Câu Hỏi</h1>
     </div>
 
     <input type="hidden" data-manage--questions-target="selectedQuestionsInput" value="[]">
     <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
-      <div class="rounded-lg p-5 bg-white dark:bg-gray-800 text-gray-800 dark:text-white">
+      <div class="rounded-lg p-5 bg-white dark:bg-gray-800 text-gray-800 dark:text-white shadow-md">
         <%= form_with(url: manage_questions_path, method: :get, id: "search_filter_form", data: {
           turbo_frame: "questions_data",
           "manage--questions-target": "searchForm"
@@ -16,7 +16,7 @@
               <div class="w-full lg:flex-1">
                 <div class="relative group">
                   <%= f.text_field :search, value: params[:search],
-                          class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 pl-10 pr-12 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 focus:border-blue-500 dark:focus:border-purple-500 transition-all",
+                          class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 pl-10 pr-12 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 focus:border-blue-500 dark:focus:border-purple-500 transition-all shadow-sm",
                           placeholder: "Tìm kiếm câu hỏi...",
                           autocomplete: "off",
                           data: {
@@ -52,7 +52,7 @@
                           options_for_select([["Tất cả khóa học", ""]] + @courses.map { |c| [c.title, c.id] }, params[:course_id]),
                           {},
                           {
-                            class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
+                            class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
                             data: {
                               "manage--questions-target": "courseSelect",
                               action: "change->manage--questions#filterByCourse"
@@ -66,7 +66,7 @@
                             [["Tất cả độ khó", ""], ["Dễ", "easy"], ["Trung bình", "medium"], ["Khó", "hard"]],
                             { selected: params[:difficulty] },
                             {
-                              class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
+                              class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
                               data: {
                                 "manage--questions-target": "difficultySelect",
                                 action: "change->manage--questions#filterByDifficulty"
@@ -89,7 +89,7 @@
                             ["Khác", "other"]],
                           { selected: params[:topic] },
                           {
-                            class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
+                            class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
                             data: {
                               "manage--questions-target": "topicSelect",
                               action: "change->manage--questions#filterByTopic"
@@ -109,7 +109,7 @@
                             ["Khác", "other"]],
                           { selected: params[:learning_goal] },
                           {
-                            class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
+                            class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
                             data: {
                               "manage--questions-target": "learningGoalSelect",
                               action: "change->manage--questions#filterByLearningGoal"
@@ -126,7 +126,7 @@
                             ["Đã loại bỏ", "deprecated"]],
                           { selected: params[:status] },
                           {
-                            class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
+                            class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
                             data: {
                               "manage--questions-target": "statusSelect",
                               action: "change->manage--questions#filterByStatus"
@@ -137,7 +137,7 @@
 
                 <div class="w-full md:w-auto">
                   <button type="button"
-                          class="w-full rounded-md hover:opacity-70 bg-gray-50 dark:bg-gray-700 flex items-center justify-center h-10 px-4"
+                          class="w-full rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 bg-gray-50 dark:bg-gray-700 flex items-center justify-center h-10 px-4 border border-gray-300 dark:border-gray-600 transition-colors shadow-sm"
                           data-action="manage--questions#resetAllFilters">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <polyline points="1 4 1 10 7 10"></polyline>
@@ -149,8 +149,8 @@
                 </div>
 
                 <div class="w-full md:w-auto">
-                  <%= f.button type: :button, 
-                          class: "w-full rounded-md hover:opacity-70 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-800 flex items-center justify-center h-10 px-4",
+                  <%= f.button type: :button,
+                          class: "w-full rounded-md hover:bg-green-100 dark:hover:bg-green-900/40 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-800 flex items-center justify-center h-10 px-4 transition-colors shadow-sm",
                           data: { action: "manage--questions-import#exportToExcel" } do %>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -168,18 +168,18 @@
     </div>
 
     <%= turbo_frame_tag "questions_data" do %>
-    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg">
-      <div class="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg overflow-hidden">
+      <div class="p-5 md:p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h2 class="text-lg md:text-xl text-blue-600 dark:text-purple-400 font-medium">Danh sách câu hỏi</h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Quản lý và tổ chức các câu hỏi theo chủ đề, mục tiêu và độ khó</p>
+            <h2 class="text-lg md:text-xl text-blue-600 dark:text-purple-400 font-semibold">Danh sách câu hỏi</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Quản lý và tổ chức các câu hỏi theo chủ đề, mục tiêu và độ khó</p>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-3">
             <button
               id="create-quiz-btn"
-              class="btn btn-secondary btn-sm"
+              class="btn btn-secondary btn-sm bg-indigo-500 hover:bg-indigo-600 border-0 shadow-md"
               data-manage--questions-target="createQuizBtn"
               data-action="manage--questions#createQuiz">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -188,7 +188,7 @@
               Tạo bài kiểm tra
             </button>
 
-            <%= link_to new_manage_question_path, class: "btn btn-primary btn-sm", data: { turbo: false } do %>
+            <%= link_to new_manage_question_path, class: "btn btn-primary btn-sm bg-gradient-to-r from-blue-500 to-indigo-600 border-0 shadow-md hover:shadow-blue-500/30 transition-all", data: { turbo: false } do %>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 5v14M5 12h14"/>
               </svg>
@@ -198,72 +198,92 @@
         </div>
       </div>
 
-      <div class="p-4 md:p-6">
+      <div class="p-5 md:p-6">
         <div class="overflow-x-auto overflow-y-auto max-h-[70vh]">
           <% if @questions.any? %>
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
               <% @questions.each do |question| %>
-                <div class="card bg-base-100 border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-shadow">
-                  <div class="card-body p-4">
+                <div class="card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group relative h-full">
+                  <div class="absolute -right-16 -top-16 w-32 h-32 bg-blue-500/10 dark:bg-blue-500/5 rounded-full z-0"></div>
+                  <div class="absolute -left-16 -bottom-16 w-32 h-32 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full z-0"></div>
+
+                  <div class="card-body p-4 relative z-10">
                     <div class="flex justify-between items-start">
-                      <div class="flex gap-2 mb-2">
-                        <span class="badge badge-<%= question.difficulty == 'easy' ? 'success' : (question.difficulty == 'medium' ? 'warning' : 'error') %>">
+                      <div class="flex flex-wrap gap-2 mb-2">
+                        <% difficulty_classes = {
+                          'easy' => 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-600 border-green-200 dark:from-green-600/10 dark:to-emerald-600/10 dark:text-green-400 dark:border-green-600/30',
+                          'medium' => 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-600 border-yellow-200 dark:from-yellow-600/10 dark:to-amber-600/10 dark:text-yellow-400 dark:border-yellow-600/30',
+                          'hard' => 'bg-gradient-to-r from-red-100 to-pink-100 text-red-600 border-red-200 dark:from-red-600/10 dark:to-pink-600/10 dark:text-red-400 dark:border-red-600/30'
+                        } %>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border <%= difficulty_classes[question.difficulty] || 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600' %>">
                           <%= question.difficulty %>
                         </span>
-                        <span class="badge badge-primary"><%= question.topic %></span>
-                        <span class="badge badge-secondary"><%= question.learning_goal %></span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-600 border-blue-200 dark:from-blue-600/10 dark:to-indigo-600/10 dark:text-blue-400 dark:border-blue-600/30">
+                          <%= question.topic %>
+                        </span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-gradient-to-r from-purple-100 to-violet-100 text-purple-600 border-purple-200 dark:from-purple-600/10 dark:to-violet-600/10 dark:text-purple-400 dark:border-purple-600/30">
+                          <%= question.learning_goal %>
+                        </span>
                       </div>
                       <div class="flex-shrink-0">
                         <input type="checkbox" class="checkbox checkbox-primary question-checkbox" data-question-id="<%= question.id %>" data-action="change->manage--questions#toggleQuestionSelection">
                       </div>
                     </div>
 
-                    <h3 class="card-title text-base font-medium text-gray-900 dark:text-white line-clamp-2">
+                    <h3 class="card-title text-base font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       <%= truncate(question.content, length: 100) %>
                     </h3>
 
-                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                      <p class="mb-1"><strong>Khóa học:</strong> <%= question.course&.title || "Không có khóa học" %></p>
-                      <p class="mb-1"><strong>Đáp án đúng:</strong>
-                        <% if question.options.is_a?(Hash) && question.correct_option.present? %>
-                          <%= question.options[question.correct_option.to_s] || "Tùy chọn #{question.correct_option}" %>
-                        <% else %>
-                          <%= question.correct_option.present? ? "Tùy chọn #{question.correct_option}" : "Không có đáp án" %>
-                        <% end %>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-3 flex-grow">
+                      <p class="mb-1.5 flex items-center">
+                        <span class="font-medium text-gray-700 dark:text-gray-300 mr-1">Khóa học:</span>
+                        <span class="text-blue-600 dark:text-blue-400"><%= question.course&.title || "Không có khóa học" %></span>
                       </p>
-                      <div class="flex items-center gap-2 mt-2">
-                        <% status_color = case question.status
-                           when 'active' then 'success'
-                           when 'inactive' then 'warning'
-                           when 'deprecated' then 'error'
-                           else 'neutral'
-                           end %>
-                        <span class="badge badge-sm badge-<%= status_color %>">
+                      <p class="mb-1.5 flex items-start">
+                        <span class="font-medium text-gray-700 dark:text-gray-300 mr-1">Đáp án đúng:</span>
+                        <span class="text-green-600 dark:text-green-400">
+                          <% if question.options.is_a?(Hash) && question.correct_option.present? %>
+                            <%= question.options[question.correct_option.to_s] || "Tùy chọn #{question.correct_option}" %>
+                          <% else %>
+                            <%= question.correct_option.present? ? "Tùy chọn #{question.correct_option}" : "Không có đáp án" %>
+                          <% end %>
+                        </span>
+                      </p>
+                      <div class="flex flex-wrap items-center gap-2 mt-3">
+                        <% status_colors = {
+                          'active' => 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-600 border-green-200 dark:from-green-600/10 dark:to-emerald-600/10 dark:text-green-400 dark:border-green-600/30',
+                          'inactive' => 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-600 border-yellow-200 dark:from-yellow-600/10 dark:to-amber-600/10 dark:text-yellow-400 dark:border-yellow-600/30',
+                          'deprecated' => 'bg-gradient-to-r from-red-100 to-pink-100 text-red-600 border-red-200 dark:from-red-600/10 dark:to-pink-600/10 dark:text-red-400 dark:border-red-600/30'
+                        } %>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border <%= status_colors[question.status] || 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600' %>">
                           <%= question.status == 'active' ? 'Đang hoạt động' : (question.status == 'inactive' ? 'Không hoạt động' : 'Đã loại bỏ') %>
                         </span>
                         <% if question.valid_until.present? %>
-                          <% if question.valid_until < Date.today %>
-                            <span class="badge badge-sm badge-error">Hết hạn <%= question.valid_until.strftime("%d/%m/%Y") %></span>
-                          <% elsif question.valid_until < Date.today + 30.days %>
-                            <span class="badge badge-sm badge-warning">Hết hạn <%= question.valid_until.strftime("%d/%m/%Y") %></span>
-                          <% else %>
-                            <span class="badge badge-sm badge-info">Hết hạn <%= question.valid_until.strftime("%d/%m/%Y") %></span>
-                          <% end %>
+                          <% date_color = if question.valid_until < Date.today
+                                            'bg-gradient-to-r from-red-100 to-pink-100 text-red-600 border-red-200 dark:from-red-600/10 dark:to-pink-600/10 dark:text-red-400 dark:border-red-600/30'
+                                          elsif question.valid_until < Date.today + 30.days
+                                            'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-600 border-yellow-200 dark:from-yellow-600/10 dark:to-amber-600/10 dark:text-yellow-400 dark:border-yellow-600/30'
+                                          else
+                                            'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-600 border-blue-200 dark:from-blue-600/10 dark:to-indigo-600/10 dark:text-blue-400 dark:border-blue-600/30'
+                                          end %>
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border <%= date_color %>">
+                            Hết hạn <%= question.valid_until.strftime("%d/%m/%Y") %>
+                          </span>
                         <% end %>
                       </div>
                     </div>
 
-                    <div class="card-actions justify-end mt-3">
-                      <%= link_to manage_question_path(question), class: "btn btn-sm btn-outline", data: { turbo: false } do %>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <div class="card-actions justify-end mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                      <%= link_to manage_question_path(question), class: "btn btn-xs bg-white dark:bg-gray-700 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 transition-colors shadow-sm", data: { turbo: false } do %>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                           <circle cx="12" cy="12" r="3"></circle>
                         </svg>
                         Xem
                       <% end %>
                       
-                      <%= link_to edit_manage_question_path(question), class: "btn btn-sm btn-outline", data: { turbo: false } do %>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <%= link_to edit_manage_question_path(question), class: "btn btn-xs bg-white dark:bg-gray-700 hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 transition-colors shadow-sm", data: { turbo: false } do %>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                         </svg>
                         Sửa
@@ -283,20 +303,20 @@
                 } %>
             </div>
           <% else %>
-            <div class="text-center py-8">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="text-center py-16 px-6">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-gray-400 dark:text-gray-600 mb-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-white">Không tìm thấy câu hỏi</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Không có câu hỏi nào phù hợp với điều kiện tìm kiếm hoặc bộ lọc của bạn.</p>
-              <div class="mt-6">
-                <%= link_to new_manage_question_path, class: "btn btn-primary", data: { turbo: false } do %>
+              <h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-white mb-3">Không tìm thấy câu hỏi</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-lg mx-auto">Không có câu hỏi nào phù hợp với điều kiện tìm kiếm hoặc bộ lọc của bạn.</p>
+              <div class="flex flex-wrap justify-center gap-4">
+                <%= link_to new_manage_question_path, class: "btn btn-primary bg-gradient-to-r from-blue-500 to-indigo-600 border-0 shadow-lg hover:shadow-blue-500/30 transition-all", data: { turbo: false } do %>
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 5v14M5 12h14"/>
                   </svg>
                   Thêm câu hỏi mới
                 <% end %>
-                <button type="button" class="btn btn-outline ml-2" data-action="manage--questions#resetAllFilters">
+                <button type="button" class="btn btn-outline bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all" data-action="manage--questions#resetAllFilters">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="1 4 1 10 7 10"></polyline>
                     <polyline points="23 20 23 14 17 14"></polyline>

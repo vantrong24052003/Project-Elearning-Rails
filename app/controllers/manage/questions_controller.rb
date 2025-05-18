@@ -34,8 +34,8 @@ class Manage::QuestionsController < Manage::BaseController
 
   def create
     if params[:file].present?
-      unless File.extname(params[:file].original_filename) == ".xlsx"
-        flash[:alert] = "Chỉ hỗ trợ file Excel (.xlsx)"
+      unless File.extname(params[:file].original_filename) == '.xlsx'
+        flash[:alert] = 'Chỉ hỗ trợ file Excel (.xlsx)'
         @question = Question.new
         @courses = Course.all.order(:title)
         render :new, status: :unprocessable_entity
@@ -43,7 +43,7 @@ class Manage::QuestionsController < Manage::BaseController
       end
 
       if params[:course_id].blank?
-        flash[:alert] = "Vui lòng chọn khóa học trước khi import"
+        flash[:alert] = 'Vui lòng chọn khóa học trước khi import'
         @question = Question.new
         @courses = Course.all.order(:title)
         render :new, status: :unprocessable_entity
@@ -56,8 +56,9 @@ class Manage::QuestionsController < Manage::BaseController
 
         if results[:error].present?
           flash[:alert] = results[:error]
-        elsif results[:failed] && results[:failed] > 0
-          flash[:alert] = "Import hoàn tất với #{results[:success]}/#{results[:total]} câu hỏi thành công. #{results[:failed]} lỗi: #{results[:errors].join('; ')}"
+        elsif results[:failed]&.positive?
+          flash[:alert] =
+            "Import hoàn tất với #{results[:success]}/#{results[:total]} câu hỏi thành công. #{results[:failed]} lỗi: #{results[:errors].join('; ')}"
         else
           flash[:notice] = "Import hoàn tất. Đã thêm #{results[:success]} câu hỏi mới."
         end
@@ -85,7 +86,8 @@ class Manage::QuestionsController < Manage::BaseController
        params[:question][:status].present? &&
        params[:question][:status] != 'active' &&
        @question.status == 'active'
-      redirect_to manage_question_path(@question), alert: 'Câu hỏi đang được sử dụng trong bài kiểm tra hiện đang diễn ra và không thể thay đổi trạng thái.'
+      redirect_to manage_question_path(@question),
+                  alert: 'Câu hỏi đang được sử dụng trong bài kiểm tra hiện đang diễn ra và không thể thay đổi trạng thái.'
       return
     end
 
@@ -116,8 +118,8 @@ class Manage::QuestionsController < Manage::BaseController
 
   def question_params
     params_with_options = params.require(:question).permit(:content, :correct_option, :explanation, :difficulty,
-                                          :course_id, :topic, :learning_goal, :status, :valid_until,
-                                          :options_0, :options_1, :options_2, :options_3)
+                                                           :course_id, :topic, :learning_goal, :status, :valid_until,
+                                                           :options_0, :options_1, :options_2, :options_3)
 
     options = {}
     (0..3).each do |i|

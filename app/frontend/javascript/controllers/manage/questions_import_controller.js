@@ -1,10 +1,21 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["importForm"]
+  static targets = ["importForm", "normalForm", "importButtonText"]
 
   connect() {
     console.log('Questions import controller connected')
+  }
+
+  toggleForms() {
+    this.importFormTarget.classList.toggle('hidden')
+    this.normalFormTarget.classList.toggle('hidden')
+
+    if (this.importFormTarget.classList.contains('hidden')) {
+      this.importButtonTextTarget.textContent = "Import từ Excel"
+    } else {
+      this.importButtonTextTarget.textContent = "Tạo câu hỏi thủ công"
+    }
   }
 
   toggleImportForm() {
