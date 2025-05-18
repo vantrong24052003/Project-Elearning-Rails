@@ -1,4 +1,4 @@
-<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8" data-controller="manage--questions-import">
   <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg">
     <div class="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -7,7 +7,16 @@
           <p class="text-sm text-gray-600 dark:text-gray-400">Điền thông tin để tạo câu hỏi mới cho ngân hàng câu hỏi</p>
         </div>
 
-        <div>
+        <div class="flex gap-2">
+          <button class="btn btn-primary btn-sm" data-action="manage--questions-import#toggleForms">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span data-manage--questions-import-target="importButtonText">Import từ Excel</span>
+          </button>
+
           <%= link_to manage_questions_path, class: "btn btn-outline btn-sm" do %>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -19,7 +28,44 @@
     </div>
 
     <div class="p-4 md:p-6">
-      <%= render "form", question: @question %>
+      <div class="hidden mb-6 border border-gray-200 dark:border-gray-700 rounded-lg p-5 bg-gray-50 dark:bg-gray-800" data-manage--questions-import-target="importForm">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Import câu hỏi từ Excel</h2>
+
+        <%= form_with url: manage_questions_path, method: :post, multipart: true, class: "space-y-4" do |form| %>
+          <div class="form-control">
+            <%= form.label :course_id, "Khóa học", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+            <%= form.select :course_id, @courses.map { |c| [c.title, c.id] }, { include_blank: "Chọn khóa học" }, { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true } %>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tất cả câu hỏi sẽ được gán vào khóa học này.</p>
+          </div>
+
+          <div class="form-control">
+            <%= form.label :file, "File Excel (.xlsx)", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+            <%= form.file_field :file, accept: ".xlsx", class: "file-input file-input-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true %>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tải file mẫu:
+              <a href="<%= manage_questions_template_path(format: :xlsx) %>" class="text-blue-600 dark:text-blue-400 hover:underline">template_import_cau_hoi.xlsx</a>
+            </p>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-lg p-4">
+            <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">Lưu ý:</h3>
+            <ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-400 space-y-1">
+              <li>File Excel phải có đúng định dạng như file mẫu</li>
+              <li>Các trường bắt buộc: Nội dung câu hỏi, Đáp án A, Đáp án B, Đáp án C, Đáp án D, Đáp án đúng</li>
+              <li>Đáp án đúng: Nhập 0 cho A, 1 cho B, 2 cho C, 3 cho D</li>
+              <li>Mỗi dòng là một câu hỏi</li>
+            </ul>
+          </div>
+
+          <div class="flex justify-end space-x-3">
+            <button type="button" class="btn btn-outline" data-action="manage--questions-import#toggleForms">Hủy</button>
+            <%= form.submit "Import", class: "btn btn-primary" %>
+          </div>
+        <% end %> 
+      </div>
+
+      <div data-manage--questions-import-target="normalForm">
+        <%= render "form", question: @question %>
+      </div>
     </div>
   </div>
 </div>

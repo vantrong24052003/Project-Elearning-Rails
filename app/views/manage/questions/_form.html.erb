@@ -17,14 +17,6 @@
   <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 mb-6">
     <h3 class="text-lg text-blue-600 dark:text-purple-400 font-semibold mb-4">Thông tin cơ bản</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="md:col-span-2">
-        <div class="form-control">
-          <%= form.label :content, "Nội dung câu hỏi", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
-          <%= form.text_area :content, rows: 4, class: "textarea textarea-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", placeholder: "Nhập nội dung câu hỏi ở đây...", required: true %>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Hãy nhập câu hỏi rõ ràng và súc tích.</p>
-        </div>
-      </div>
-
       <div class="form-control">
         <%= form.label :course_id, "Khóa học", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
         <%= form.select :course_id, @courses.map { |c| [c.title, c.id] }, { include_blank: "Chọn khóa học" }, { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true } %>
@@ -65,6 +57,14 @@
           ["Khác", "other"]
         ], { include_blank: "Chọn mục tiêu học tập" }, { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true } %>
       </div>
+
+      <div class="md:col-span-2">
+        <div class="form-control">
+          <%= form.label :content, "Nội dung câu hỏi", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+          <%= form.text_area :content, rows: 4, class: "textarea textarea-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", placeholder: "Nhập nội dung câu hỏi ở đây...", required: true %>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Hãy nhập câu hỏi rõ ràng và súc tích.</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -96,6 +96,26 @@
 
   <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 mb-6">
     <h3 class="text-lg text-blue-600 dark:text-purple-400 font-semibold mb-4">Thông tin bổ sung</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+      <div class="form-control">
+        <%= form.label :status, "Trạng thái", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+        <%= form.select :status, [
+          ["Đang hoạt động", "active"],
+          ["Không hoạt động", "inactive"],
+          ["Đã loại bỏ", "deprecated"]
+        ], {}, { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500" } %>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <span class="text-amber-500">Lưu ý:</span> Không thể thay đổi trạng thái nếu câu hỏi đang được sử dụng trong bài kiểm tra.
+        </p>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :valid_until, "Thời hạn hiệu lực", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+        <%= form.date_field :valid_until, class: "input input-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500" %>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Để trống nếu câu hỏi không có thời hạn.</p>
+      </div>
+    </div>
 
     <div class="form-control">
       <%= form.label :explanation, "Giải thích", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>

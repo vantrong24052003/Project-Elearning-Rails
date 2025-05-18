@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 20_250_517_030_053) do
+ActiveRecord::Schema[8.0].define(version: 20_250_517_124_628) do
   # These are extensions that must be enabled in order to support this database
   enable_extension 'pg_catalog.plpgsql'
   enable_extension 'pgcrypto'
@@ -113,7 +113,10 @@ ActiveRecord::Schema[8.0].define(version: 20_250_517_030_053) do
     t.datetime 'updated_at', null: false
     t.string 'topic', null: false
     t.string 'learning_goal', null: false
+    t.string 'status', default: 'active', null: false
+    t.datetime 'valid_until'
     t.index ['course_id'], name: 'index_questions_on_course_id'
+    t.index ['status'], name: 'index_questions_on_status'
     t.index ['user_id'], name: 'index_questions_on_user_id'
   end
 
