@@ -86,56 +86,6 @@ class GeminiServices
     JSON.parse(response)
   end
 
-  def analyze_lecture_content(title:, description:, duration: nil, language: 'Vietnamese')
-    prompt = <<~PROMPT
-      Bạn là chuyên gia phân tích nội dung giáo dục với kinh nghiệm 30 năm trong thiết kế bài giảng.#{' '}
-      Hãy phân tích và đưa ra đề xuất cải thiện cho nội dung bài giảng với thông tin sau:
-
-      - Tiêu đề bài giảng: #{title}
-      - Mô tả nội dung: #{description}
-      - Thời lượng: #{duration || 'Không có thông tin'}
-      - Ngôn ngữ: #{language}
-
-      Phân tích các khía cạnh sau và đưa ra đề xuất cụ thể cho mỗi phần:
-
-      1. Độ phủ sóng nội dung:
-         - Nội dung có bao quát đầy đủ chủ đề không?
-         - Có thiếu nội dung quan trọng nào không?
-
-      2. Cấu trúc bài giảng:
-         - Đánh giá tính logic và thứ tự của nội dung
-         - Đề xuất cải thiện cấu trúc nếu cần
-
-      3. Độ dài và sự cân đối:
-         - Đánh giá sự phân bổ thời gian/nội dung
-         - Phần nào cần rút gọn hoặc mở rộng?
-
-      4. Ngôn ngữ và cách trình bày:
-         - Ngôn ngữ có phù hợp với đối tượng không?
-         - Đề xuất điều chỉnh cách trình bày
-
-      5. Đề xuất bổ sung:
-         - Những nội dung cụ thể nên thêm vào
-         - Các phương pháp giảng dạy phù hợp
-
-      6. Đề xuất rút gọn:
-         - Những phần có thể tinh giản
-         - Cách duy trì thông tin quan trọng khi rút gọn
-
-      7. Đánh giá tổng thể và điểm cải thiện ưu tiên
-
-      Trả về phân tích chuyên sâu và đề xuất thực tế, cụ thể mà giảng viên có thể áp dụng ngay.
-      Hoàng Sa và Trường Sa là của Việt Nam.
-    PROMPT
-
-    options = {
-      temperature: 0.2,
-      max_output_tokens: 2048
-    }
-
-    generate(prompt: prompt, options: options)
-  end
-
   private
 
   def build_request(prompt, options = {})
