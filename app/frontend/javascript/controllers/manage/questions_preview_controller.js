@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { Modal } from "tw-elements";
 import { QuestionsApi } from "../../services/questions_api";
-
+import { Toast } from "../../services/toast_service";
 export default class extends Controller {
   static targets = [
     "courseSelect", "fileInput", "previewContainer", "normalForm",
@@ -20,7 +20,7 @@ export default class extends Controller {
     event.preventDefault();
 
     if (!this.fileInputTarget.files || this.fileInputTarget.files.length === 0) {
-      this.showToast("Vui lòng chọn file để import", "error");
+      Toast.error("Vui lòng chọn file để import");
       return;
     }
 
@@ -34,7 +34,7 @@ export default class extends Controller {
     const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
 
     if (!validExtensions.includes(fileExtension)) {
-      this.showToast("Định dạng file không hỗ trợ. Vui lòng sử dụng Excel (.xlsx, .xls) hoặc CSV (.csv)", "error");
+      Toast.error("Định dạng file không hỗ trợ. Vui lòng sử dụng Excel (.xlsx, .xls) hoặc CSV (.csv)");
       return;
     }
 
@@ -43,34 +43,34 @@ export default class extends Controller {
     QuestionsApi.previewImport(file, this.selectedCourseId)
       .then(data => {
         if (data.error) {
-          this.showToast(data.error, "error");
+         Toast.error(data.error);
           return;
         }
 
         this.questions = data.questions || [];
 
         if (data.validation_errors && data.validation_errors.length > 0) {
-          const errorMessage = `Có ${data.validation_errors.length} lỗi trong file: 
+          const errorMessage = `Có ${data.validation_errors.length} lỗi trong file:
             ${data.validation_errors.map(e => e.message).join('; ')}`;
-          this.showToast(errorMessage, "warning");
+          Toast.warning(errorMessage);
           this.showError(errorMessage);
         } else {
           this.hideError();
         }
 
         if (this.questions.length === 0) {
-          this.showToast("Không tìm thấy câu hỏi nào trong file Excel", "warning");
+          Toast.warning("Không tìm thấy câu hỏi nào trong file Excel");
           return;
         }
 
         // Show preview
         this.renderQuestions();
         this.showPreview();
-        this.showToast(`Đã tìm thấy ${this.questions.length} câu hỏi từ file Excel`, "success");
+        Toast.success(`Đã tìm thấy ${this.questions.length} câu hỏi từ file Excel`);
       })
       .catch(error => {
         console.error('Error importing questions:', error);
-        this.showToast("Đã xảy ra lỗi khi đọc file. Vui lòng thử lại.", "error");
+        Toast.error("Đã xảy ra lỗi khi đọc file. Vui lòng thử lại.");
       });
   }
 
@@ -171,18 +171,14 @@ export default class extends Controller {
       explanation: form.querySelector('[name="explanation"]').value || 'Không có giải thích'
     };
 
-    // Update question in memory
     this.questions[this.editingQuestionIndex] = updatedQuestion;
 
-    // Re-render questions
     this.renderQuestions();
 
-    // Close modal
     document.getElementById('edit-question-modal').remove();
     this.editingQuestionIndex = null;
 
-    // Show toast notification
-    this.showToast("Câu hỏi đã được cập nhật", "success");
+    Toast.success("Câu hỏi đã được cập nhật");
   }
 
   deleteQuestion(index) {
@@ -192,7 +188,7 @@ export default class extends Controller {
 
     this.questions.splice(index, 1);
     this.renderQuestions();
-    this.showToast("Đã xóa câu hỏi", "success");
+    Toast.success("Đã xóa câu hỏi");
   }
 
   addNewQuestion() {
@@ -221,7 +217,7 @@ export default class extends Controller {
 
   saveAllQuestions() {
     if (this.questions.length === 0) {
-      this.showToast('Không có câu hỏi nào để lưu', "error");
+      Toast.error('Không có câu hỏi nào để lưu');
       return;
     }
 
@@ -235,7 +231,7 @@ export default class extends Controller {
       })
       .catch(error => {
         console.error('Error saving questions:', error);
-        this.showToast('Đã xảy ra lỗi khi lưu câu hỏi. Vui lòng thử lại.', "error");
+        Toast.error('Đã xảy ra lỗi khi lưu câu hỏi. Vui lòng thử lại.');
       });
   }
 
@@ -306,26 +302,6 @@ export default class extends Controller {
     return learningGoalMap[learning_goal] || learning_goal;
   }
 
-  showToast(message, type = "info") {
-    if (window.dispatchToasterEvent) {
-      window.dispatchToasterEvent(message, type);
-      return;
-    }
-
-    const toastContainer = document.createElement('div');
-    toastContainer.className = `fixed bottom-4 right-4 z-50 p-4 rounded-lg shadow-lg ${this.getToastBackgroundColor(type)}`;
-    toastContainer.textContent = message;
-
-    document.body.appendChild(toastContainer);
-
-    setTimeout(() => {
-      toastContainer.classList.add('opacity-0', 'transition-opacity', 'duration-300');
-      setTimeout(() => {
-        document.body.removeChild(toastContainer);
-      }, 300);
-    }, 3000);
-  }
-
   getToastBackgroundColor(type) {
     switch (type) {
       case "success": return "bg-green-500 text-white";
@@ -339,7 +315,7 @@ export default class extends Controller {
     event.preventDefault();
 
     if (this.questions.length === 0) {
-      this.showToast("Không có câu hỏi nào để tạo bài kiểm tra", "error");
+      Toast.error("Không có câu hỏi nào để tạo bài kiểm tra");
       return;
     }
 
