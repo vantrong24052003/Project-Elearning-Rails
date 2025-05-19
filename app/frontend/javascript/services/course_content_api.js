@@ -2,18 +2,18 @@ import { ApiService } from './api_service';
 
 export class CourseContentApi {
   static async getCourseChapters(courseId) {
-    return ApiService.get(`/manage/quizzes/new.json?get_content_type=course_chapters&course_id=${courseId}`);
+    return await ApiService.get(`/manage/quizzes/new.json?get_content_type=course_chapters&course_id=${courseId}`);
   }
 
   static async getChapterLessons(chapterId) {
-    return ApiService.get(`/manage/quizzes/new.json?get_content_type=chapter_lessons&chapter_id=${chapterId}`);
+    return await ApiService.get(`/manage/quizzes/new.json?get_content_type=chapter_lessons&chapter_id=${chapterId}`);
   }
 
   static async getLessonVideos(lessonId) {
-    return ApiService.get(`/manage/quizzes/new.json?get_content_type=lesson_videos&lesson_id=${lessonId}`);
+    return await ApiService.get(`/manage/quizzes/new.json?get_content_type=lesson_videos&lesson_id=${lessonId}`);
   }
 
   static async getVideoDetails(videoId) {
-    return ApiService.get(`/manage/quizzes/new.json?get_content_type=video_details&video_id=${videoId}`);
+    return await ApiService.get(`/manage/quizzes/new.json?get_content_type=video_details&video_id=${videoId}`);
   }
 }

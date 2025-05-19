@@ -86,6 +86,78 @@ class GeminiServices
     JSON.parse(response)
   end
 
+  def analyze_and_improve_video_lesson(title:, transcription:, duration:, course_overview: {})
+    course_title = course_overview[:title] || 'N/A'
+    course_description = course_overview[:description] || 'N/A'
+    course_language = course_overview[:language] || 'N/A'
+    course_rating = course_overview[:rating] || '0.0'
+    course_is_free = course_overview[:is_free] ? 'Có' : 'Không'
+    course_price = course_overview[:price] || '0.0'
+    course_category = course_overview[:category_name] || 'N/A'
+
+    prompt = <<~PROMPT
+      Bạn là chuyên gia phát triển nội dung giáo dục với hơn 20 năm kinh nghiệm tối ưu hóa bài giảng số.
+
+      Nhiệm vụ:
+      - Phân tích chất lượng nội dung video bài giảng dựa trên dữ liệu được cung cấp.
+      - Đưa ra đề xuất cải thiện để nâng cao chất lượng truyền đạt và hiệu quả học tập.
+
+      Thông tin tổng quan khóa học:
+      - Tiêu đề khóa học: #{course_title}
+      - Mô tả khóa học: #{course_description}
+      - Ngôn ngữ: #{course_language}
+      - Đánh giá trung bình: #{course_rating}
+      - Khóa học miễn phí: #{course_is_free}
+      - Giá: #{course_price}
+      - Danh mục: #{course_category}
+
+      Thông tin video bài giảng:
+      - Tiêu đề video: #{title}
+      - Bản chép lời: #{transcription}
+      - Độ dài video (giây): #{duration}
+
+      Yêu cầu phân tích:
+      1. Độ phủ nội dung: Nội dung có bao quát đầy đủ và phù hợp với khóa học không?
+      2. Cấu trúc bài giảng:#{' '}
+        - Nội dung có trình tự hợp lý không (mở bài - thân bài - kết luận)?
+        - Các phần có được phân đoạn rõ ràng không?
+        - Có sử dụng ví dụ, minh họa, sơ đồ hoặc điểm nhấn để làm rõ nội dung không?
+      3. Độ dài: Video có quá dài, quá ngắn hay phù hợp với nội dung?
+      4. Ngôn ngữ: Ngôn từ có phù hợp với trình độ người học không? (học thuật / đời thường / dễ hiểu / phức tạp)
+
+      Sau khi phân tích, vui lòng đề xuất cải tiến nội dung theo định dạng JSON sau:
+
+      {
+        "analysis": {
+          "coverage": "Đánh giá mức độ bao phủ nội dung...",
+          "structure": "Đánh giá cấu trúc trình bày...",
+          "length": "Đánh giá độ dài...",
+          "language": "Đánh giá ngôn ngữ sử dụng..."
+        },
+        "recommendations": {
+          "remove": ["Các phần nên rút gọn hoặc loại bỏ"],
+          "add": ["Phần nên bổ sung thêm (ví dụ, ví dụ minh họa, sơ đồ, hình ảnh...)"],
+          "restructure": ["Gợi ý tái cấu trúc nếu cần"],
+          "notes": "Lưu ý khác để cải thiện chất lượng video bài giảng"
+        }
+      }
+
+      QUAN TRỌNG:
+      - Trả về duy nhất một JSON như định dạng trên, không kèm đoạn văn hay markdown.
+      - Nếu thiếu hoặc rỗng phần transcription thì trả về null.
+      - Không đề xuất nội dung nhạy cảm, phản cảm hoặc sai lệch.
+      - Hoàng Sa và Trường Sa là của Việt Nam.
+    PROMPT
+
+    options = {
+      temperature: 0.5,
+      max_output_tokens: 1024
+    }
+
+    response = generate(prompt: prompt, options: options)
+    JSON.parse(response)
+  end
+
   private
 
   def build_request(prompt, options = {})

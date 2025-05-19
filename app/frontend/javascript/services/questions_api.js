@@ -16,23 +16,23 @@ export class QuestionsApi {
       url += `?${params.toString()}`;
     }
 
-    return ApiService.get(url);
+    return await ApiService.get(url);
   }
 
   static async getQuestion(questionId) {
-    return ApiService.get(`/manage/questions/${questionId}.json`);
+    return await ApiService.get(`/manage/questions/${questionId}.json`);
   }
 
   static async createQuestion(question) {
-    return ApiService.post('/manage/questions.json', { question });
+    return await ApiService.post('/manage/questions.json', { question });
   }
 
   static async updateQuestion(questionId, question) {
-    return ApiService.put(`/manage/questions/${questionId}.json`, { question });
+    return await ApiService.put(`/manage/questions/${questionId}.json`, { question });
   }
 
   static async deleteQuestion(questionId) {
-    return ApiService.delete(`/manage/questions/${questionId}.json`);
+    return await ApiService.delete(`/manage/questions/${questionId}.json`);
   }
 
   static async previewImport(file, courseId) {
@@ -40,7 +40,7 @@ export class QuestionsApi {
     formData.append('file', file);
     formData.append('course_id', courseId);
 
-    return ApiService.post('/manage/questions.json', formData, {
+    return await ApiService.post('/manage/questions.json', formData, {
       headers: {
         'Accept': 'application/json'
       }
@@ -48,7 +48,7 @@ export class QuestionsApi {
   }
 
   static async saveImportedQuestions(questions, courseId) {
-    return ApiService.post('/manage/questions.json', {
+    return await ApiService.post('/manage/questions.json', {
       preview_questions: JSON.stringify(questions),
       selected_course_id: courseId
     }, {

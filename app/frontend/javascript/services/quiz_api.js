@@ -2,7 +2,7 @@ import { ApiService } from './api_service';
 
 export class QuizApi {
   static async checkQuizStatus(courseId) {
-    return ApiService.get(`/dashboard/courses/${courseId}/quiz_statuses`);
+    return await ApiService.get(`/dashboard/courses/${courseId}/quiz_statuses`);
   }
 
   static async generateQuestions(title, description, numQuestions, difficulty, topic , learningGoal ) {
@@ -22,7 +22,7 @@ export class QuizApi {
   }
 
   static async logAction(courseId, quizId, attemptId, actionType, extraData = {}) {
-    return ApiService.put(
+    return await ApiService.put(
       `/dashboard/courses/${courseId}/quiz_statuses/${attemptId}`,
       {
         quiz_id: quizId,
@@ -35,7 +35,7 @@ export class QuizApi {
   }
 
   static async updateBehaviorCounts(courseId, quizId, attemptId, counts) {
-    return ApiService.put(
+    return await ApiService.put(
       `/dashboard/courses/${courseId}/quiz_statuses/${attemptId}`,
       {
         quiz_id: quizId,
@@ -52,23 +52,23 @@ export class QuizApi {
   }
 
   static async getQuestions(courseId, quizId) {
-    return ApiService.get(`/dashboard/courses/${courseId}/quizzes/${quizId}/questions`);
+    return await ApiService.get(`/dashboard/courses/${courseId}/quizzes/${quizId}/questions`);
   }
 
   static async getQuizInfo(courseId, quizId) {
-    return ApiService.get(`/dashboard/courses/${courseId}/quizzes/${quizId}`);
+    return await ApiService.get(`/dashboard/courses/${courseId}/quizzes/${quizId}`);
   }
 
   static async getAttemptInfo(courseId, quizId, attemptId) {
-    return ApiService.get(`/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}`);
+    return await ApiService.get(`/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}`);
   }
 
   static async createAttempt(courseId, quizId) {
-    return ApiService.post(`/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts`);
+    return await ApiService.post(`/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts`);
   }
 
   static async submitAttempt(courseId, quizId, attemptId, answers, timeSpent) {
-    return ApiService.put(
+    return await ApiService.put(
       `/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}`,
       {
         quiz_attempt: {
@@ -90,7 +90,7 @@ export class QuizApi {
       console.error("Error getting IP for saveAttemptState:", error);
     }
 
-    return ApiService.put(
+    return await ApiService.put(
       `/dashboard/courses/${courseId}/quiz_statuses/${attemptId}`,
       {
         quiz_id: quizId,
@@ -105,11 +105,11 @@ export class QuizApi {
   }
 
   static async getInProgressAttempts(courseId) {
-    return ApiService.get(`/dashboard/courses/${courseId}/quiz_statuses`);
+    return await ApiService.get(`/dashboard/courses/${courseId}/quiz_statuses`);
   }
 
   static async getAttemptState(courseId, quizId, attemptId) {
-    return ApiService.get(`/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}`);
+    return await ApiService.get(`/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_attempts/${attemptId}`);
   }
 
   static async getIpAddress() {
@@ -137,7 +137,7 @@ export class QuizApi {
 
   static async getLocalIpAddress(courseId) {
     try {
-      return ApiService.get(`/dashboard/courses/${courseId}/quiz_statuses/get_ip`);
+      return await ApiService.get(`/dashboard/courses/${courseId}/quiz_statuses/get_ip`);
     } catch (error) {
       console.error("Error fetching local IP address:", error);
       return { ip: "0.0.0.0" };
