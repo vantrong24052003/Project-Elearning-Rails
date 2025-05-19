@@ -21,44 +21,15 @@ class Dashboard::ViewersController < Dashboard::DashboardController
     @current_lesson = @course.lessons.find_by(id: params[:lesson_id]) if params[:lesson_id]
     @current_video = @current_lesson&.videos&.find_by(id: params[:video_id]) if params[:video_id]
 
-    @course_progress = calculate_course_progress(@course)
+    if @current_video && !@current_video.is_locked.nil?
+      redirect_to dashboard_courses_path, alert: 'Bạn không có quyền xem video này'
+      return
+    end
 
     @next_lesson = find_next_lesson if @current_lesson
-
-    return unless enrolled?
-
-    @progress = current_user.progresses.find_by(
-      course: @course,
-      lesson: @current_lesson
-    )
   end
 
   private
-
-  def calculate_course_progress(course)
-    unless course
-      return {
-        completed_lessons: 0,
-        total_lessons: 0,
-        percentage: 0
-      }
-    end
-
-    total_lessons = course.lessons.count
-    completed_lessons = Progress.where(
-      user: current_user,
-      course: course,
-      status: :done
-    ).count
-
-    percentage = total_lessons.positive? ? (completed_lessons.to_f / total_lessons * 100).round : 0
-
-    {
-      completed_lessons: completed_lessons,
-      total_lessons: total_lessons,
-      percentage: percentage
-    }
-  end
 
   def find_next_lesson
     current_chapter = @current_lesson.chapter
@@ -75,11 +46,5 @@ class Dashboard::ViewersController < Dashboard::DashboardController
     end
 
     next_lesson
-  end
-
-  def enrolled?
-    return false unless current_user && @course
-
-    current_user.enrollments.active.exists?(course: @course)
   end
 end

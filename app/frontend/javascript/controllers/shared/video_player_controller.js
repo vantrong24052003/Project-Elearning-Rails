@@ -38,7 +38,6 @@ export default class extends Controller {
 
     console.log("Nguồn video:", videoSrc)
 
-    // HLS (m3u8) format
     if (videoSrc.includes('.m3u8')) {
       console.log("Đã phát hiện định dạng HLS (.m3u8)")
       this.setupHls(video, videoSrc)
@@ -98,28 +97,15 @@ export default class extends Controller {
       this.levels = data.levels
 
       data.levels.forEach((level, index) => {
-        const height = level.height
-        const width = level.width
+        const height = level.height || 0
+        const width = level.width || 0
         const bitrate = Math.round(level.bitrate / 1000)
         console.log(`Chất lượng ${index}: ${width}x${height}, ${bitrate} Kbps`)
       })
 
       const mainBadge = document.querySelector('.video-quality-badge')
       if (mainBadge && data.levels.length > 0) {
-        const maxHeightLevel = data.levels.reduce((prev, current) =>
-          (prev.height > current.height) ? prev : current
-        )
-
-        let qualityLabel = "HLS"
-        if (maxHeightLevel.height >= 720) {
-          qualityLabel = "HLS-720"
-        } else if (maxHeightLevel.height >= 480) {
-          qualityLabel = "HLS-480"
-        } else if (maxHeightLevel.height >= 360) {
-          qualityLabel = "HLS-360"
-        }
-
-        mainBadge.textContent = qualityLabel
+        mainBadge.textContent = "HLS"
       }
 
       video.play().catch(e => console.error("Không thể tự động phát video:", e))
@@ -130,30 +116,36 @@ export default class extends Controller {
 
       if (this.levels && this.levels[levelIndex]) {
         const level = this.levels[levelIndex]
-        const height = level.height
-        const width = level.width
+        const height = level.height || 0
+        const width = level.width || 0
         const bitrate = Math.round(level.bitrate / 1000)
 
         let qualityLabel, badgeClass
         if (height >= 720) {
-          qualityLabel = "HLS-720"
+          qualityLabel = `720p`
           badgeClass = "bg-green-500/80"
         } else if (height >= 480) {
-          qualityLabel = "HLS-480"
+          qualityLabel = `480p`
           badgeClass = "bg-blue-500/80"
         } else if (height >= 360) {
-          qualityLabel = "HLS-360"
+          qualityLabel = `360p`
           badgeClass = "bg-yellow-500/80"
-        } else {
-          qualityLabel = `HLS-${height}`
+        } else if (height >= 240) {
+          qualityLabel = `240p`
+          badgeClass = "bg-orange-500/80"
+        } else if (height > 0) {
+          qualityLabel = `${height}p`
           badgeClass = "bg-gray-500/80"
+        } else {
+          qualityLabel = `${bitrate}Kbps`
+          badgeClass = "bg-purple-500/80"
         }
 
         console.log(`=== ĐANG PHÁT: ${qualityLabel} ===`)
         console.log(`Độ phân giải: ${width}x${height}, Bitrate: ${bitrate} Kbps`)
 
         if (this.hasQualityInfoTarget) {
-          this.qualityInfoTarget.textContent = `${qualityLabel} - ${bitrate} Kbps`
+          this.qualityInfoTarget.textContent = `${qualityLabel} - ${bitrate}Kbps`
           this.qualityInfoTarget.className = `absolute top-2 left-2 ${badgeClass} text-white text-xs px-2 py-1 rounded-lg z-10`
           this.qualityInfoTarget.classList.remove('hidden')
 
@@ -166,7 +158,6 @@ export default class extends Controller {
         const mainBadge = document.querySelector('.video-quality-badge')
         if (mainBadge) {
           mainBadge.textContent = qualityLabel
-
           mainBadge.className = `absolute top-2 right-2 ${badgeClass} text-white text-xs px-2 py-1 rounded-lg z-10 font-medium video-quality-badge`
         }
       }
@@ -207,18 +198,10 @@ export default class extends Controller {
 
           if (currentLevel >= 0 && this.levels && this.levels[currentLevel]) {
             const level = this.levels[currentLevel]
-            const height = level.height
+            const height = level.height || 0
             const bitrate = Math.round(level.bitrate / 1000)
 
-            if (height >= 720) {
-              qualityInfo = `HLS-720 (${bitrate} Kbps)`
-            } else if (height >= 480) {
-              qualityInfo = `HLS-480 (${bitrate} Kbps)`
-            } else if (height >= 360) {
-              qualityInfo = `HLS-360 (${bitrate} Kbps)`
-            } else {
-              qualityInfo = `HLS-${height} (${bitrate} Kbps)`
-            }
+            qualityInfo = height > 0 ? `${height}p (${bitrate}Kbps)` : `${bitrate}Kbps`
           }
 
           console.log(`Thống kê HLS: ${qualityInfo}, Băng thông: ${bandwidth} Kbps`)
