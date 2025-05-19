@@ -1,0 +1,131 @@
+<%= form_with(model: [:manage, question], class: "space-y-6") do |form| %>
+  <% if question.errors.any? %>
+    <div class="alert alert-error mb-6">
+      <div>
+        <h2 class="text-lg font-medium mb-2">
+          <%= pluralize(question.errors.count, "lỗi") %> đã xảy ra:
+        </h2>
+        <ul class="list-disc pl-5 text-sm">
+          <% question.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 mb-6">
+    <h3 class="text-lg text-blue-600 dark:text-purple-400 font-semibold mb-4">Thông tin cơ bản</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="form-control">
+        <%= form.label :course_id, "Khóa học", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+        <%= form.select :course_id, @courses.map { |c| [c.title, c.id] }, { include_blank: "Chọn khóa học" }, { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true } %>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :difficulty, "Độ khó", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+        <%= form.select :difficulty, [
+          ["Dễ", "easy"],
+          ["Trung bình", "medium"],
+          ["Khó", "hard"]
+        ], { include_blank: "Chọn độ khó" }, { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true } %>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :topic, "Chủ đề", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+        <%= form.select :topic, [
+          ["Toán học", "math"],
+          ["Vật lý", "physics"],
+          ["Hóa học", "chemistry"],
+          ["Sinh học", "biology"],
+          ["Lịch sử", "history"],
+          ["Địa lý", "geography"],
+          ["Văn học", "literature"],
+          ["Lập trình", "programming"],
+          ["Khác", "other"]
+        ], { include_blank: "Chọn chủ đề" }, { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true } %>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :learning_goal, "Mục tiêu học tập", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+        <%= form.select :learning_goal, [
+          ["Ghi nhớ", "remember"],
+          ["Hiểu", "understand"],
+          ["Áp dụng", "apply"],
+          ["Phân tích", "analyze"],
+          ["Sáng tạo", "create"],
+          ["Khác", "other"]
+        ], { include_blank: "Chọn mục tiêu học tập" }, { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true } %>
+      </div>
+
+      <div class="md:col-span-2">
+        <div class="form-control">
+          <%= form.label :content, "Nội dung câu hỏi", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+          <%= form.text_area :content, rows: 4, class: "textarea textarea-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", placeholder: "Nhập nội dung câu hỏi ở đây...", required: true %>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Hãy nhập câu hỏi rõ ràng và súc tích.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 mb-6">
+    <h3 class="text-lg text-blue-600 dark:text-purple-400 font-semibold mb-4">Các phương án trả lời</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <% (0..3).each do |i| %>
+        <div class="form-control relative">
+          <div class="flex items-center justify-between">
+            <%= form.label "options_#{i}", "Phương án #{i+1}", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+            <div class="flex items-center">
+              <% if i == 0 %>
+                <div class="text-xs text-green-600 dark:text-green-400 mr-2 font-medium">Hãy nhập đủ 4 phương án</div>
+              <% end %>
+              <div class="form-control">
+                <label class="cursor-pointer label inline-flex items-center gap-2">
+                  <%= form.radio_button :correct_option, i, checked: question.correct_option.to_s == i.to_s, class: "radio radio-primary", required: true %>
+                  <span class="label-text text-gray-700 dark:text-gray-300">Đáp án đúng</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <%= form.text_field "options_#{i}", value: question.options.try(:[], i.to_s), class: "input input-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", placeholder: "Nội dung phương án #{i+1}" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 mb-6">
+    <h3 class="text-lg text-blue-600 dark:text-purple-400 font-semibold mb-4">Thông tin bổ sung</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+      <div class="form-control">
+        <%= form.label :status, "Trạng thái", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+        <%= form.select :status, [
+          ["Đang hoạt động", "active"],
+          ["Không hoạt động", "inactive"],
+          ["Đã loại bỏ", "deprecated"]
+        ], {}, { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500" } %>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <span class="text-amber-500">Lưu ý:</span> Không thể thay đổi trạng thái nếu câu hỏi đang được sử dụng trong bài kiểm tra.
+        </p>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :valid_until, "Thời hạn hiệu lực", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+        <%= form.date_field :valid_until, class: "input input-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500" %>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Để trống nếu câu hỏi không có thời hạn.</p>
+      </div>
+    </div>
+
+    <div class="form-control">
+      <%= form.label :explanation, "Giải thích", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+      <%= form.text_area :explanation, rows: 3, class: "textarea textarea-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", placeholder: "Giải thích lý do tại sao đáp án được chọn là đúng (tùy chọn)" %>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Giải thích rõ ràng sẽ giúp học viên hiểu bài tốt hơn.</p>
+    </div>
+  </div>
+
+  <div class="flex justify-end space-x-3 mt-8">
+    <%= link_to "Hủy", manage_questions_path, class: "btn btn-outline hover:bg-gray-100 dark:hover:bg-gray-700" %>
+    <%= form.submit "Lưu câu hỏi", class: "btn btn-primary hover:bg-blue-600 dark:hover:bg-purple-600" %>
+  </div>
+<% end %> 

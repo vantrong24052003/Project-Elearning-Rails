@@ -160,6 +160,38 @@
                 %>
               </div>
 
+              <div class="mb-4">
+                <%= label_tag :topic, 'Chủ đề', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= select_tag :topic,
+                  options_for_select([
+                    ['Toán học', 'math'],
+                    ['Vật lý', 'physics'],
+                    ['Hóa học', 'chemistry'],
+                    ['Sinh học', 'biology'],
+                    ['Lịch sử', 'history'],
+                    ['Địa lý', 'geography'],
+                    ['Văn học', 'literature'],
+                    ['Lập trình', 'programming']
+                  ], 'programming'),
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
+                %>
+              </div>
+
+              <div class="mb-4">
+                <%= label_tag :learning_goal, 'Mục tiêu học tập', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= select_tag :learning_goal,
+                  options_for_select([
+                    ['Ghi nhớ', 'remember'],
+                    ['Hiểu', 'understand'],
+                    ['Áp dụng', 'apply'],
+                    ['Phân tích', 'analyze'],
+                    ['Sáng tạo', 'create']
+                  ], 'understand'),
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
+                %>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Dựa trên Thang đo Bloom: Từ đơn giản (ghi nhớ) đến phức tạp (sáng tạo)</p>
+              </div>
+
               <div class="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-700/30 rounded-lg p-4 mb-4">
                 <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">Các kiểu câu hỏi muốn tạo:</h3>
                 <div class="space-y-2">
@@ -227,7 +259,6 @@
           </div>
         </div>
 
-        <!-- Phần 2: Xem trước câu hỏi được sinh -->
         <div class="lg:col-span-2">
           <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
             <div class="flex items-center justify-between mb-6">
@@ -255,7 +286,6 @@
               <!-- Nội dung câu hỏi sẽ được thêm vào bằng Stimulus -->
             </div>
 
-            <!-- Template cho câu hỏi -->
             <template data-manage--course-content-select-target="questionTemplate">
               <div class="question-item border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                 <div class="bg-gray-50 dark:bg-gray-800 px-4 py-3 flex justify-between items-center">
@@ -266,7 +296,25 @@
                       <option value="medium" selected>Trung bình</option>
                       <option value="hard">Khó</option>
                     </select>
-
+                    <select class="question-topic select select-sm select-bordered">
+                      <option value="math">Toán học</option>
+                      <option value="physics">Vật lý</option>
+                      <option value="chemistry">Hóa học</option>
+                      <option value="biology">Sinh học</option>
+                      <option value="history">Lịch sử</option>
+                      <option value="geography">Địa lý</option>
+                      <option value="literature">Văn học</option>
+                      <option value="programming" selected>Lập trình</option>
+                      <option value="other">Khác</option>
+                    </select>
+                    <select class="question-learning-goal select select-sm select-bordered">
+                      <option value="remember">Ghi nhớ</option>
+                      <option value="understand" selected>Hiểu</option>
+                      <option value="apply">Áp dụng</option>
+                      <option value="analyze">Phân tích</option>
+                      <option value="create">Sáng tạo</option>
+                      <option value="other">Khác</option>
+                    </select>
                   </div>
                 </div>
                 <div class="p-4">
@@ -275,7 +323,6 @@
                   </div>
 
                   <div class="space-y-2 mb-4 options-container">
-                    <!-- Đáp án sẽ được thêm vào đây -->
                   </div>
 
                   <div class="mb-2">
@@ -307,11 +354,7 @@
                 { include_blank: 'Chọn khóa học' },
                 {
                   class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
-                  required: true,
-                  data: {
-                    manage__course_content_select_target: "courseSelect",
-                    action: "change->manage--course-content-select#loadChapters"
-                  }
+                  required: true
                 }
               %>
               <% if @course.present? %>
@@ -341,20 +384,31 @@
             </div>
           </div>
 
-          <div class="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-lg p-4 mt-2 mb-6">
-            <div class="flex items-start">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p class="text-sm text-blue-700 dark:text-blue-300">
-                Sau khi tạo bài kiểm tra, bạn sẽ thêm các câu hỏi vào bài kiểm tra này. Bạn cũng có thể
-                <%= link_to "tạo bài kiểm tra với AI", new_manage_quiz_path(ai: true), class: "underline font-medium" %>
-                để tự động sinh câu hỏi dựa trên nội dung bài giảng.
-              </p>
+          <% if @selected_questions.present? %>
+            <%= hidden_field_tag :selected_questions, @selected_question_ids.to_json %>
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-6 mt-4">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Câu hỏi đã chọn (<%= @selected_questions.count %>)</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto p-2">
+                <% @selected_questions.each_with_index do |question, index| %>
+                  <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+                    <div class="flex justify-between items-start mb-2">
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">Câu hỏi <%= index + 1 %></span>
+                      <div class="flex gap-1">
+                        <span class="badge badge-<%= question.difficulty == 'easy' ? 'success' : (question.difficulty == 'medium' ? 'warning' : 'error') %>"><%= question.difficulty %></span>
+                        <span class="badge badge-primary"><%= question.topic %></span>
+                      </div>
+                    </div>
+                    <p class="text-gray-800 dark:text-gray-200 text-sm mb-2"><%= question.content %></p>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                      <p>Khóa học: <%= question.course.title %></p>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
             </div>
-          </div>
+          <% end %>
 
-          <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 mt-6">
             <%= link_to "Hủy", manage_quizzes_path, class: "btn btn-ghost" %>
             <%= f.submit "Tạo bài kiểm tra", class: "btn btn-primary" %>
           </div>

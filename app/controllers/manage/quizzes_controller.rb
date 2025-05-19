@@ -26,12 +26,32 @@ class Manage::QuizzesController < Manage::BaseController
     }
   end
 
+  def new_with_preview
+    session[:preview_questions_data] = params[:preview_questions_data] if params[:preview_questions_data].present?
+    redirect_to new_manage_quiz_path
+  end
+
   def new
     @quiz = Quiz.new
 
     if params[:course_id].present?
       @quiz.course_id = params[:course_id]
       @course = Course.find_by(id: params[:course_id])
+    end
+
+    if params[:selected_questions].present?
+      @selected_question_ids = JSON.parse(params[:selected_questions])
+      @selected_questions = Question.where(id: @selected_question_ids).includes(:course)
+
+      if @selected_questions.first&.course_id.present?
+        @quiz.course_id = @selected_questions.first.course_id
+        @course = @selected_questions.first.course
+      end
+    end
+
+    if session[:preview_questions_data].present?
+      @preview_questions_data = session[:preview_questions_data]
+      session.delete(:preview_questions_data)
     end
 
     respond_to do |format|
@@ -63,35 +83,78 @@ class Manage::QuizzesController < Manage::BaseController
 
     @quiz = Quiz.new(quiz_params)
 
-    if params[:source_type] == 'ai_generated' && params[:questions_data].present?
-      begin
-        questions_data = JSON.parse(params[:questions_data])
+    if params[:selected_questions].present?
+      selected_question_ids = JSON.parse(params[:selected_questions])
 
-        if @quiz.save
-          questions_data.each do |q_data|
-            question = Question.new(
-              content: q_data['content'],
-              options: q_data['options'],
-              correct_option: q_data['correct_option'],
-              explanation: q_data['explanation'],
-              difficulty: q_data['difficulty'],
-              course_id: @quiz.course_id,
-              user_id: current_user.id
-            )
-
-            QuizQuestion.create(quiz: @quiz, question: question) if question.save
-          end
-
-          redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully created with AI generated questions.'
-        else
-          set_courses
-          render :new, status: :unprocessable_entity
+      if @quiz.save
+        selected_question_ids.each do |question_id|
+          question = Question.find_by(id: question_id)
+          QuizQuestion.create(quiz: @quiz, question: question) if question
         end
-      rescue JSON::ParserError
+
+        redirect_to manage_quiz_path(@quiz), notice: 'Bài kiểm tra đã được tạo thành công'
+      else
+        @selected_question_ids = selected_question_ids
+        @selected_questions = Question.where(id: selected_question_ids).includes(:course)
         set_courses
-        @quiz.errors.add(:base, 'Invalid questions data format')
         render :new, status: :unprocessable_entity
       end
+    elsif params[:preview_questions_data].present?
+      preview_questions = JSON.parse(params[:preview_questions_data])
+
+      if @quiz.save
+        preview_questions.each do |q_data|
+          question = Question.new(
+            content: q_data['content'],
+            options: q_data['options'],
+            correct_option: q_data['correct_option'],
+            explanation: q_data['explanation'] || 'Không có giải thích',
+            difficulty: q_data['difficulty'] || 'medium',
+            topic: q_data['topic'] || 'other',
+            learning_goal: q_data['learning_goal'] || 'other',
+            course_id: @quiz.course_id,
+            user_id: current_user.id,
+            status: 'active'
+          )
+
+          if question.save
+            QuizQuestion.create(quiz: @quiz, question: question)
+          else
+            Rails.logger.error("Không thể lưu câu hỏi: #{question.errors.full_messages.join(', ')}")
+          end
+        end
+
+        redirect_to manage_quiz_path(@quiz), notice: 'Bài kiểm tra đã được tạo thành công với câu hỏi từ preview'
+      else
+        set_courses
+        render :new, status: :unprocessable_entity
+      end
+    elsif params[:questions_data].present?
+      questions_data = JSON.parse(params[:questions_data])
+
+      if @quiz.save
+        questions_data.each do |q_data|
+          question = Question.new(
+            content: q_data['content'],
+            options: q_data['options'],
+            correct_option: q_data['correct_option'],
+            explanation: q_data['explanation'],
+            difficulty: q_data['difficulty'],
+            topic: q_data['topic'],
+            learning_goal: q_data['learning_goal'],
+            course_id: @quiz.course_id,
+            user_id: current_user.id
+          )
+
+          QuizQuestion.create(quiz: @quiz, question: question) if question.save
+        end
+
+        redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully created with AI generated questions.'
+      else
+        set_courses
+        render :new, status: :unprocessable_entity
+      end
+
     elsif @quiz.save
       redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully created.'
     else
@@ -123,7 +186,9 @@ class Manage::QuizzesController < Manage::BaseController
             options: q_data['options'],
             correct_option: q_data['correct_option'],
             explanation: q_data['explanation'],
-            difficulty: q_data['difficulty']
+            difficulty: q_data['difficulty'],
+            topic: q_data['topic'],
+            learning_goal: q_data['learning_goal']
           )
         end
 
@@ -170,6 +235,8 @@ class Manage::QuizzesController < Manage::BaseController
     description = params[:description]
     num_questions = params[:num_questions].to_i || 5
     difficulty = params[:difficulty] || 'medium'
+    topic = params[:topic] || 'other'
+    learning_goal = params[:learning_goal] || 'other'
 
     if description.blank? || title.blank?
       render json: { error: 'Thiếu thông tin cần thiết' }, status: :bad_request
@@ -182,7 +249,9 @@ class Manage::QuizzesController < Manage::BaseController
         title: title,
         description: description,
         num_questions: num_questions,
-        difficulty: difficulty
+        difficulty: difficulty,
+        topic: topic,
+        learning_goal: learning_goal
       )
 
       if questions.blank? || !questions.is_a?(Array) || questions.empty?

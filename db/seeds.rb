@@ -385,7 +385,7 @@ EXAM_QUESTIONS = {
   ]
 }.freeze
 
-puts 'Tạo bài kiểm tra cho các khóa học...'
+puts 'Đang tạo bài kiểm tra cho các khóa học'
 
 def create_quiz_for_course(course, is_exam = false)
   category = course.categories.first
@@ -425,7 +425,9 @@ def create_practice_quiz_for_course(course, category_name)
       explanation: "Giải thích chi tiết: #{answers.sample} là phương pháp hiệu quả nhất cho #{topic.downcase}.",
       difficulty: %w[easy medium hard].sample,
       course: course,
-      user: course.user
+      user: course.user,
+      topic: %w[math physics chemistry biology history geography literature programming].sample,
+      learning_goal: %w[remember understand apply analyze create].sample
     )
 
     QuizQuestion.create!(quiz: quiz, question: question)
@@ -462,7 +464,9 @@ def create_exam_for_course(course, category_name)
       explanation: "Lý giải chi tiết: #{template[:options].sample} là phương pháp tối ưu cho nhiều trường hợp.",
       difficulty: %w[medium hard].sample,
       course: course,
-      user: course.user
+      user: course.user,
+      topic: %w[math physics chemistry biology history geography literature programming].sample,
+      learning_goal: %w[remember understand apply analyze create].sample
     )
 
     QuizQuestion.create!(quiz: exam, question: question)
@@ -533,7 +537,7 @@ end
 
 puts '✅ Created course ratings!'
 
-puts 'Đang cập nhật dữ liệu phiên âm cho các uploads...'
+puts 'Đang cập nhật dữ liệu phiên âm cho các uploads'
 
 transcription_samples = [
   'Hôm nay tôi sẽ hướng dẫn các bạn cách vẽ một bức tranh đơn giản để tặng crush. Đầu tiên, chúng ta cần chuẩn bị bút màu và giấy vẽ. Sau đó, hãy phác họa khung cảnh mà bạn muốn vẽ. Tôi sẽ vẽ một phong cảnh thiên nhiên với hoa và cây cối. Tiếp theo, hãy tô màu cho bức tranh bằng những gam màu tươi sáng để tạo sự sinh động. Cuối cùng, viết một lời nhắn nhỏ ở góc bức tranh để thể hiện tình cảm của bạn.',
@@ -554,7 +558,6 @@ Upload.where(status: 'success').each_with_index do |upload, index|
     transcription: modified_text,
     transcription_status: 'completed'
   )
-  print '.'
 end
 
 puts "\n✅ Đã cập nhật phiên âm cho #{Upload.where(transcription_status: 'completed').count} uploads."

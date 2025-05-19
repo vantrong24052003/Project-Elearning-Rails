@@ -50,8 +50,9 @@ Rails.application.routes.draw do
       resources :quiz_attempts, only: [:index]
     end
     resources :questions
+    resource :questions_template, only: [:show], defaults: { format: :xlsx }
+    resource :questions_export, only: [:show], defaults: { format: :xlsx }
     resources :quiz_attempts
-    get 'quiz_dashboard', to: 'quiz_attempts#dashboard', as: :quiz_dashboard
     resources :uploads do
       member do
         get :progress

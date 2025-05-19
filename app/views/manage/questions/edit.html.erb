@@ -1,0 +1,33 @@
+<div class="md:container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg">
+    <div class="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h1 class="text-lg md:text-xl text-blue-600 dark:text-purple-400 font-medium">Chỉnh sửa câu hỏi</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Cập nhật thông tin cho câu hỏi</p>
+        </div>
+
+        <div class="flex gap-2">
+          <%= link_to manage_question_path(@question), class: "btn btn-outline btn-sm" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            Xem chi tiết
+          <% end %>
+
+          <%= link_to manage_questions_path, class: "btn btn-outline btn-sm" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Quay lại danh sách
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 md:p-6">
+      <%= render "form", question: @question %>
+    </div>
+  </div>
+</div> 

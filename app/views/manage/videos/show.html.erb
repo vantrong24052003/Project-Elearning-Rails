@@ -101,371 +101,6 @@
         </div>
       </div>
     </div>
-
-    <div class="p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="lg:col-span-2">
-        <div class="bg-black rounded-lg overflow-hidden shadow-lg aspect-video relative">
-          <% if @video.upload&.status == 'success' && @video.upload&.cdn_url.present? %>
-            <video
-              id="video-player"
-              class="w-full h-full"
-              controls
-              poster="<%= @video.thumbnail.present? ? @video.thumbnail : @video.upload&.thumbnail_path %>"
-            >
-              <source src="<%= @video.upload.cdn_url %>" type="video/mp4">
-              <% if @video.upload&.formats&.include?('webm') %>
-                <source src="<%= @video.upload.cdn_url.gsub(/\.mp4$/, '.webm') %>" type="video/webm">
-              <% end %>
-              <% if @video.upload&.formats&.include?('hls') %>
-                <source src="<%= @video.upload.cdn_url.gsub(/\.[^.]+$/, '.m3u8') %>" type="application/x-mpegURL">
-              <% end %>
-              Trình duyệt của bạn không hỗ trợ thẻ video.
-            </video>
-          <% elsif @video.upload&.status == 'processing' %>
-            <div class="flex items-center justify-center h-full bg-gray-900">
-              <div class="text-center">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-                <p class="text-gray-300 text-lg">Video đang được xử lý (<%= @video.upload&.progress || 0 %>%)</p>
-              </div>
-            </div>
-          <% elsif @video.upload&.status == 'failed' %>
-            <div class="flex items-center justify-center h-full bg-gray-900">
-              <div class="text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p class="text-gray-300 text-lg">Xử lý video thất bại</p>
-                <p class="text-gray-400 text-sm mt-2">Vui lòng thử lại hoặc liên hệ với đội hỗ trợ</p>
-              </div>
-            </div>
-          <% else %>
-            <div class="flex items-center justify-center h-full bg-gray-900">
-              <div class="text-center">
-                <% if @video.thumbnail.present? || @video.upload&.thumbnail_path.present? %>
-                  <img src="<%= @video.thumbnail.present? ? @video.thumbnail : @video.upload&.thumbnail_path %>" alt="Thumbnail" class="w-full h-full object-contain">
-                <% else %>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  <p class="text-gray-300 text-lg">Video chưa sẵn sàng</p>
-                <% end %>
-              </div>
-            </div>
-          <% end %>
-        </div>
-
-        <div class="mt-6">
-          <div class="mb-5">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Thông tin video</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Tiêu đề</h3>
-                <p class="text-gray-900 dark:text-white"><%= @video.title %></p>
-              </div>
-
-              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Vị trí</h3>
-                <p class="text-gray-900 dark:text-white"><%= @video.position || 'Chưa đặt' %></p>
-              </div>
-
-              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Bài học</h3>
-                <p class="text-gray-900 dark:text-white">
-                  <% if @video.lesson.present? %>
-                    <%= @video.lesson.title %>
-                  <% else %>
-                    Chưa gán
-                  <% end %>
-                </p>
-              </div>
-
-              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Khóa học</h3>
-                <p class="text-gray-900 dark:text-white">
-                  <% if @video.lesson&.chapter&.course.present? %>
-                    <%= @video.lesson.chapter.course.title %>
-                  <% else %>
-                    Chưa gán
-                  <% end %>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <% if @video.upload.present? %>
-            <div class="mb-5">
-              <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Thông tin tệp</h2>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Định dạng</h3>
-                  <p class="text-gray-900 dark:text-white"><%= @video.upload.file_type || 'N/A' %></p>
-                </div>
-
-                <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Định dạng xuất</h3>
-                  <div class="flex flex-wrap gap-1 mt-1">
-                    <% if @video.upload.formats.present? %>
-                      <% @video.upload.formats.each do |format| %>
-                        <span class="px-2 py-0.5 text-xs rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
-                          <%= format.upcase %>
-                        </span>
-                      <% end %>
-                    <% else %>
-                      <span class="text-gray-500 dark:text-gray-400">--</span>
-                    <% end %>
-                  </div>
-                </div>
-
-                <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Thời lượng</h3>
-                  <p class="text-gray-900 dark:text-white">
-                    <% if @video.upload.duration.present? %>
-                      <%= Time.at(@video.upload.duration).utc.strftime("%H:%M:%S") %>
-                    <% else %>
-                      N/A
-                    <% end %>
-                  </p>
-                </div>
-
-
-                <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Trạng thái xử lý</h3>
-                  <div class="mt-1">
-                    <% status_classes = case @video.upload.status
-                                        when 'success'
-                                          'bg-green-100 text-green-600 border border-green-200 dark:bg-green-600/20 dark:text-green-400 dark:border-green-600/30'
-                                        when 'failed'
-                                          'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:text-red-400 dark:border-red-600/30'
-                                        when 'processing'
-                                          'bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-600/20 dark:text-blue-400 dark:border-blue-600/30'
-                                        else
-                                          'bg-yellow-100 text-yellow-600 border border-yellow-200 dark:bg-yellow-600/20 dark:text-yellow-400 dark:border-yellow-600/30'
-                                        end %>
-
-                    <% status_text = case @video.upload.status
-                                     when 'success' then 'Hoàn thành'
-                                     when 'failed' then 'Thất bại'
-                                     when 'processing' then 'Đang xử lý'
-                                     else 'Đang chờ'
-                                     end %>
-
-                    <span class="inline-block px-2 py-1 text-xs font-medium rounded-full <%= status_classes %>">
-                      <%= status_text %>
-                    </span>
-                  </div>
-                </div>
-
-                <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Trạng thái kiểm duyệt</h3>
-                  <div class="mt-1">
-                    <% moderation_status_classes = case @video.moderation_status
-                                           when 'approved'
-                                             'bg-green-100 text-green-600 border border-green-200 dark:bg-green-600/20 dark:text-green-400 dark:border-green-600/30'
-                                           when 'rejected'
-                                             'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:text-red-400 dark:border-red-600/30'
-                                           when 'locked'
-                                             'bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-600/20 dark:text-gray-400 dark:border-gray-600/30'
-                                           else
-                                             'bg-yellow-100 text-yellow-600 border border-yellow-200 dark:bg-yellow-600/20 dark:text-yellow-400 dark:border-yellow-600/30'
-                                           end %>
-
-                    <% moderation_status_text = case @video.moderation_status
-                                         when 'approved' then 'Đã duyệt'
-                                         when 'rejected' then 'Bị từ chối'
-                                         when 'locked' then 'Đã khóa'
-                                         else 'Chờ duyệt'
-                                         end %>
-
-                    <span class="inline-block px-2 py-1 text-xs font-medium rounded-full <%= moderation_status_classes %>">
-                      <%= moderation_status_text %>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          <% end %>
-        </div>
-      </div>
-
-      <div class="lg:col-span-1">
-        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Trạng thái quản lý</h2>
-
-          <div class="mb-4">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Trạng thái kiểm duyệt</h3>
-            <div class="mt-1">
-              <% moderation_status_classes = case @video.moderation_status
-                                 when 'approved'
-                                   'bg-green-100 text-green-600 border border-green-200 dark:bg-green-600/20 dark:text-green-400 dark:border-green-600/30'
-                                 when 'rejected'
-                                   'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:text-red-400 dark:border-red-600/30'
-                                 when 'locked'
-                                   'bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-600/20 dark:text-gray-400 dark:border-gray-600/30'
-                                 else
-                                   'bg-yellow-100 text-yellow-600 border border-yellow-200 dark:bg-yellow-600/20 dark:text-yellow-400 dark:border-yellow-600/30'
-                                 end %>
-
-              <% moderation_status_text = case @video.moderation_status
-                               when 'approved' then 'Đã duyệt'
-                               when 'rejected' then 'Bị từ chối'
-                               when 'locked' then 'Đã khóa'
-                               else 'Chờ duyệt'
-                               end %>
-
-              <span class="inline-block px-2 py-1 text-sm font-medium rounded-full <%= moderation_status_classes %>">
-                <%= moderation_status_text %>
-              </span>
-            </div>
-
-            <% if @video.upload&.status == 'success' %>
-              <% if @video.moderation_status == 'pending' %>
-                <div class="mt-4 flex gap-2">
-                  <%= button_to manage_video_moderation_path(@video),
-                        method: :patch,
-                        params: { action_type: 'approve' },
-                        class: "btn btn-success btn-sm flex-1",
-                        data: { turbo_confirm: "Bạn có chắc chắn muốn chấp thuận video này không?" } do %>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    Chấp thuận
-                  <% end %>
-
-                  <%= button_to manage_video_moderation_path(@video),
-                        method: :patch,
-                        params: { action_type: 'reject' },
-                        class: "btn btn-error btn-sm flex-1",
-                        data: { turbo_confirm: "Bạn có chắc chắn muốn từ chối video này không?" } do %>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                    Từ chối
-                  <% end %>
-                </div>
-              <% elsif @video.moderation_status == 'approved' %>
-                <div class="mt-4">
-                  <%= button_to manage_video_moderation_path(@video),
-                        method: :patch,
-                        params: { action_type: 'lock' },
-                        class: "btn btn-warning btn-sm w-full",
-                        data: { turbo_confirm: "Bạn có chắc chắn muốn khóa video này không?" } do %>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
-                    Khóa video này
-                  <% end %>
-                </div>
-              <% elsif @video.moderation_status == 'rejected' %>
-                <div class="mt-4">
-                  <%= button_to manage_video_moderation_path(@video),
-                        method: :patch,
-                        params: { action_type: 'approve' },
-                        class: "btn btn-success btn-sm w-full",
-                        data: { turbo_confirm: "Bạn có chắc chắn muốn chấp thuận lại video này không?" } do %>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    Chấp thuận lại
-                  <% end %>
-                </div>
-              <% elsif @video.moderation_status == 'locked' %>
-                <div class="mt-4">
-                  <%= button_to manage_video_moderation_path(@video),
-                        method: :patch,
-                        params: { action_type: 'approve' },
-                        class: "btn btn-success btn-sm w-full",
-                        data: { turbo_confirm: "Bạn có chắc chắn muốn mở khóa video này không?" } do %>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                      <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
-                    </svg>
-                    Mở khóa video này
-                  <% end %>
-                </div>
-              <% end %>
-            <% end %>
-          </div>
-
-          <div class="mb-4">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Người tải lên</h3>
-            <div class="flex items-center mt-1">
-              <% if @video.upload&.user.present? %>
-                <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mr-3">
-                  <% if @video.upload.user.avatar.present? %>
-                    <img src="<%= @video.upload.user.avatar %>" alt="<%= @video.upload.user.name %>" class="w-full h-full object-cover">
-                  <% else %>
-                    <div class="w-full h-full flex items-center justify-center bg-purple-500 dark:bg-purple-700">
-                      <span class="text-lg font-medium text-white">
-                        <%= @video.upload.user.name&.first&.upcase || @video.upload.user.email.first.upcase %>
-                      </span>
-                    </div>
-                  <% end %>
-                </div>
-                <div>
-                  <p class="font-medium text-gray-800 dark:text-white"><%= @video.upload.user.name %></p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400"><%= @video.upload.user.email %></p>
-                </div>
-              <% else %>
-                <span class="text-gray-500 dark:text-gray-400">Không xác định</span>
-              <% end %>
-            </div>
-          </div>
-
-          <div class="mb-4">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Ngày tạo</h3>
-            <p class="text-gray-900 dark:text-white"><%= @video.created_at.strftime("%d/%m/%Y %H:%M") %></p>
-          </div>
-
-          <div class="mb-4">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Cập nhật lần cuối</h3>
-            <p class="text-gray-900 dark:text-white"><%= @video.updated_at.strftime("%d/%m/%Y %H:%M") %></p>
-          </div>
-
-          <% if @video.upload&.status == 'failed' && @video.upload&.processing_log.present? %>
-            <div class="mt-6">
-              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Thông tin lỗi</h3>
-              <div class="mt-1 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/20 rounded-lg text-sm text-red-800 dark:text-red-300 overflow-auto max-h-60">
-                <pre class="whitespace-pre-wrap break-words"><%= @video.upload.processing_log %></pre>
-              </div>
-            </div>
-          <% end %>
-        </div>
-
-        <% if @video.upload&.status == 'success' %>
-          <div class="mt-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Hành động</h2>
-
-            <div class="space-y-3">
-              <% player_url = @video.upload.cdn_url %>
-              <div class="flex flex-col space-y-2">
-                <div class="flex justify-between items-center">
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Video URL</span>
-                  <button class="text-blue-600 dark:text-blue-400 text-sm" onclick="copyToClipboard('<%= player_url %>')">Sao chép</button>
-                </div>
-                <div class="relative">
-                  <input type="text" value="<%= player_url %>" readonly class="w-full py-2 px-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg text-sm cursor-text overflow-x-auto">
-                </div>
-              </div>
-
-              <% if @video.upload.formats&.include?('hls') %>
-                <% hls_url = @video.upload.cdn_url.gsub(/\.[^.]+$/, '.m3u8') %>
-                <div class="flex flex-col space-y-2">
-                  <div class="flex justify-between items-center">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">HLS Stream URL</span>
-                    <button class="text-blue-600 dark:text-blue-400 text-sm" onclick="copyToClipboard('<%= hls_url %>')">Sao chép</button>
-                  </div>
-                  <div class="relative">
-                    <input type="text" value="<%= hls_url %>" readonly class="w-full py-2 px-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg text-sm cursor-text overflow-x-auto">
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -523,3 +158,336 @@
     <button>Đóng</button>
   </form>
 </dialog>
+
+<div class="p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2">
+    <div class="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 mb-6">
+      <div class="relative" data-controller="shared--video-player">
+        <video class="w-full aspect-video" controls poster="<%= @video.thumbnail.present? ? @video.thumbnail : @video.upload&.thumbnail_path %>" data-shared--video-player-target="player">
+          <% demo_video = nil %>
+          <% if @video.upload&.formats&.include?('hls') && @video.upload&.quality_480p_url.present? %>
+            <% demo_video = @video.upload.quality_480p_url %>
+            <source src="<%= demo_video %>" type="application/x-mpegURL">
+          <% elsif @video.upload&.cdn_url.present? %>
+            <% demo_video = @video.upload.cdn_url %>
+            <source src="<%= demo_video %>" type="video/mp4">
+          <% else %>
+            <source src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4">
+          <% end %>
+          Trình duyệt của bạn không hỗ trợ video.
+        </video>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <div class="mb-5">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Thông tin video</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Tiêu đề</h3>
+            <p class="text-gray-900 dark:text-white"><%= @video.title %></p>
+          </div>
+
+          <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Vị trí</h3>
+            <p class="text-gray-900 dark:text-white"><%= @video.position || 'Chưa đặt' %></p>
+          </div>
+
+          <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Bài học</h3>
+            <p class="text-gray-900 dark:text-white">
+              <% if @video.lesson.present? %>
+                <%= @video.lesson.title %>
+              <% else %>
+                Chưa gán
+              <% end %>
+            </p>
+          </div>
+
+          <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Khóa học</h3>
+            <p class="text-gray-900 dark:text-white">
+              <% if @video.lesson&.chapter&.course.present? %>
+                <%= @video.lesson.chapter.course.title %>
+              <% else %>
+                Chưa gán
+              <% end %>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <% if @video.upload.present? %>
+        <div class="mb-5">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Thông tin tệp</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Định dạng</h3>
+              <p class="text-gray-900 dark:text-white"><%= @video.upload.file_type || 'N/A' %></p>
+            </div>
+
+            <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Định dạng xuất</h3>
+              <div class="flex flex-wrap gap-1 mt-1">
+                <% if @video.upload.formats.present? %>
+                  <% @video.upload.formats.each do |format| %>
+                    <span class="px-2 py-0.5 text-xs rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                      <%= format.upcase %>
+                    </span>
+                  <% end %>
+                <% else %>
+                  <span class="text-gray-500 dark:text-gray-400">--</span>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Thời lượng</h3>
+              <p class="text-gray-900 dark:text-white">
+                <% if @video.upload.duration.present? %>
+                  <%= Time.at(@video.upload.duration).utc.strftime("%H:%M:%S") %>
+                <% else %>
+                  N/A
+                <% end %>
+              </p>
+            </div>
+
+
+            <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Trạng thái xử lý</h3>
+              <div class="mt-1">
+                <% status_classes = case @video.upload.status
+                                    when 'success'
+                                      'bg-green-100 text-green-600 border border-green-200 dark:bg-green-600/20 dark:text-green-400 dark:border-green-600/30'
+                                    when 'failed'
+                                      'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:text-red-400 dark:border-red-600/30'
+                                    when 'processing'
+                                      'bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-600/20 dark:text-blue-400 dark:border-blue-600/30'
+                                    else
+                                      'bg-yellow-100 text-yellow-600 border border-yellow-200 dark:bg-yellow-600/20 dark:text-yellow-400 dark:border-yellow-600/30'
+                                    end %>
+
+                <% status_text = case @video.upload.status
+                                 when 'success' then 'Hoàn thành'
+                                 when 'failed' then 'Thất bại'
+                                 when 'processing' then 'Đang xử lý'
+                                 else 'Đang chờ'
+                                 end %>
+
+                <span class="inline-block px-2 py-1 text-xs font-medium rounded-full <%= status_classes %>">
+                  <%= status_text %>
+                </span>
+              </div>
+            </div>
+
+            <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Trạng thái kiểm duyệt</h3>
+              <div class="mt-1">
+                <% moderation_status_classes = case @video.moderation_status
+                                       when 'approved'
+                                         'bg-green-100 text-green-600 border border-green-200 dark:bg-green-600/20 dark:text-green-400 dark:border-green-600/30'
+                                       when 'rejected'
+                                         'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:text-red-400 dark:border-red-600/30'
+                                       when 'locked'
+                                         'bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-600/20 dark:text-gray-400 dark:border-gray-600/30'
+                                       else
+                                         'bg-yellow-100 text-yellow-600 border border-yellow-200 dark:bg-yellow-600/20 dark:text-yellow-400 dark:border-yellow-600/30'
+                                       end %>
+
+                <% moderation_status_text = case @video.moderation_status
+                                     when 'approved' then 'Đã duyệt'
+                                     when 'rejected' then 'Bị từ chối'
+                                     when 'locked' then 'Đã khóa'
+                                     else 'Chờ duyệt'
+                                     end %>
+
+                <span class="inline-block px-2 py-1 text-xs font-medium rounded-full <%= moderation_status_classes %>">
+                  <%= moderation_status_text %>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="lg:col-span-1">
+    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Trạng thái quản lý</h2>
+
+      <div class="mb-4">
+        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Trạng thái kiểm duyệt</h3>
+        <div class="mt-1">
+          <% moderation_status_classes = case @video.moderation_status
+                                 when 'approved'
+                                   'bg-green-100 text-green-600 border border-green-200 dark:bg-green-600/20 dark:text-green-400 dark:border-green-600/30'
+                                 when 'rejected'
+                                   'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:text-red-400 dark:border-red-600/30'
+                                 when 'locked'
+                                   'bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-600/20 dark:text-gray-400 dark:border-gray-600/30'
+                                 else
+                                   'bg-yellow-100 text-yellow-600 border border-yellow-200 dark:bg-yellow-600/20 dark:text-yellow-400 dark:border-yellow-600/30'
+                                 end %>
+
+          <% moderation_status_text = case @video.moderation_status
+                                   when 'approved' then 'Đã duyệt'
+                                   when 'rejected' then 'Bị từ chối'
+                                   when 'locked' then 'Đã khóa'
+                                   else 'Chờ duyệt'
+                                   end %>
+
+          <span class="inline-block px-2 py-1 text-sm font-medium rounded-full <%= moderation_status_classes %>">
+            <%= moderation_status_text %>
+          </span>
+        </div>
+
+        <% if @video.upload&.status == 'success' %>
+          <% if @video.moderation_status == 'pending' %>
+            <div class="mt-4 flex gap-2">
+              <%= button_to manage_video_moderation_path(@video),
+                    method: :patch,
+                    params: { action_type: 'approve' },
+                    class: "btn btn-success btn-sm flex-1",
+                    data: { turbo_confirm: "Bạn có chắc chắn muốn chấp thuận video này không?" } do %>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Chấp thuận
+              <% end %>
+
+              <%= button_to manage_video_moderation_path(@video),
+                    method: :patch,
+                    params: { action_type: 'reject' },
+                    class: "btn btn-error btn-sm flex-1",
+                    data: { turbo_confirm: "Bạn có chắc chắn muốn từ chối video này không?" } do %>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                Từ chối
+              <% end %>
+            </div>
+          <% elsif @video.moderation_status == 'approved' %>
+            <div class="mt-4">
+              <%= button_to manage_video_moderation_path(@video),
+                    method: :patch,
+                    params: { action_type: 'lock' },
+                    class: "btn btn-warning btn-sm w-full",
+                    data: { turbo_confirm: "Bạn có chắc chắn muốn khóa video này không?" } do %>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Khóa video này
+              <% end %>
+            </div>
+          <% elsif @video.moderation_status == 'rejected' %>
+            <div class="mt-4">
+              <%= button_to manage_video_moderation_path(@video),
+                    method: :patch,
+                    params: { action_type: 'approve' },
+                    class: "btn btn-success btn-sm w-full",
+                    data: { turbo_confirm: "Bạn có chắc chắn muốn chấp thuận lại video này không?" } do %>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Chấp thuận lại
+              <% end %>
+            </div>
+          <% elsif @video.moderation_status == 'locked' %>
+            <div class="mt-4">
+              <%= button_to manage_video_moderation_path(@video),
+                    method: :patch,
+                    params: { action_type: 'approve' },
+                    class: "btn btn-success btn-sm w-full",
+                    data: { turbo_confirm: "Bạn có chắc chắn muốn mở khóa video này không?" } do %>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                </svg>
+                Mở khóa video này
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <div class="mb-4">
+        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Người tải lên</h3>
+        <div class="flex items-center mt-1">
+          <% if @video.upload&.user.present? %>
+            <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mr-3">
+              <% if @video.upload.user.avatar.present? %>
+                <img src="<%= @video.upload.user.avatar %>" alt="<%= @video.upload.user.name %>" class="w-full h-full object-cover">
+              <% else %>
+                <div class="w-full h-full flex items-center justify-center bg-purple-500 dark:bg-purple-700">
+                  <span class="text-lg font-medium text-white">
+                    <%= @video.upload.user.name&.first&.upcase || @video.upload.user.email.first.upcase %>
+                  </span>
+                </div>
+              <% end %>
+            </div>
+            <div>
+              <p class="font-medium text-gray-800 dark:text-white"><%= @video.upload.user.name %></p>
+              <p class="text-xs text-gray-500 dark:text-gray-400"><%= @video.upload.user.email %></p>
+            </div>
+          <% else %>
+            <span class="text-gray-500 dark:text-gray-400">Không xác định</span>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Ngày tạo</h3>
+        <p class="text-gray-900 dark:text-white"><%= @video.created_at.strftime("%d/%m/%Y %H:%M") %></p>
+      </div>
+
+      <div class="mb-4">
+        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Cập nhật lần cuối</h3>
+        <p class="text-gray-900 dark:text-white"><%= @video.updated_at.strftime("%d/%m/%Y %H:%M") %></p>
+      </div>
+
+      <% if @video.upload&.status == 'failed' && @video.upload&.processing_log.present? %>
+        <div class="mt-6">
+          <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Thông tin lỗi</h3>
+          <div class="mt-1 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/20 rounded-lg text-sm text-red-800 dark:text-red-300 overflow-auto max-h-60">
+            <pre class="whitespace-pre-wrap break-words"><%= @video.upload.processing_log %></pre>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @video.upload&.status == 'success' %>
+      <div class="mt-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Hành động</h2>
+
+        <div class="space-y-3">
+          <% player_url = @video.upload.cdn_url %>
+          <div class="flex flex-col space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Video URL</span>
+              <button class="text-blue-600 dark:text-blue-400 text-sm" onclick="copyToClipboard('<%= player_url %>')">Sao chép</button>
+            </div>
+            <div class="relative">
+              <input type="text" value="<%= player_url %>" readonly class="w-full py-2 px-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg text-sm cursor-text overflow-x-auto">
+            </div>
+          </div>
+
+          <% if @video.upload.formats&.include?('hls') %>
+            <% hls_url = @video.upload.cdn_url.gsub(/\.[^.]+$/, '.m3u8') %>
+            <div class="flex flex-col space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">HLS Stream URL</span>
+                <button class="text-blue-600 dark:text-blue-400 text-sm" onclick="copyToClipboard('<%= hls_url %>')">Sao chép</button>
+              </div>
+              <div class="relative">
+                <input type="text" value="<%= hls_url %>" readonly class="w-full py-2 px-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg text-sm cursor-text overflow-x-auto">
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

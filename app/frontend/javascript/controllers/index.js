@@ -1,6 +1,5 @@
 import { application } from "./application"
 
-
 import audio_player_controller from "./shared/audio_player_controller"
 import header_controller from "./shared/header_controller"
 import dropdown_controller from "./shared/dropdown_controller"
@@ -30,6 +29,10 @@ import QuizFlagController from "./dashboard/quiz_flag_controller"
 import QuizRedirectController from "./dashboard/quiz_redirect_controller"
 import QuizTimerController from "./dashboard/quiz_timer_controller"
 import course_content_select_controller from "./manage/course_content_select_controller"
+import questions_controller from "./manage/questions_controller"
+import questions_import_controller from "./manage/questions_import_controller"
+import QuestionsPreviewController from "./manage/questions_preview_controller"
+import QuizzesPreviewController from "./manage/quizzes_preview_controller"
 
 // home
 application.register("home--faq", faq_controller)
@@ -68,3 +71,7 @@ application.register("manage--upload-transcoding", UploadTranscodingController)
 application.register("manage--upload-form", ManageUploadFormController)
 application.register("manage--overview", OverviewController)
 application.register("manage--course-content-select", course_content_select_controller)
+application.register("manage--questions", questions_controller)
+application.register("manage--questions-import", questions_import_controller)
+application.register("manage--questions-preview", QuestionsPreviewController)
+application.register("manage--quizzes-preview", QuizzesPreviewController)
