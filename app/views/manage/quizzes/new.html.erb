@@ -1,22 +1,13 @@
 <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
   <div class="flex flex-col gap-4">
     <div class="flex items-center gap-3 mb-4">
-      <%= link_to manage_quizzes_path, class: "flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white" do %>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-        <span class="ml-1">Quay lại</span>
-      <% end %>
-
       <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
         <%= params[:ai] ? "Tạo bài kiểm tra với AI" : "Tạo bài kiểm tra mới" %>
       </h1>
     </div>
 
     <% if params[:ai] %>
-      <!-- Giao diện tạo bài kiểm tra bằng AI -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" data-controller="manage--course-content-select">
-        <!-- Phần 1: Thiết lập bài kiểm tra -->
         <div class="lg:col-span-1 space-y-6">
           <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Thiết lập bài kiểm tra</h2>

@@ -33,6 +33,7 @@ import questions_controller from "./manage/questions_controller"
 import questions_import_controller from "./manage/questions_import_controller"
 import QuestionsPreviewController from "./manage/questions_preview_controller"
 import QuizzesPreviewController from "./manage/quizzes_preview_controller"
+import VideoAnalysisController from "./manage/video_analysis_controller"
 
 // home
 application.register("home--faq", faq_controller)
@@ -75,3 +76,4 @@ application.register("manage--questions", questions_controller)
 application.register("manage--questions-import", questions_import_controller)
 application.register("manage--questions-preview", QuestionsPreviewController)
 application.register("manage--quizzes-preview", QuizzesPreviewController)
+application.register("manage--video-analysis", VideoAnalysisController)

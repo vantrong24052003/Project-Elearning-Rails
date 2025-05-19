@@ -1,4 +1,4 @@
-<div class="md:container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+<div class="mx-auto py-6 px-4 sm:px-6 lg:px-8">
     <div class="flex flex-col gap-4">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Quản lý khóa học</h1>
@@ -110,14 +110,14 @@
                 </svg>
                 Thêm mới
               <% end %>
-              
+
               <%= link_to new_manage_question_path, class: "btn btn-outline btn-sm", data: { turbo: false } do %>
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 01-2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
                 Tạo bài kiểm tra
               <% end %>
-              
+
               <%= link_to new_manage_quiz_path(ai: true), class: "btn btn-outline btn-sm", data: { turbo: false } do %>
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 2a10 10 0 1 0 10 10H12V2Z"></path>
@@ -234,7 +234,7 @@
                               <circle cx="12" cy="12" r="3"></circle>
                             </svg>
                             <% end %>
-                            
+
                             <%= link_to manage_quizzes_path(course_id: course.id),
                                 class: "text-purple-600 hover:text-purple-900 dark:text-purple-300 dark:hover:text-white bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-800/50 p-2 rounded-md ",
                                 title: "Xem bài kiểm tra",
