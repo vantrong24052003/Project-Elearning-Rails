@@ -39,8 +39,11 @@
               </video>
 
               <% if @current_video.upload.cdn_url.include?('.m3u8') %>
-                <div class="absolute top-2 right-2 bg-blue-500/80 text-white text-xs px-2 py-1 rounded-lg z-10 font-medium">
+                <div class="absolute top-2 right-2 bg-blue-500/80 text-white text-xs px-2 py-1 rounded-lg z-10 font-medium video-quality-badge">
                   HLS
+                </div>
+                <div class="absolute top-2 left-2 bg-blue-500/80 text-white text-xs px-2 py-1 rounded-lg z-10 hidden" data-shared--video-player-target="qualityInfo">
+                  Đang tải...
                 </div>
               <% end %>
             </div>
@@ -99,16 +102,6 @@
       <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10 p-3 sm:p-4 md:p-5 rounded-t-lg backdrop-blur-sm flex-shrink-0">
         <div class="flex items-center justify-between">
           <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">Nội dung khóa học</h3>
-          <div class="flex items-center flex-shrink-0 ml-2">
-            <div class="w-14 sm:w-16 md:w-20 bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 sm:h-2 mr-1 sm:mr-2 overflow-hidden">
-              <div class="h-full rounded-full transition-all ease-out bg-gradient-to-r from-blue-500 to-blue-600 dark:from-purple-500 dark:to-purple-600 shadow-[0_0_5px_rgba(59,130,246,0.5)] dark:shadow-[0_0_5px_rgba(147,51,234,0.5)]"
-                   data-dashboard--course-viewer-target="progress">
-              </div>
-            </div>
-            <span class="text-xs text-gray-600 dark:text-gray-300 font-medium whitespace-nowrap" data-dashboard--course-viewer-target="progressText">
-              <%= '4' %> / <%= 5 %>
-            </span>
-          </div>
         </div>
       </div>
 
@@ -159,35 +152,58 @@
                         <div class="collapse-content bg-gray-50/50 dark:bg-gray-800/20 py-1 px-0 peer-checked:pb-2">
                           <div class="border-l-2 border-gray-200 dark:border-gray-700/50 ml-4 sm:ml-5 space-y-0.5 py-1">
                             <% lesson.videos.order(position: :asc).each_with_index do |video, video_index| %>
-                              <%= link_to dashboard_course_viewer_path(@course, lesson_id: lesson.id, video_id: video.id),
-                                          data: {
-                                            turbo_frame: "video_player",
-                                            turbo: true,
-                                            turbo_action: "advance",
-                                            video_id: video.id,
-                                            dashboard__course_viewer_target: "video",
-                                            action: "click->dashboard--course-viewer#markVideoActive"
-                                          },
-                                          class: "block p-1.5 sm:p-2 mx-1 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all rounded-lg
-                                                #{@current_video&.id == video.id ? 'bg-blue-50 dark:bg-purple-900/40 text-blue-700 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-300'}" do %>
-                                <div class="flex items-center justify-between w-full pl-2 sm:pl-3">
-                                  <div class="flex items-center min-w-0 pr-1 flex-grow max-w-[90%]">
-                                    <div class="w-5 h-5 flex-shrink-0 rounded-full <%= @current_video&.id == video.id ? 'bg-blue-100 dark:bg-purple-900/50' : 'bg-gray-100 dark:bg-gray-700' %> flex items-center justify-center mr-2">
-                                      <svg class="w-3 h-3 <%= @current_video&.id == video.id ? 'text-blue-500 dark:text-purple-400' : 'text-gray-400' %> flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                      </svg>
+                              <% if !video.is_locked.nil? %>
+                                <div class="block p-1.5 sm:p-2 mx-1 bg-gray-50 dark:bg-gray-800 transition-all rounded-lg text-gray-400 dark:text-gray-500 cursor-not-allowed">
+                                  <div class="flex items-center justify-between w-full pl-2 sm:pl-3">
+                                    <div class="flex items-center min-w-0 pr-1 flex-grow max-w-[90%]">
+                                      <div class="w-5 h-5 flex-shrink-0 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mr-2">
+                                        <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                      </div>
+                                      <span class="truncate max-w-full text-[10px] sm:text-xs" title="<%= video.title %>">
+                                        <span class="text-gray-500 mr-1"><%= video_index + 1 %>.</span>
+                                        <%= video.title %> <span class="text-red-400 dark:text-red-500">(Đã khóa)</span>
+                                      </span>
                                     </div>
-                                    <span class="truncate max-w-full text-[10px] sm:text-xs <%= @current_video&.id == video.id ? 'font-medium' : '' %>" title="<%= video.title %>">
-                                      <span class="text-gray-500 mr-1"><%= video_index + 1 %>.</span>
-                                      <%= video.title %>
-                                    </span>
+                                    <% if video.upload.duration %>
+                                      <span class="text-[9px] sm:text-[10px] ml-1 flex-shrink-0 px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700/70 whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                        <%= Time.at(video.upload.duration).utc.strftime("%M:%S") %>
+                                      </span>
+                                    <% end %>
                                   </div>
-                                  <% if video.upload.duration %>
-                                    <span class="text-[9px] sm:text-[10px] ml-1 flex-shrink-0 px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700/70 whitespace-nowrap <%= @current_video&.id == video.id ? 'text-blue-500 dark:text-purple-200' : 'text-gray-500 dark:text-gray-400' %>">
-                                      <%= Time.at(video.upload.duration).utc.strftime("%M:%S") %>
-                                    </span>
-                                  <% end %>
                                 </div>
+                              <% else %>
+                                <%= link_to dashboard_course_viewer_path(@course, lesson_id: lesson.id, video_id: video.id),
+                                            data: {
+                                              turbo_frame: "video_player",
+                                              turbo: true,
+                                              turbo_action: "advance",
+                                              video_id: video.id,
+                                              dashboard__course_viewer_target: "video",
+                                              action: "click->dashboard--course-viewer#markVideoActive"
+                                            },
+                                            class: "block p-1.5 sm:p-2 mx-1 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all rounded-lg
+                                                  #{@current_video&.id == video.id ? 'bg-blue-50 dark:bg-purple-900/40 text-blue-700 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-300'}" do %>
+                                  <div class="flex items-center justify-between w-full pl-2 sm:pl-3">
+                                    <div class="flex items-center min-w-0 pr-1 flex-grow max-w-[90%]">
+                                      <div class="w-5 h-5 flex-shrink-0 rounded-full <%= @current_video&.id == video.id ? 'bg-blue-100 dark:bg-purple-900/50' : 'bg-gray-100 dark:bg-gray-700' %> flex items-center justify-center mr-2">
+                                        <svg class="w-3 h-3 <%= @current_video&.id == video.id ? 'text-blue-500 dark:text-purple-400' : 'text-gray-400' %> flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                        </svg>
+                                      </div>
+                                      <span class="truncate max-w-full text-[10px] sm:text-xs <%= @current_video&.id == video.id ? 'font-medium' : '' %>" title="<%= video.title %>">
+                                        <span class="text-gray-500 mr-1"><%= video_index + 1 %>.</span>
+                                        <%= video.title %>
+                                      </span>
+                                    </div>
+                                    <% if video.upload.duration %>
+                                      <span class="text-[9px] sm:text-[10px] ml-1 flex-shrink-0 px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700/70 whitespace-nowrap <%= @current_video&.id == video.id ? 'text-blue-500 dark:text-purple-200' : 'text-gray-500 dark:text-gray-400' %>">
+                                        <%= Time.at(video.upload.duration).utc.strftime("%M:%S") %>
+                                      </span>
+                                    <% end %>
+                                  </div>
+                                <% end %>
                               <% end %>
                             <% end %>
                           </div>
