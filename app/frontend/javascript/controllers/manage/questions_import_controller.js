@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { QuestionsApi } from "../../services/questions_api";
 
 export default class extends Controller {
   static targets = ["importForm", "normalForm", "importButtonText"]
@@ -32,32 +33,38 @@ export default class extends Controller {
     const learningGoalSelect = document.querySelector('[data-manage--questions-target="learningGoalSelect"]')
     const statusSelect = document.querySelector('[data-manage--questions-target="statusSelect"]')
 
-    const url = new URL('/manage/questions_export.xlsx', window.location.origin)
+    const filters = {}
 
     if (searchInput && searchInput.value) {
-      url.searchParams.append('search', searchInput.value)
+      filters.search = searchInput.value
     }
 
     if (courseSelect && courseSelect.value) {
-      url.searchParams.append('course_id', courseSelect.value)
+      filters.course_id = courseSelect.value
     }
 
     if (difficultySelect && difficultySelect.value) {
-      url.searchParams.append('difficulty', difficultySelect.value)
+      filters.difficulty = difficultySelect.value
     }
 
     if (topicSelect && topicSelect.value) {
-      url.searchParams.append('topic', topicSelect.value)
+      filters.topic = topicSelect.value
     }
 
     if (learningGoalSelect && learningGoalSelect.value) {
-      url.searchParams.append('learning_goal', learningGoalSelect.value)
+      filters.learning_goal = learningGoalSelect.value
     }
 
     if (statusSelect && statusSelect.value) {
-      url.searchParams.append('status', statusSelect.value)
+      filters.status = statusSelect.value
     }
 
-    window.location.href = url.toString()
+    try {
+      QuestionsApi.exportQuestions(filters)
+      console.log('Đang tải xuống file Excel...')
+    } catch (error) {
+      console.error('Error exporting questions:', error)
+      alert('Đã xảy ra lỗi khi xuất file Excel. Vui lòng thử lại.')
+    }
   }
 }

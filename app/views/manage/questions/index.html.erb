@@ -1,4 +1,4 @@
-<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8" data-controller="manage--questions manage--questions-import">
+<div class="md:container mx-auto py-6 px-4 sm:px-6 lg:px-8" data-controller="manage--questions manage--questions-import">
   <div class="flex flex-col gap-5">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Ngân Hàng Câu Hỏi</h1>
@@ -185,7 +185,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 01-2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
               </svg>
-              Tạo bài kiểm tra
+              Tạo bài kiểm tra với câu hỏi đã chọn
             </button>
 
             <%= link_to new_manage_question_path, class: "btn btn-primary btn-sm bg-gradient-to-r from-blue-500 to-indigo-600 border-0 shadow-md hover:shadow-blue-500/30 transition-all", data: { turbo: false } do %>
@@ -199,7 +199,7 @@
       </div>
 
       <div class="p-5 md:p-6">
-        <div class="overflow-x-auto overflow-y-auto max-h-[70vh]">
+        <div>
           <% if @questions.any? %>
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
               <% @questions.each do |question| %>

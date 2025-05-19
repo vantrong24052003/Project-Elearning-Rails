@@ -32,19 +32,26 @@ export class ApiService {
 
   static async post(url, data, options = {}) {
     try {
+      const isFormData = data instanceof FormData;
+      const headers = isFormData
+        ? { 'X-CSRF-Token': this.getCsrfToken(), ...(options.headers || {}) }
+        : this.getHeaders(options.headers);
+      const body = isFormData ? data : JSON.stringify(data);
+      const { headers: _, ...restOptions } = options;
+
       const response = await fetch(url, {
         method: 'POST',
-        headers: this.getHeaders(options.headers),
-        body: JSON.stringify(data),
-        ...options
+        headers,
+        body,
+        ...restOptions
       });
 
       if (!response.ok) {
-        throw new Error(`GET request failed: ${response.status} ${response.statusText}`);
+        throw new Error(`POST request failed: ${response.status} ${response.statusText}`);
       }
 
       return await response.json();
-    } catch (error) { 
+    } catch (error) {
       console.error('API POST error:', error);
       throw error;
     }

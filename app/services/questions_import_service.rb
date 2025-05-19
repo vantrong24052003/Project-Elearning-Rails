@@ -86,6 +86,83 @@ class QuestionsImportService
     end
   end
 
+  def preview_import
+    return { error: 'Không có file', questions: [], validation_errors: [] } if file.blank?
+    return { error: 'Không có khóa học được chọn', questions: [], validation_errors: [] } if course_id.blank?
+
+    begin
+      file_ext = File.extname(file.original_filename).downcase
+
+      sheet = if file_ext == '.csv'
+                Roo::CSV.new(file.path)
+              else
+                Roo::Spreadsheet.open(file.path)
+              end
+
+      sheet = sheet.sheet(0) unless file_ext == '.csv'
+
+      headers = sheet.row(1)
+
+      if headers.blank? || headers.compact.empty?
+        return { error: 'File không đúng định dạng. Không tìm thấy header.', questions: [], validation_errors: [] }
+      end
+
+      preview_results = {
+        questions: [],
+        validation_errors: []
+      }
+
+      (2..sheet.last_row).each do |i|
+        row_data = sheet.row(i)
+        next if row_data.compact.empty?
+
+        row = {}
+        headers.each_with_index do |header, index|
+          row[header] = row_data[index] if header.present?
+        end
+
+        options = {}
+        (0..3).each do |j|
+          option_key = "Đáp án #{('A'.ord + j).chr}"
+          options[j.to_s] = row[option_key].presence || ''
+        end
+
+        if row['Nội dung câu hỏi'].blank?
+          preview_results[:validation_errors] << {
+            row: i,
+            message: "Dòng #{i}: Nội dung câu hỏi không được để trống"
+          }
+          next
+        end
+
+        question_data = {
+          content: row['Nội dung câu hỏi'],
+          options: options,
+          correct_option: row['Đáp án đúng (0-3)'].to_i,
+          explanation: row['Giải thích'].presence || 'Không có giải thích',
+          difficulty: row['Độ khó'].presence || 'medium',
+          topic: row['Chủ đề'].presence || 'other',
+          learning_goal: row['Mục tiêu học tập'].presence || 'other',
+          course_id: course_id,
+          user_id: user_id,
+          status: row['Trạng thái'].presence || 'active',
+          valid_until: parse_date_to_string(row['Thời hạn hiệu lực'])
+        }
+
+        preview_results[:questions] << question_data
+      rescue StandardError => e
+        preview_results[:validation_errors] << {
+          row: i,
+          message: "Dòng #{i}: Lỗi xử lý - #{e.message}"
+        }
+      end
+
+      preview_results
+    rescue StandardError => e
+      { error: "Lỗi xử lý file: #{e.message}", questions: [], validation_errors: [] }
+    end
+  end
+
   def parse_date(date_value)
     return nil if date_value.blank?
 
@@ -101,6 +178,27 @@ class QuestionsImportService
       when DateTime, Time
         date_value.to_date
       end
+    rescue StandardError
+      nil
+    end
+  end
+
+  def parse_date_to_string(date_value)
+    return nil if date_value.blank?
+
+    begin
+      date = case date_value
+             when String
+               Date.parse(date_value)
+             when Numeric
+               base_date = Date.new(1899, 12, 30)
+               base_date + date_value.to_i
+             when Date
+               date_value
+             when DateTime, Time
+               date_value.to_date
+             end
+      date&.to_s
     rescue StandardError
       nil
     end

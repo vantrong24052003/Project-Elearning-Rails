@@ -26,6 +26,11 @@ class Manage::QuizzesController < Manage::BaseController
     }
   end
 
+  def new_with_preview
+    session[:preview_questions_data] = params[:preview_questions_data] if params[:preview_questions_data].present?
+    redirect_to new_manage_quiz_path
+  end
+
   def new
     @quiz = Quiz.new
 
@@ -42,6 +47,11 @@ class Manage::QuizzesController < Manage::BaseController
         @quiz.course_id = @selected_questions.first.course_id
         @course = @selected_questions.first.course
       end
+    end
+
+    if session[:preview_questions_data].present?
+      @preview_questions_data = session[:preview_questions_data]
+      session.delete(:preview_questions_data)
     end
 
     respond_to do |format|
@@ -86,6 +96,36 @@ class Manage::QuizzesController < Manage::BaseController
       else
         @selected_question_ids = selected_question_ids
         @selected_questions = Question.where(id: selected_question_ids).includes(:course)
+        set_courses
+        render :new, status: :unprocessable_entity
+      end
+    elsif params[:preview_questions_data].present?
+      preview_questions = JSON.parse(params[:preview_questions_data])
+
+      if @quiz.save
+        preview_questions.each do |q_data|
+          question = Question.new(
+            content: q_data['content'],
+            options: q_data['options'],
+            correct_option: q_data['correct_option'],
+            explanation: q_data['explanation'] || 'Không có giải thích',
+            difficulty: q_data['difficulty'] || 'medium',
+            topic: q_data['topic'] || 'other',
+            learning_goal: q_data['learning_goal'] || 'other',
+            course_id: @quiz.course_id,
+            user_id: current_user.id,
+            status: 'active'
+          )
+
+          if question.save
+            QuizQuestion.create(quiz: @quiz, question: question)
+          else
+            Rails.logger.error("Không thể lưu câu hỏi: #{question.errors.full_messages.join(', ')}")
+          end
+        end
+
+        redirect_to manage_quiz_path(@quiz), notice: 'Bài kiểm tra đã được tạo thành công với câu hỏi từ preview'
+      else
         set_courses
         render :new, status: :unprocessable_entity
       end
