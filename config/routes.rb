@@ -45,6 +45,7 @@ Rails.application.routes.draw do
     resources :lessons
     resources :videos do
       resource :moderation, only: [:update]
+      resource :video_analysis, only: [:create], path: 'analyze'
     end
     resources :quizzes do
       resources :quiz_attempts, only: [:index]
