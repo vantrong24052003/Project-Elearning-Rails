@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Manage::SessionsController < Devise::SessionsController
   def create
     user = User.find_by(email: params[:user][:email])
@@ -6,7 +8,7 @@ class Manage::SessionsController < Devise::SessionsController
         flash[:alert] = "Account has been locked from #{user.locked_at.strftime('%d/%m/%Y %H:%M')}"
         redirect_to manage_login_path
       else
-      super
+        super
         flash[:notice] = 'Login successfully'
       end
     else
@@ -15,7 +17,7 @@ class Manage::SessionsController < Devise::SessionsController
     end
   end
 
-  def after_sign_in_path_for(resource)
+  def after_sign_in_path_for(_resource)
     manage_root_path
   end
 end
