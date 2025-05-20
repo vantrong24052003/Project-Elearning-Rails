@@ -10,7 +10,10 @@
           <% if @upload.status == 'failed' %>
             <%= button_to retry_manage_upload_path(@upload),
                   method: :post,
-                  data: { turbo_frame: "_top" },
+                  data: { 
+                    turbo: false,
+                    turbo_frame: "_top" 
+                  },
                   class: "btn btn-primary btn-sm" do %>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 2v6h-6"></path>
@@ -24,6 +27,7 @@
           <%= button_to manage_upload_path(@upload),
                 method: :delete,
                 data: {
+                  turbo: false,
                   turbo_confirm: "Bạn có chắc chắn muốn xóa upload này không?",
                   turbo_frame: "_top"
                 },

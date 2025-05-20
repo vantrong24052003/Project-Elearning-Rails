@@ -14,6 +14,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
             instructor_request_status: 'pending',
             instructor_requested_at: Time.current
           )
+          UserMailer.instructor_status_notification(user).deliver_later
         end
       end
     end
