@@ -35,6 +35,7 @@
 
                 <%= link_to manage_quiz_path(@quiz),
                       data: {
+                        turbo: false,
                         turbo_method: :delete,
                         turbo_confirm: "Bạn có chắc chắn muốn xóa bài kiểm tra này không? Tất cả câu hỏi liên quan cũng sẽ bị xóa."
                       },

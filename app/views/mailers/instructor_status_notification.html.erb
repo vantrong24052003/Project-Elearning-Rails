@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thông báo trạng thái Instructor</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9; color: #333333;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <!-- Header -->
+    <div style="background-color: #4f46e5; padding: 30px 20px; text-align: center;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+        <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+      </svg>
+      <h1 style="color: #ffffff; margin: 10px 0 0 0; font-size: 24px;">E-learning Platform</h1>
+    </div>
+
+    <!-- Content -->
+    <div style="padding: 30px 40px;">
+      <div style="background-color: #f3f4f6; border-left: 4px solid #4f46e5; padding: 15px 20px; margin-bottom: 25px; border-radius: 0 4px 4px 0;">
+        <h2 style="margin: 0 0 10px 0; color: #4f46e5; font-size: 20px;">Thông báo trạng thái yêu cầu làm Instructor</h2>
+      </div>
+
+      <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">Xin chào <strong><%= @user.name %></strong>,</p>
+
+      <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Yêu cầu làm Instructor của bạn <strong><%= @status_text %></strong>.</p>
+
+      <% if @status == 'approved' %>
+        <div style="background-color: #ecfdf5; border-radius: 8px; padding: 20px; margin-bottom: 25px; display: flex; align-items: center;">
+          <div style="margin-right: 15px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div>
+            <h3 style="margin: 0 0 10px 0; color: #065f46; font-size: 18px;">Chúc mừng!</h3>
+            <p style="margin: 0; color: #065f46; font-size: 16px;">Bạn đã trở thành Instructor của hệ thống. Bạn có thể bắt đầu tạo và quản lý các khóa học của mình.</p>
+            <p style="margin: 10px 0 0 0; color: #065f46; font-size: 16px;">Từ giờ tài khoản của bạn sẽ login tại đường dẫn: <a href="http://localhost:3000/manage/login" style="color: #059669; text-decoration: underline;">http://localhost:3000/manage/login</a></p>
+          </div>
+        </div>
+      <% elsif @status == 'rejected' %>
+        <div style="background-color: #fef2f2; border-radius: 8px; padding: 20px; margin-bottom: 25px; display: flex; align-items: center;">
+          <div style="margin-right: 15px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <div>
+            <h3 style="margin: 0 0 10px 0; color: #7f1d1d; font-size: 18px;">Rất tiếc</h3>
+            <p style="margin: 0; color: #7f1d1d; font-size: 16px;">Yêu cầu của bạn không được chấp thuận. Vui lòng liên hệ với chúng tôi để biết thêm chi tiết.</p>
+          </div>
+        </div>
+      <% end %>
+      
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+        <p style="font-size: 16px; line-height: 1.6; margin-bottom: 5px;">Trân trọng,</p>
+        <p style="font-size: 16px; line-height: 1.6; font-weight: bold; color: #4f46e5;">Đội ngũ E-learning</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background-color: #f3f4f6; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+      <div style="margin-bottom: 15px;">
+        <a href="#" style="display: inline-block; margin: 0 10px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+          </svg>
+        </a>
+        <a href="#" style="display: inline-block; margin: 0 10px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+        </a>
+        <a href="#" style="display: inline-block; margin: 0 10px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+          </svg>
+        </a>
+      </div>
+      <p style="color: #6b7280; font-size: 14px; margin: 0;">© 2024 E-learning Platform. Tất cả các quyền được bảo lưu.</p>
+    </div>
+  </div>
+</body>
+</html>
