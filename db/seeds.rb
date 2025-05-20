@@ -27,7 +27,7 @@ end
 
 admin = begin
   user = User.new(
-    email: 'trongdn24052003@gmail.com', password: 'Admin123@',
+    email: 'trongdn2405@gmail.com', password: 'Admin123@',
     name: 'Admin User', phone: '1234567890', address: 'Admin Address',
     bio: 'This is an admin user', date_of_birth: '1985-05-10'
   )
