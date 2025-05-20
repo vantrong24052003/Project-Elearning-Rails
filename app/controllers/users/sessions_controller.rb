@@ -2,21 +2,16 @@
 
 class Users::SessionsController < Devise::SessionsController
   def create
-    super do |resource|
-      unless resource.persisted?
-        flash[:alert] = 'Login failed! Please check your email and password.'
-        return redirect_to new_session_path(resource_name)
-      end
+    user = User.find_by(email: params[:user][:email])
+    if user&.has_role?(:student)
+      super
+    else
+      flash[:alert] = 'Invalid email or password'
+      redirect_to new_user_session_path
     end
   end
 
   def after_sign_in_path_for(resource)
-    if resource.has_role?(:admin)
-      manage_root_path
-    elsif resource.has_role?(:instructor)
-      manage_root_path
-    else
       root_path
-    end
   end
 end
