@@ -44,6 +44,12 @@ class Manage::VideosController < Manage::BaseController
     videos = Video.includes(:lesson, upload: :user)
                   .order(created_at: :desc)
 
+    videos = if current_user.has_role?(:admin)
+               videos.all
+             else
+               videos.joins(:upload).where(uploads: { user_id: current_user.id })
+             end
+
     videos = videos.joins(:upload).where(uploads: { status: params[:status] }) if params[:status].present?
 
     videos = videos.where(moderation_status: params[:moderation_status]) if params[:moderation_status].present?

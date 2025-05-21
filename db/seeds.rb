@@ -25,6 +25,8 @@ User.destroy_all
   ActiveRecord::Base.connection.reset_pk_sequence!(table_name)
 end
 
+puts 'Creating admin student and instructor...'
+
 admin = begin
   user = User.new(
     email: 'trongdn2405@gmail.com', password: 'Admin123@',
@@ -96,6 +98,8 @@ category2 = Category.create!(name: 'Design', description: 'Design and creative s
 category3 = Category.create!(name: 'Business', description: 'Business and management skills.')
 category4 = Category.create!(name: 'Data Analysis', description: 'Data analysis and visualization.')
 puts '✅ Created categories.'
+
+puts 'Creating uploads...'
 
 uploads = [
   Upload.create!(
@@ -169,8 +173,9 @@ uploads = [
 ]
 
 demo_videos = uploads.map(&:cdn_url)
-
 course_thumbnails = uploads.map(&:thumbnail_path)
+
+puts '✅ Created uploads with matching content and thumbnails.'
 
 course_titles = [
   'Data Analysis Mastery',
@@ -298,13 +303,16 @@ def create_practice_quiz_for_course(course, category_name)
   topic = topics.sample
   title = "#{topic} - #{course.title.split.first(2).join(' ')}"
 
+  start_time = Time.current + 5.minutes
+  end_time = start_time + 1.hour
+
   quiz = Quiz.create!(
     title: title,
     is_exam: false,
     time_limit: [10, 15, 20, 25, 30].sample,
     course: course,
-    start_time: Faker::Time.between(from: 6.months.ago, to: Time.current),
-    end_time: Faker::Time.between(from: 1.month.ago, to: 1.month.from_now)
+    start_time: start_time,
+    end_time: end_time
   )
 
   rand(5..10).times do |j|
@@ -313,7 +321,7 @@ def create_practice_quiz_for_course(course, category_name)
 
     question = Question.create!(
       content: content,
-      options: answers.shuffle,
+      options: answers.shuffle.each_with_index.map { |v, i| [i.to_s, v] }.to_h,
       correct_option: rand(0..3),
       explanation: "Giải thích chi tiết: #{answers.sample} là phương pháp hiệu quả nhất cho #{topic.downcase}.",
       difficulty: %w[easy medium hard].sample,
@@ -332,13 +340,16 @@ def create_practice_quiz_for_course(course, category_name)
 end
 
 def create_exam_for_course(course, category_name)
+  start_time = Time.current + 5.minutes
+  end_time = start_time + 2.hours
+
   exam = Quiz.create!(
     title: "Bài thi cuối khóa - #{course.title.truncate(30)}",
     is_exam: true,
     time_limit: [30, 45, 60].sample,
     course: course,
-    start_time: Faker::Time.between(from: 6.months.ago, to: Time.current),
-    end_time: Faker::Time.between(from: 1.month.ago, to: 1.month.from_now)
+    start_time: start_time,
+    end_time: end_time
   )
 
   exam_templates = EXAM_QUESTIONS[category_name] || EXAM_QUESTIONS['Programming']
@@ -352,7 +363,7 @@ def create_exam_for_course(course, category_name)
 
     question = Question.create!(
       content: content,
-      options: template[:options].shuffle,
+      options: template[:options].shuffle.each_with_index.map { |v, i| [i.to_s, v] }.to_h,
       correct_option: rand(0..3),
       explanation: "Lý giải chi tiết: #{template[:options].sample} là phương pháp tối ưu cho nhiều trường hợp.",
       difficulty: %w[medium hard].sample,
@@ -548,23 +559,21 @@ Upload.where(status: 'success').each_with_index do |upload, index|
   )
 end
 
-puts "\n✅ Đã cập nhật phiên âm cho #{Upload.where(transcription_status: 'completed').count} uploads."
+puts "✅ Đã cập nhật phiên âm cho #{Upload.where(transcription_status: 'completed').count} uploads."
 
 puts 'Đang tạo bài kiểm tra cho các khóa học'
 
-30.times do
-  course = Course.all.sample
-  create_quiz_for_course(course, false)
-end
+Course.find_each do |course|
+  rand(5..8).times do
+    create_quiz_for_course(course, false)
+  end
 
-20.times do
-  course = Course.all.sample
-  create_quiz_for_course(course, true)
+  rand(2..3).times do
+    create_quiz_for_course(course, true)
+  end
 end
 
 puts "✅ Đã tạo #{Quiz.count} bài kiểm tra với #{Question.count} câu hỏi và #{QuizAttempt.count} lần làm bài."
-
-puts "\n🎉 Seed data completed successfully!"
 
 User.joins(:roles).where(roles: { name: 'student' }).each do |student|
   student.enrollments.sample(rand(1..3)).each do |enrollment|
@@ -588,3 +597,86 @@ Course.find_each do |course|
 end
 
 puts '✅ Created course ratings!'
+
+puts 'Seeding quiz attempts...'
+
+users = User.all
+quizzes = Quiz.all
+
+device_infos = [
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+  'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+  'Mozilla/5.0 (Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36'
+]
+
+client_ips = [
+  '::1',
+  '118.69.55.83',
+  '192.168.1.1',
+  '10.0.0.1',
+  '172.16.0.1',
+  '127.0.0.1'
+]
+
+users.each do |user|
+  quizzes.each do |quiz|
+    start_time = Time.current - rand(1..24).hours
+    completed_at = start_time + rand(10..30).minutes
+    time_spent = (completed_at - start_time).to_i
+
+    log_actions = []
+    current_time = start_time
+
+    used_devices = Set.new
+    used_ips = Set.new
+
+    while current_time < completed_at
+      device_info = device_infos.sample
+      client_ip = client_ips.sample
+
+      used_devices.add(device_info)
+      used_ips.add(client_ip)
+
+      log_actions << {
+        client_ip: client_ip,
+        timestamp: current_time.iso8601(3),
+        device_info: device_info
+      }
+      current_time += rand(30..180).seconds
+    end
+
+    final_device = device_infos.sample
+    final_ip = client_ips.sample
+    used_devices.add(final_device)
+    used_ips.add(final_ip)
+
+    log_actions << {
+      client_ip: final_ip,
+      timestamp: completed_at.iso8601(3),
+      device_info: final_device
+    }
+
+    QuizAttempt.create!(
+      user: user,
+      quiz: quiz,
+      score: rand(5..10),
+      time_spent: time_spent,
+      start_time: start_time,
+      completed_at: completed_at,
+      tab_switch_count: rand(0..3),
+      copy_paste_count: rand(0..2),
+      screenshot_count: rand(0..1),
+      right_click_count: rand(0..2),
+      devtools_open_count: rand(0..1),
+      other_unusual_actions: rand(0..2),
+      device_count: used_devices.size,
+      log_actions: log_actions
+    )
+  end
+end
+
+puts '✅ Created quiz attempts!'
+puts "\n🎉 Seed data completed successfully!"

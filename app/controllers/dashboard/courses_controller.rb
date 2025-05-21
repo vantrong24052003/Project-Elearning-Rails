@@ -27,6 +27,14 @@ class Dashboard::CoursesController < Dashboard::DashboardController
     @videos = Video.includes(:upload).where(lesson_id: @lessons.pluck(:id))
     @enrollments = @course.enrollments
 
+    @can_view_full_content = if current_user&.has_role?(:admin) || @course.user_id == current_user&.id
+                               true
+                             elsif current_user
+                               @enrollments.exists?(user_id: current_user.id, status: :active)
+                             else
+                               false
+                             end
+
     set_course_statistics
     set_user_progress if user_enrolled?
     set_related_courses
@@ -135,7 +143,10 @@ class Dashboard::CoursesController < Dashboard::DashboardController
   end
 
   def user_enrolled?
-    current_user && @enrollments.exists?(user_id: current_user.id)
+    return true if current_user&.has_role?(:admin)
+    return true if @course.user_id == current_user&.id
+
+    current_user && @enrollments.exists?(user_id: current_user.id, status: :active)
   end
 
   def set_user_progress

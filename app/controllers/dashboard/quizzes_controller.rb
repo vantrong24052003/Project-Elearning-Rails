@@ -83,6 +83,8 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   end
 
   def check_enrollment
+    return if current_user.has_role?(:admin)
+    return if current_user == @course.user
     return if current_user && Enrollment.exists?(user: current_user, course: @course, status: :active)
 
     redirect_to dashboard_course_path(@course),

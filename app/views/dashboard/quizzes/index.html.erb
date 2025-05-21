@@ -58,7 +58,7 @@
                 </div>
 
                 <div class="mt-4 md:mt-6">
-                  <% if user_signed_in? && current_user.enrollments.active.exists?(course: @course) %>
+                  <% if current_user.has_role?(:admin) || current_user == @course.user || Enrollment.exists?(user: current_user, course: @course, status: :active) %>
                     <% already_attempted = QuizAttempt.exists?(quiz: quiz, user: current_user) %>
                     <% if already_attempted %>
                       <% latest_attempt = QuizAttempt.where(quiz: quiz, user: current_user).order(created_at: :desc).first %>
@@ -86,9 +86,9 @@
 
                       <% if quiz_available %>
                         <%= link_to dashboard_course_quiz_path(@course, quiz, start: true),
-                            class: "w-full text-center px-3 py-2 md:px-4 md:py-2 #{quiz.is_exam? ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700'} text-white text-sm md:text-base rounded-lg transition block font-medium",
+                            class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm md:text-base rounded-lg transition block font-medium",
                             data: { quiz_id: quiz.id, quiz_type: quiz.is_exam? ? 'exam' : 'practice' } do %>
-                          <span class="quiz-action-text"><%= quiz.is_exam? ? 'Làm bài thi' : 'Bắt đầu làm bài' %></span>
+                          <%= quiz.is_exam? ? 'Làm bài thi' : 'Làm bài kiểm tra' %>
                         <% end %>
                       <% elsif quiz_upcoming %>
                         <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">
@@ -145,7 +145,7 @@
                 </div>
 
                 <div class="mt-4 md:mt-6">
-                  <% if user_signed_in? && current_user.enrollments.active.exists?(course: @course) %>
+                  <% if current_user.has_role?(:admin) || current_user == @course.user || Enrollment.exists?(user: current_user, course: @course, status: :active) %>
                     <% already_attempted = QuizAttempt.exists?(quiz: quiz, user: current_user) %>
                     <% if already_attempted %>
                       <% latest_attempt = QuizAttempt.where(quiz: quiz, user: current_user).order(created_at: :desc).first %>
@@ -173,9 +173,9 @@
 
                       <% if quiz_available %>
                         <%= link_to dashboard_course_quiz_path(@course, quiz, start: true),
-                            class: "w-full text-center px-3 py-2 md:px-4 md:py-2 #{quiz.is_exam? ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700'} text-white text-sm md:text-base rounded-lg transition block font-medium",
+                            class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm md:text-base rounded-lg transition block font-medium",
                             data: { quiz_id: quiz.id, quiz_type: quiz.is_exam? ? 'exam' : 'practice' } do %>
-                          <span class="quiz-action-text"><%= quiz.is_exam? ? 'Làm bài thi' : 'Bắt đầu làm bài' %></span>
+                          <%= quiz.is_exam? ? 'Làm bài thi' : 'Làm bài kiểm tra' %>
                         <% end %>
                       <% elsif quiz_upcoming %>
                         <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">
@@ -396,8 +396,8 @@
                       <tr>
                         <td><%= attempt.quiz.title %></td>
                         <td>
-                          <div class="badge badge-<%= attempt.score >= 70 ? 'success' : (attempt.score >= 40 ? 'warning' : 'error') %>">
-                            <%= attempt.score %>%
+                          <div class="badge badge-<%= attempt.score >= 7 ? 'success' : (attempt.score >= 4 ? 'warning' : 'error') %>">
+                            <%= attempt.score %> điểm
                           </div>
                         </td>
                         <td><%= Time.at(attempt.time_spent).utc.strftime("%H:%M:%S") %></td>
@@ -520,8 +520,8 @@
                       <tr>
                         <td><%= attempt.quiz.title %></td>
                         <td>
-                          <div class="badge badge-<%= attempt.score >= 70 ? 'success' : (attempt.score >= 40 ? 'warning' : 'error') %>">
-                            <%= attempt.score %>%
+                          <div class="badge badge-<%= attempt.score >= 7 ? 'success' : (attempt.score >= 4 ? 'warning' : 'error') %>">
+                            <%= attempt.score %> điểm
                           </div>
                         </td>
                         <td><%= Time.at(attempt.time_spent).utc.strftime("%H:%M:%S") %></td>
