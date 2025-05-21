@@ -18,6 +18,7 @@
   <%= vite_stylesheet_tag "application.css" %>
   <%= vite_client_tag %>
   <%= vite_javascript_tag 'application' %>
+
 </head>
 
 <body class="min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-white" data-controller="shared--header shared--drawer">
@@ -159,7 +160,7 @@
           </div>
 
           <ul class="menu menu-md p-2 space-y-1 text-gray-700 dark:text-gray-300 w-full">
-            <%= link_to manage_root_path, class: "flex items-center px-4 py-3 rounded-md #{current_page?(manage_root_path) ? 'bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-purple-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}" do %>
+            <%= link_to manage_overviews_path  , class: "flex items-center px-4 py-3 rounded-md #{current_page?(manage_root_path) ? 'bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-purple-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}" do %>
               <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>

@@ -17,7 +17,7 @@ Rails.application.routes.draw do
       delete 'logout', to: 'sessions#destroy'
     end
 
-    root to: 'courses#index'
+    root to: 'overviews#index'
 
     resources :courses do
       member do
@@ -50,6 +50,7 @@ Rails.application.routes.draw do
     resources :faqs
     resources :payments
     resources :reviews
+    resources :overviews, only: [:index]
   end
 
   namespace :dashboard do

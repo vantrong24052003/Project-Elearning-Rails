@@ -106,8 +106,8 @@ uploads = [
     duration: 34,
     status: 'success',
     user_id: instructor.id,
-    created_at: '2025-05-07 04:35:49.450872',
-    updated_at: '2025-05-07 04:36:26.943297',
+    created_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+    updated_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
     formats: %w[mp4 hls],
     progress: 100,
     processing_log: 'Vẽ tranh tặng Crush siêu đơn giản- Lê Công Duy Tính #shorts.mp4',
@@ -123,8 +123,8 @@ uploads = [
     duration: 30,
     status: 'success',
     user_id: instructor.id,
-    created_at: '2025-05-07 04:35:49.445987',
-    updated_at: '2025-05-07 04:36:29.976609',
+    created_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+    updated_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
     formats: %w[mp4 hls],
     progress: 100,
     processing_log: 'Một biệt đội phản anh hùng _bất thường_.mp4',
@@ -140,8 +140,8 @@ uploads = [
     duration: 24,
     status: 'success',
     user_id: instructor.id,
-    created_at: '2025-05-07 04:35:49.664633',
-    updated_at: '2025-05-07 04:36:30.74805',
+    created_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+    updated_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
     formats: %w[mp4 hls],
     progress: 100,
     processing_log: 'Mất chất luôn 🙃 #takhongngu.mp4',
@@ -157,8 +157,8 @@ uploads = [
     duration: 12,
     status: 'success',
     user_id: instructor.id,
-    created_at: '2025-05-07 04:35:49.323788',
-    updated_at: '2025-05-07 04:36:12.065124',
+    created_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+    updated_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
     formats: %w[mp4 hls],
     progress: 100,
     processing_log: 'đém ngược 10 giây.mp4',
@@ -247,7 +247,7 @@ prices = [299_000, 499_000, 999_000, 1_499_000, 1_999_000]
           upload: available_upload,
           thumbnail: available_upload.thumbnail_path,
           position: l + 1,
-          is_locked: rand < 0.4 ? Time.current + rand(1..30).days : nil,
+          is_locked: rand < 0.4 ? Faker::Time.between(from: 6.months.ago, to: Time.current) : nil,
           moderation_status: %i[pending approved rejected locked].sample
         )
       end
@@ -268,9 +268,9 @@ prices = [299_000, 499_000, 999_000, 1_499_000, 1_999_000]
       payment_code: SecureRandom.hex(4).upcase,
       payment_method: Enrollment.payment_method.values.sample,
       amount: course.price,
-      paid_at: rand < 0.8 ? Time.current - rand(1..30).days : nil,
-      enrolled_at: Time.current - rand(1..30).days,
-      completed_at: rand < 0.3 ? Time.current : nil,
+      paid_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+      enrolled_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+      completed_at: [nil, Faker::Time.between(from: 6.months.ago, to: Time.current)].sample,
       note: ['Completed payment successfully', 'Payment pending', nil].sample
     )
   end
@@ -303,8 +303,8 @@ def create_practice_quiz_for_course(course, category_name)
     is_exam: false,
     time_limit: [10, 15, 20, 25, 30].sample,
     course: course,
-    start_time: Time.current,
-    end_time: Time.current + rand(1..3).days
+    start_time: Faker::Time.between(from: 6.months.ago, to: Time.current),
+    end_time: Faker::Time.between(from: 1.month.ago, to: 1.month.from_now)
   )
 
   rand(5..10).times do |j|
@@ -337,8 +337,8 @@ def create_exam_for_course(course, category_name)
     is_exam: true,
     time_limit: [30, 45, 60].sample,
     course: course,
-    start_time: Time.current,
-    end_time: Time.current + rand(1..3).days
+    start_time: Faker::Time.between(from: 6.months.ago, to: Time.current),
+    end_time: Faker::Time.between(from: 1.month.ago, to: 1.month.from_now)
   )
 
   exam_templates = EXAM_QUESTIONS[category_name] || EXAM_QUESTIONS['Programming']

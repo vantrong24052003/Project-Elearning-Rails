@@ -47,6 +47,8 @@ gem 'pagy'
 gem 'redis'
 gem 'roo'
 gem 'sidekiq'
+gem 'chartkick'
+gem 'faker'
 
 # Xử lý video
 gem 'streamio-ffmpeg', '3.0'

@@ -125,6 +125,7 @@ GEM
     caxlsx_rails (0.6.4)
       actionpack (>= 3.1)
       caxlsx (>= 3.0)
+    chartkick (5.1.5)
     coderay (1.1.3)
     concurrent-ruby (1.3.5)
     connection_pool (2.5.0)
@@ -149,6 +150,8 @@ GEM
     erubi (1.13.1)
     et-orbi (1.2.11)
       tzinfo
+    faker (3.5.1)
+      i18n (>= 1.8.11, < 2)
     faraday (2.13.0)
       faraday-net_http (>= 2.0, < 3.5)
       json
@@ -492,10 +495,12 @@ DEPENDENCIES
   capybara
   caxlsx
   caxlsx_rails
+  chartkick
   csv
   debug
   devise
   enumerize
+  faker
   faraday
   jbuilder
   kamal
