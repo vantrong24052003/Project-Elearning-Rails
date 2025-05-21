@@ -17,6 +17,8 @@
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
     "@hotwired/turbo-rails": "^8.0.13",
+    "chart.js": "^4.4.9",
+    "chartkick": "^5.0.1",
     "framer-motion": "^12.7.4",
     "hls.js": "^1.6.2",
     "lucide": "latest",

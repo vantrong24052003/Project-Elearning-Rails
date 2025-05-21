@@ -3,6 +3,7 @@ import "./controllers"
 import "toastr/build/toastr.min.css";
 import { createIcons, icons } from "lucide"
 import "hls.js"
+import "chartkick/chart.js"
 
 toastr.options = {
   closeButton: true,

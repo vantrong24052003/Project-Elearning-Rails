@@ -7,7 +7,7 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable,
          :confirmable, :lockable, :timeoutable, :trackable
 
-  enumerize :instructor_request_status, in: %i[pending approved rejected], predicates: true, scope: true
+  enumerize :instructor_request_status, in: %i[pending approved rejected], predicates: true
 
   has_many :courses, dependent: :destroy
   has_many :enrollments, dependent: :destroy
