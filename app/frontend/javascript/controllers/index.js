@@ -37,6 +37,9 @@ import VideoAnalysisController from "./manage/video_analysis_controller"
 import UsersController from "./manage/users_controller"
 import EnrollmentsController from "./manage/enrollments_controller"
 import QuizAttemptsController from "./manage/quiz_attempts_controller"
+import ManageQuizzesController from "./manage/quizzes_controller"
+import UploadsController from "./manage/uploads_controller"
+import QuizTimeValidationController from "./manage/quiz_time_validation_controller"
 // home
 application.register("home--faq", faq_controller)
 application.register("home--hero", hero_controller)
@@ -66,6 +69,7 @@ application.register("dashboard--quiz-redirect", QuizRedirectController)
 application.register("dashboard--quiz-timer", QuizTimerController)
 application.register("dashboard--quiz-cache", quiz_cache_controller)
 
+
 // manage
 application.register("manage--courses", ManageCoursesController)
 application.register("manage--video-filter", VideoFilterController)
@@ -81,4 +85,7 @@ application.register("manage--quizzes-preview", QuizzesPreviewController)
 application.register("manage--video-analysis", VideoAnalysisController)
 application.register("manage--users", UsersController)
 application.register("manage--enrollments", EnrollmentsController)
-application.register("manage--quiz-attempts", QuizAttemptsController)
+application.register("manage--quiz-attempts", QuizAttemptsController) 
+application.register("manage--quizzes", ManageQuizzesController)
+application.register("manage--uploads", UploadsController)
+application.register("manage--quiz-time-validation", QuizTimeValidationController)
