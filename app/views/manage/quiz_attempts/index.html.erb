@@ -10,15 +10,6 @@
       </h1>
 
       <div class="flex items-center gap-2">
-        <%= link_to manage_quiz_dashboard_path, class: "btn btn-outline btn-sm" do %>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="3" y1="9" x2="21" y2="9"></line>
-            <line x1="9" y1="21" x2="9" y2="9"></line>
-          </svg>
-          Dashboard
-        <% end %>
-
         <% if @quiz %>
           <%= link_to manage_quiz_path(@quiz), class: "btn btn-primary btn-sm" do %>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -156,51 +147,120 @@
       </div>
     <% end %>
 
-    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg">
-      <div class="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <h2 class="text-lg md:text-xl text-blue-600 dark:text-purple-400 font-medium">
-              <% if @quiz %>
-                Lịch sử làm bài
-              <% else %>
-                Tất cả lịch sử làm bài kiểm tra
-              <% end %>
-            </h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-              <% if @quiz %>
-                Danh sách các lần làm bài: <%= @quiz.title %>
-              <% else %>
-                Danh sách tất cả các lần làm bài kiểm tra trên hệ thống
-              <% end %>
-            </p>
-          </div>
-        </div>
-      </div>
+    <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+      <div class="rounded-lg p-5 bg-white dark:bg-gray-800 text-gray-800 dark:text-white" data-controller="manage--quiz-attempts">
+        <%= form_with url: manage_quiz_attempts_path, method: :get, id: "search_filter_form", data: {
+          turbo_frame: "quiz_attempts_data",
+          manage__quiz_attempts_target: "searchForm"
+        } do |f| %>
+          <div class="space-y-5">
+            <div class="flex flex-col lg:flex-row gap-4 items-center">
+              <div class="w-full lg:flex-1">
+                <div class="relative group">
+                  <%= f.text_field :search, value: params[:search],
+                          class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 pl-10 pr-12 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 focus:border-blue-500 dark:focus:border-purple-500 transition-all",
+                          placeholder: "Tìm kiếm theo tên học viên...",
+                          autocomplete: "off",
+                          data: {
+                            manage__quiz_attempts_target: "searchInput",
+                            action: "input->manage--quiz-attempts#search"
+                          }
+                      %>
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                  </div>
+                  <div class="absolute inset-y-0 right-0 flex items-center">
+                    <% if params[:search].present? %>
+                      <button type="button" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white px-2" data-action="manage--quiz-attempts#clearSearch">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    <% end %>
+                    <button type="submit" class="h-full px-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white focus:outline-none border-l border-gray-300 dark:border-gray-600">
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
 
+              <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
+                <div class="w-full md:w-auto">
+                  <%= f.select :cheating_score,
+                            [["Tất cả mức độ gian lận", ""], ["Nghiêm trọng (>15)", "high"], ["Nhiều dấu hiệu (>8)", "medium"], ["Ít dấu hiệu (≤8)", "low"]],
+                            { selected: params[:cheating_score] },
+                            {
+                              class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
+                              data: {
+                                manage__quiz_attempts_target: "cheatingScoreSelect",
+                                action: "change->manage--quiz-attempts#filterByCheatingScore"
+                              }
+                            }
+                        %>
+                </div>
+
+                <div class="w-full md:w-auto">
+                  <%= f.select :score_range,
+                            [["Tất cả điểm số", ""], ["Xuất sắc (≥80)", "excellent"], ["Khá (≥50)", "good"], ["Yếu (<50)", "poor"]],
+                            { selected: params[:score_range] },
+                            {
+                              class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
+                              data: {
+                                manage__quiz_attempts_target: "scoreRangeSelect",
+                                action: "change->manage--quiz-attempts#filterByScoreRange"
+                              }
+                            }
+                        %>
+                </div>
+
+                <div class="w-full md:w-auto">
+                  <button type="button"
+                          class="w-full rounded-md hover:opacity-70 bg-gray-50 dark:bg-gray-700 flex items-center justify-center h-10 px-4"
+                          data-action="manage--quiz-attempts#resetAllFilters">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="1 4 1 10 7 10"></polyline>
+                      <polyline points="23 20 23 14 17 14"></polyline>
+                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                    </svg>
+                    Xóa tất cả
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%= turbo_frame_tag "quiz_attempts_data" do %>
       <div class="p-4 md:p-6">
         <div class="overflow-x-auto overflow-y-auto max-h-[70vh]">
           <% if @quiz_attempts.any? %>
             <table class="table table-zebra w-full">
               <thead class="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10">
                 <tr>
-                  <th class="text-left">ID</th>
+                  <th class="text-center w-16">STT</th>
                   <th class="text-left">Học viên</th>
                   <% unless @quiz %>
                   <th class="text-left">Bài kiểm tra</th>
                   <% end %>
                   <th class="text-left">Điểm số</th>
                   <th class="text-left">Thời gian làm</th>
-                  <th class="text-left">IP Address</th>
                   <th class="text-left">Ngày làm</th>
                   <th class="text-left">Chỉ số gian lận</th>
                   <th class="text-right">Hành động</th>
                 </tr>
               </thead>
               <tbody>
-                <% @quiz_attempts.each do |quiz_attempt| %>
+                <% @quiz_attempts.each_with_index do |quiz_attempt, index| %>
                   <tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/50">
-                    <td class="py-3 px-4 font-mono"><%= quiz_attempt.id %></td>
+                    <td class="py-3 px-4 text-center">
+                      <%= @quiz_attempts.offset_value + index + 1 %>
+                    </td>
                     <td class="py-3 px-4">
                       <div class="flex items-center">
                         <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center text-gray-900 dark:text-white font-medium mr-2">
@@ -216,39 +276,32 @@
                     <% end %>
                     <td class="py-3 px-4">
                       <span class="px-2 py-1 rounded-full text-xs font-medium
-                        <%= if quiz_attempt.score.to_f >= 70
+                        <%= if quiz_attempt.score.to_f >= 7
                               'bg-green-100 text-green-600 border border-green-200 dark:bg-green-600/20 dark:text-green-400 dark:border-green-600/30'
-                            elsif quiz_attempt.score.to_f >= 40
+                            elsif quiz_attempt.score.to_f >= 4
                               'bg-yellow-100 text-yellow-600 border border-yellow-200 dark:bg-yellow-600/20 dark:text-yellow-400 dark:border-yellow-600/30'
                             else
                               'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:text-red-400 dark:border-red-600/30'
                             end
                         %>">
-                        <%= quiz_attempt.score %>%
+                        <%= quiz_attempt.score %> điểm
                       </span>
                     </td>
                     <td class="py-3 px-4">
                       <%= Time.at(quiz_attempt.time_spent || 0).utc.strftime("%H:%M:%S") %>
-                    </td>
-                    <td class="py-3 px-4 font-mono text-sm">
-                      <% 
-                        log_entries = quiz_attempt.log_actions || []
-                        start_log = log_entries.find { |entry| entry['action'] == 'start_quiz' } || {}
-                        ip_address = start_log['client_ip'] || 'N/A'
-                      %>
-                      <%= ip_address %>
                     </td>
                     <td class="py-3 px-4">
                       <%= quiz_attempt.created_at.strftime("%d/%m/%Y %H:%M") %>
                     </td>
                     <td class="py-3 px-4">
                       <%
-                        cheating_score = 0
-                        cheating_score += quiz_attempt.tab_switch_count || 0
-                        cheating_score += (quiz_attempt.copy_paste_count || 0) * 2
-                        cheating_score += (quiz_attempt.screenshot_count || 0) * 3
-                        cheating_score += (quiz_attempt.devtools_open_count || 0) * 4
-                        cheating_score += quiz_attempt.right_click_count || 0
+                        cheating_score = quiz_attempt.tab_switch_count.to_i +
+                                       quiz_attempt.copy_paste_count.to_i +
+                                       quiz_attempt.screenshot_count.to_i +
+                                       quiz_attempt.devtools_open_count.to_i +
+                                       quiz_attempt.right_click_count.to_i +
+                                       quiz_attempt.other_unusual_actions.to_i +
+                                       (quiz_attempt.device_count.to_i - 1)
 
                         severity_class = if cheating_score > 15
                                           'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:text-red-400 dark:border-red-600/30'
@@ -266,7 +319,8 @@
                       <div class="flex items-center justify-end">
                         <%= link_to manage_quiz_attempt_path(quiz_attempt),
                             class: "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 p-2 rounded-md",
-                            title: "Xem chi tiết" do %>
+                            title: "Xem chi tiết",
+                            data: { turbo_frame: "_top" } do %>
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
@@ -288,101 +342,130 @@
             </div>
           <% end %>
         </div>
-      </div>
-    </div>
 
-    <div class="mt-8">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-4 gap-4">
-        <div class="text-sm text-gray-600 dark:text-gray-400">
-          <% if @quiz_attempts.respond_to?(:total_count) && @quiz_attempts.total_count > 0 %>
-            Hiển thị <%= @quiz_attempts.offset_value + 1 %>-<%= [@quiz_attempts.offset_value + @quiz_attempts.limit_value, @quiz_attempts.total_count].min %> trong số <%= @quiz_attempts.total_count %> lần làm bài
-          <% else %>
-            0 lần làm bài
-          <% end %>
-        </div>
-
-        <div class="flex items-center justify-center">
-          <div class="flex items-center gap-1">
-            <% if @quiz_attempts.current_page > 2 %>
-              <%= link_to url_for(request.params.merge(page: 1)),
-                  class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" do %>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m11 17-5-5 5-5" />
-                  <path d="m18 17-5-5 5-5" />
-                </svg>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-4 mb-2 border-t border-gray-200 dark:border-gray-700 pt-4">
+          <div class="text-sm text-gray-800 dark:text-white flex items-center" data-controller="manage--quiz-attempts">
+            <span class="mr-2">Hiển thị:</span>
+            <%= form_with url: manage_quiz_attempts_path, method: :get, data: {
+              turbo_frame: "quiz_attempts_data",
+              manage__quiz_attempts_target: "searchForm"
+            } do |f| %>
+              <%= f.hidden_field :page, value: 1 %>
+              <% request.query_parameters.except(:page, :per_page, :authenticity_token).each do |key, value| %>
+                <%= f.hidden_field key, value: value %>
               <% end %>
-            <% else %>
-              <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m11 17-5-5 5-5" />
-                  <path d="m18 17-5-5 5-5" />
-                </svg>
-              </span>
-            <% end %>
-
-            <% if @quiz_attempts.respond_to?(:prev_page) && @quiz_attempts.prev_page %>
-              <%= link_to url_for(request.params.merge(page: @quiz_attempts.prev_page)),
-                  class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" do %>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m15 18-6-6 6-6" />
-                </svg>
-              <% end %>
-            <% else %>
-              <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m15 18-6-6 6-6" />
-                </svg>
-              </span>
-            <% end %>
-
-            <% start_page = [1, @quiz_attempts.current_page - 2].max %>
-            <% end_page = [@quiz_attempts.total_pages, @quiz_attempts.current_page + 2].min %>
-
-            <% (start_page..end_page).each do |page| %>
-              <% if page == @quiz_attempts.current_page %>
-                <span class="flex items-center justify-center w-9 h-9 rounded-md border border-blue-500 dark:border-purple-700 bg-blue-50 dark:bg-purple-700/30 text-blue-700 dark:text-white font-medium">
-                  <%= page %>
-                </span>
-              <% else %>
-                <%= link_to page, url_for(request.params.merge(page: page)),
-                      class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" %>
-              <% end %>
-            <% end %>
-
-            <% if @quiz_attempts.respond_to?(:next_page) && @quiz_attempts.next_page %>
-              <%= link_to url_for(request.params.merge(page: @quiz_attempts.next_page)),
-                  class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" do %>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m9 18 6-6-6-6" />
-                </svg>
-              <% end %>
-            <% else %>
-              <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m9 18 6-6-6-6" />
-                </svg>
-              </span>
-            <% end %>
-
-            <% if @quiz_attempts.respond_to?(:total_pages) && @quiz_attempts.respond_to?(:current_page) && @quiz_attempts.current_page < @quiz_attempts.total_pages - 1 %>
-              <%= link_to url_for(request.params.merge(page: @quiz_attempts.total_pages)),
-                  class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" do %>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m13 17 5-5-5-5" />
-                  <path d="m6 17 5-5-5-5" />
-                </svg>
-              <% end %>
-            <% else %>
-              <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m13 17 5-5-5-5" />
-                  <path d="m6 17 5-5-5-5" />
-                </svg>
-              </span>
+              <%= f.select :per_page,
+                      options_for_select([10, 25, 50, 100], params[:per_page].to_i > 0 ? params[:per_page].to_i : 10),
+                      {},
+                      {
+                        class: "select select-bordered select-sm",
+                        data: {
+                          manage__quiz_attempts_target: "perPageSelect",
+                          action: "change->manage--quiz-attempts#changePerPage"
+                        }
+                      }
+                  %>
             <% end %>
           </div>
         </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-2 gap-4">
+          <div class="text-sm text-gray-600 dark:text-gray-400">
+            <% if @quiz_attempts.respond_to?(:total_count) && @quiz_attempts.total_count > 0 %>
+              Hiển thị <%= @quiz_attempts.offset_value + 1 %>-<%= [@quiz_attempts.offset_value + @quiz_attempts.limit_value, @quiz_attempts.total_count].min %> trong số <%= @quiz_attempts.total_count %> lần làm bài
+            <% else %>
+              0 lần làm bài
+            <% end %>
+          </div>
+
+          <div class="flex items-center justify-center mt-4">
+            <div class="flex items-center gap-1">
+              <% if @quiz_attempts.current_page > 2 %>
+                <%= link_to url_for(request.params.merge(page: 1)),
+                    class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
+                    data: { turbo_frame: "quiz_attempts_data" } do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m11 17-5-5 5-5" />
+                    <path d="m18 17-5-5 5-5" />
+                  </svg>
+                <% end %>
+              <% else %>
+                <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m11 17-5-5 5-5" />
+                    <path d="m18 17-5-5 5-5" />
+                  </svg>
+                </span>
+              <% end %>
+
+              <% if @quiz_attempts.respond_to?(:prev_page) && @quiz_attempts.prev_page %>
+                <%= link_to url_for(request.params.merge(page: @quiz_attempts.prev_page)),
+                    class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
+                    data: { turbo_frame: "quiz_attempts_data" } do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m15 18-6-6 6-6" />
+                  </svg>
+                <% end %>
+              <% else %>
+                <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m15 18-6-6 6-6" />
+                  </svg>
+                </span>
+              <% end %>
+
+              <% start_page = [1, @quiz_attempts.current_page - 2].max %>
+              <% end_page = [@quiz_attempts.total_pages, @quiz_attempts.current_page + 2].min %>
+
+              <% (start_page..end_page).each do |page| %>
+                <% if page == @quiz_attempts.current_page %>
+                  <span class="flex items-center justify-center w-9 h-9 rounded-md border border-blue-500 dark:border-purple-700 bg-blue-50 dark:bg-purple-700/30 text-blue-700 dark:text-white font-medium">
+                    <%= page %>
+                  </span>
+                <% else %>
+                  <%= link_to page, url_for(request.params.merge(page: page)),
+                        class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
+                        data: { turbo_frame: "quiz_attempts_data" } %>
+                <% end %>
+              <% end %>
+
+              <% if @quiz_attempts.respond_to?(:next_page) && @quiz_attempts.next_page %>
+                <%= link_to url_for(request.params.merge(page: @quiz_attempts.next_page)),
+                    class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
+                    data: { turbo_frame: "quiz_attempts_data" } do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                <% end %>
+              <% else %>
+                <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </span>
+              <% end %>
+
+              <% if @quiz_attempts.respond_to?(:total_pages) && @quiz_attempts.respond_to?(:current_page) && @quiz_attempts.current_page < @quiz_attempts.total_pages - 1 %>
+                <%= link_to url_for(request.params.merge(page: @quiz_attempts.total_pages)),
+                    class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
+                    data: { turbo_frame: "quiz_attempts_data" } do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m13 17 5-5-5-5" />
+                    <path d="m6 17 5-5-5-5" />
+                  </svg>
+                <% end %>
+              <% else %>
+                <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m13 17 5-5-5-5" />
+                    <path d="m6 17 5-5-5-5" />
+                  </svg>
+                </span>
+              <% end %>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    <% end %>
   </div>
-</div> 
+</div>

@@ -13,7 +13,7 @@ class Dashboard::PaymentsController < Dashboard::DashboardController
 
     @enrollment.update!(
       status: :active,
-      payment_method: 'payment',
+      payment_method: :credit_card,
       paid_at: Time.current,
       enrolled_at: Time.current
     )

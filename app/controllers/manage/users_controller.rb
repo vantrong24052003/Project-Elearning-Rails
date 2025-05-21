@@ -2,6 +2,7 @@
 
 class Manage::UsersController < Manage::BaseController
   before_action :set_user, only: %i[show edit update destroy]
+  before_action :authorize_admin
 
   def index
     @users = User.includes(:roles).where.not(id: User.with_role(:admin).pluck(:id))
@@ -60,6 +61,10 @@ class Manage::UsersController < Manage::BaseController
   end
 
   private
+
+  def authorize_admin
+    redirect_to manage_root_path, alert: 'Bạn không có quyền truy cập trang này' unless current_user.has_role?(:admin)
+  end
 
   def set_user
     @user = User.find(params[:id])

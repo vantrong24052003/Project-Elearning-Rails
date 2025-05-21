@@ -519,6 +519,9 @@ export default class extends Controller {
     const isEditMode = editModeToggle.classList.contains('editing')
 
     if (isEditMode) {
+      if (!confirm('Hành động này sẽ làm thay đổi toàn bộ question trong tất cả các quiz khác của bạn. Bạn có chắc chắn muốn lưu thay đổi không?')) {
+        return
+      }
       this.collectQuestionsData()
       this.formTarget.submit()
     } else {

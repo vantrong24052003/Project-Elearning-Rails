@@ -26,7 +26,7 @@
           <table class="table table-zebra w-full">
             <thead class="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10">
               <tr>
-                <th class="text-left">ID</th>
+                <th class="text-center w-16">STT</th>
                 <th class="text-left">Người tải lên</th>
                 <th class="text-left">Loại tệp</th>
                 <th class="text-left">Thời lượng</th>
@@ -39,16 +39,14 @@
 
             <tbody>
               <% if @uploads.any? %>
-                <% @uploads.each do |upload| %>
+                <% @uploads.each_with_index do |upload, index| %>
                   <tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/50"
                       data-controller="manage--upload-transcoding"
                       data-manage--upload-transcoding-upload-id-value="<%= upload.id %>"
                       data-manage--upload-transcoding-status-value="<%= upload.status %>"
                       data-manage--upload-transcoding-progress-value="<%= upload.progress || 0 %>">
-                    <td class="py-3 px-4">
-                      <div class="flex items-center">
-                        <%= upload.id.first(8) %>...
-                      </div>
+                    <td class="py-3 px-4 text-center">
+                      <%= @uploads.offset_value + index + 1 %>
                     </td>
 
                     <td class="py-3 px-4">

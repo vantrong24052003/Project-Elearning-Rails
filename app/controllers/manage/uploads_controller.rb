@@ -4,7 +4,11 @@ class Manage::UploadsController < Manage::BaseController
   before_action :set_upload, only: %i[show update destroy progress retry]
 
   def index
-    @uploads = Upload.includes(:user).order(created_at: :desc).page(params[:page]).per(10)
+    @uploads = if current_user.has_role?(:admin)
+                 Upload.includes(:user).order(created_at: :desc)
+               else
+                 Upload.includes(:user).where(user_id: current_user.id).order(created_at: :desc)
+               end.page(params[:page]).per(10)
   end
 
   def show; end
@@ -170,7 +174,11 @@ class Manage::UploadsController < Manage::BaseController
   private
 
   def set_upload
-    @upload = Upload.includes(:user).find(params[:id])
+    @upload = if current_user.has_role?(:admin)
+                Upload.includes(:user).find(params[:id])
+              else
+                Upload.includes(:user).where(user_id: current_user.id).find(params[:id])
+              end
   end
 
   def upload_params

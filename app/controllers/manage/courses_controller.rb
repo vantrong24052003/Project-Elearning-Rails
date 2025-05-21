@@ -57,6 +57,12 @@ class Manage::CoursesController < Manage::BaseController
   def find_courses
     courses = Course.includes(:categories)
 
+    courses = if current_user.has_role?(:admin)
+                courses.all
+              else
+                courses.where(user_id: current_user.id)
+              end
+
     courses = courses.where('title ILIKE ?', "%#{params[:search]}%") if params[:search].present?
     courses = courses.where(status: params[:status]) if params[:status].present?
 
@@ -68,7 +74,6 @@ class Manage::CoursesController < Manage::BaseController
     courses = courses.where(language: params[:language]) if params[:language].present?
     courses = courses.where('price >= ?', params[:min_price].to_f) if params[:min_price].present?
     courses = courses.where('price <= ?', params[:max_price].to_f) if params[:max_price].present?
-    courses = courses.where(user_id: params[:instructor_id]) if params[:instructor_id].present?
 
     courses.order(created_at: :desc)
            .page(params[:page])
