@@ -16,7 +16,7 @@
             </svg>
             Tạo bài kiểm tra mới
           <% end %>
-          
+
           <%= link_to manage_quizzes_path, class: "btn btn-outline", data: { turbo: false } do %>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -172,13 +172,13 @@
       <%= turbo_frame_tag "quizzes_data" do %>
         <div class="p-4 md:p-6">
           <% if @quizzes&.any? %>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               <% @quizzes.each do |quiz| %>
-                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-                  <div class="p-5 border-b border-gray-200 dark:border-gray-700">
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow flex flex-col h-full">
+                  <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                     <div class="flex justify-between items-start">
                       <div>
-                        <h3 class="font-medium text-gray-900 dark:text-white text-lg mb-1"><%= quiz.title %></h3>
+                        <h3 class="font-medium text-gray-900 dark:text-white text-lg mb-1 line-clamp-2"><%= quiz.title %></h3>
                         <% unless @course.present? %>
                           <div class="mb-2">
                             <% if quiz.course.present? %>
@@ -195,29 +195,27 @@
                     </div>
                   </div>
 
-                  <div class="p-5">
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                      <div class="text-center bg-gray-50 dark:bg-gray-700 py-3 px-2 rounded-md">
+                  <div class="p-4 flex-grow">
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                      <div class="text-center bg-gray-50 dark:bg-gray-700 py-2 px-2 rounded-md">
                         <p class="text-sm text-gray-500 dark:text-gray-400">Thời gian</p>
                         <p class="text-lg font-medium text-gray-900 dark:text-white"><%= quiz.time_limit %> phút</p>
                       </div>
-                      <div class="text-center bg-gray-50 dark:bg-gray-700 py-3 px-2 rounded-md">
+                      <div class="text-center bg-gray-50 dark:bg-gray-700 py-2 px-2 rounded-md">
                         <p class="text-sm text-gray-500 dark:text-gray-400">Số câu hỏi</p>
                         <p class="text-lg font-medium text-gray-900 dark:text-white"><%= quiz.questions.count %> câu</p>
                       </div>
                     </div>
+                  </div>
 
-                    <div class="flex justify-between items-center">
-                      <div class="flex space-x-2">
-                        <%= link_to manage_quiz_path(quiz), class: "btn btn-sm", data: { turbo: false } do %>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                          </svg>
-                          Chi tiết
-                        <% end %>
-                      </div>
-                    </div>
+                  <div class="p-4 pt-0 border-t border-gray-200 dark:border-gray-700 mt-auto">
+                    <%= link_to manage_quiz_path(quiz), class: "btn btn-primary btn-sm w-full", data: { turbo: false } do %>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                      Xem chi tiết
+                    <% end %>
                   </div>
                 </div>
               <% end %>
@@ -250,7 +248,7 @@
                     </svg>
                     Tạo bài kiểm tra mới
                   <% end %>
-                  
+
                   <%= link_to new_manage_quiz_path(course_id: @course.id, ai: true), class: "btn btn-outline ml-4", data: { turbo: false } do %>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M12 2a10 10 0 1 0 10 10H12V2Z"></path>
