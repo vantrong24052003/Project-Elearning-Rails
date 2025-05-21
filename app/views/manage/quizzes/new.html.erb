@@ -17,7 +17,8 @@
 
               <div class="mb-4">
                 <%= f.label :title, 'Tiêu đề bài kiểm tra', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
-                <%= f.text_field :title, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', placeholder: 'Nhập tiêu đề bài kiểm tra', required: true %>
+                <%= f.text_field :title, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', placeholder: 'Nhập tiêu đề bài kiểm tra', required: true, data: { manage__quiz_time_validation_target: "title" } %>
+                <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="titleError"></div>
               </div>
 
               <div class="mb-4">
@@ -28,12 +29,12 @@
                   {
                     class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
                     required: true,
-                    data: {
-                      manage__course_content_select_target: "courseSelect",
-                      action: "change->manage--course-content-select#loadChapters"
+                    data: { 
+                      manage__quiz_time_validation_target: "course"
                     }
                   }
                 %>
+                <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="courseError"></div>
                 <% if @course.present? %>
                   <p class="mt-1 text-xs text-green-600 dark:text-green-400">Đã chọn khóa học: <%= @course.title %></p>
                 <% end %>
@@ -103,6 +104,40 @@
               </div>
 
               <div class="mb-4">
+                <%= f.label :time_limit, 'Thời gian làm bài (phút)', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= f.number_field :time_limit, min: 1, 
+                    class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', 
+                    value: 15,
+                    required: true,
+                    data: { 
+                      manage__quiz_time_validation_target: "timeLimit"
+                    } %>
+                <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="timeLimitError"></div>
+              </div>
+
+              <div class="mb-4">
+                <%= f.label :start_time, 'Thời gian bắt đầu', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= f.datetime_local_field :start_time, 
+                    class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
+                    required: true,
+                    data: { 
+                      manage__quiz_time_validation_target: "startTime"
+                    } %>
+                <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="startTimeError"></div>
+              </div>
+
+              <div class="mb-4">
+                <%= f.label :end_time, 'Thời gian kết thúc', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= f.datetime_local_field :end_time, 
+                    class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
+                    required: true,
+                    data: { 
+                      manage__quiz_time_validation_target: "endTime"
+                    } %>
+                <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="endTimeError"></div>
+              </div>
+
+              <div class="mb-4">
                 <div class="flex justify-between items-center mb-1">
                   <%= f.label :is_exam, 'Loại bài kiểm tra', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300' %>
                 </div>
@@ -116,11 +151,6 @@
                     <%= f.label :is_exam_true, 'Bài thi', class: 'ml-2 text-sm text-gray-700 dark:text-gray-300' %>
                   </div>
                 </div>
-              </div>
-
-              <div class="mb-4">
-                <%= f.label :time_limit, 'Thời gian làm bài (phút)', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
-                <%= f.number_field :time_limit, min: 1, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', value: 15 %>
               </div>
 
               <!-- Mô tả người dùng - phần quan trọng nhất cho AI -->
@@ -331,11 +361,21 @@
       <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Thông tin bài kiểm tra</h2>
 
-        <%= form_with model: @quiz, url: manage_quizzes_path, method: :post do |f| %>
+        <%= form_with model: @quiz, url: manage_quizzes_path, method: :post,
+            data: {
+              controller: "manage--quiz-time-validation",
+              action: "submit->manage--quiz-time-validation#validateBeforeSubmit"
+            } do |f| %>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="mb-4">
               <%= f.label :title, 'Tiêu đề bài kiểm tra', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
-              <%= f.text_field :title, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', placeholder: 'Nhập tiêu đề bài kiểm tra', required: true %>
+              <%= f.text_field :title, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', 
+                  placeholder: 'Nhập tiêu đề bài kiểm tra', 
+                  required: true,
+                  data: { 
+                    manage__quiz_time_validation_target: "title"
+                  } %>
+              <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="titleError"></div>
             </div>
 
             <div class="mb-4">
@@ -345,9 +385,13 @@
                 { include_blank: 'Chọn khóa học' },
                 {
                   class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
-                  required: true
+                  required: true,
+                  data: { 
+                    manage__quiz_time_validation_target: "course"
+                  }
                 }
               %>
+              <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="courseError"></div>
               <% if @course.present? %>
                 <p class="mt-1 text-xs text-green-600 dark:text-green-400">Đã chọn khóa học: <%= @course.title %></p>
               <% end %>
@@ -355,7 +399,36 @@
 
             <div class="mb-4">
               <%= f.label :time_limit, 'Thời gian làm bài (phút)', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
-              <%= f.number_field :time_limit, min: 1, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', value: 15 %>
+              <%= f.number_field :time_limit, min: 1, 
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', 
+                  value: 15,
+                  required: true,
+                  data: { 
+                    manage__quiz_time_validation_target: "timeLimit"
+                  } %>
+              <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="timeLimitError"></div>
+            </div>
+
+            <div class="mb-4">
+              <%= f.label :start_time, 'Thời gian bắt đầu', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+              <%= f.datetime_local_field :start_time, 
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
+                  required: true,
+                  data: { 
+                    manage__quiz_time_validation_target: "startTime"
+                  } %>
+              <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="startTimeError"></div>
+            </div>
+
+            <div class="mb-4">
+              <%= f.label :end_time, 'Thời gian kết thúc', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+              <%= f.datetime_local_field :end_time, 
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
+                  required: true,
+                  data: { 
+                    manage__quiz_time_validation_target: "endTime"
+                  } %>
+              <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="endTimeError"></div>
             </div>
 
             <div class="mb-4">

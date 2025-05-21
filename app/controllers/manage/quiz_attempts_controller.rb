@@ -5,11 +5,15 @@ class Manage::QuizAttemptsController < Manage::BaseController
   before_action :set_quiz_attempt, only: [:show]
 
   def index
-    @quiz_attempts = if @quiz
-                       @quiz.quiz_attempts
-                     else
-                       QuizAttempt.all
-                     end
+    if current_user.has_role?(:admin)
+      @quiz_attempts = QuizAttempt.all
+    else
+      @quiz_attempts = if @quiz
+                         @quiz.quiz_attempts.joins(quiz: :course).where(courses: { user_id: current_user.id })
+                       else
+                         QuizAttempt.joins(quiz: :course).where(courses: { user_id: current_user.id })
+                       end
+    end
 
     @quiz_attempts = @quiz_attempts.includes(:user, :quiz)
 
