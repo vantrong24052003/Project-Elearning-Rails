@@ -6,34 +6,71 @@ export default class extends Controller {
   ]
 
   connect() {
-    this.loadPreviewQuestions()
+    this.loadQuestionsFromSessionStorage()
   }
 
-  loadPreviewQuestions() {
+  loadQuestionsFromSessionStorage() {
     const previewQuestionsData = sessionStorage.getItem('preview_questions_data');
+    const selectedQuestionsData = sessionStorage.getItem('selected_questions_data');
 
-    if (!previewQuestionsData) return;
+    if (previewQuestionsData) {
+      this.loadPreviewQuestions(previewQuestionsData);
+      sessionStorage.removeItem('preview_questions_data');
+    } else if (selectedQuestionsData) {
+      this.loadSelectedQuestions(selectedQuestionsData);
+      sessionStorage.removeItem('selected_questions_data');
+    }
+  }
 
+  loadPreviewQuestions(previewQuestionsData) {
     try {
       const previewQuestions = JSON.parse(previewQuestionsData);
 
       if (previewQuestions.length > 0) {
         this.containerTarget.classList.remove('hidden');
         this.countTarget.textContent = previewQuestions.length;
-
         this.dataTarget.value = previewQuestionsData;
-
         this.renderQuestions(previewQuestions);
 
         if (previewQuestions[0]?.course_id) {
           this.setCourseValue(previewQuestions[0].course_id);
         }
-
-        sessionStorage.removeItem('preview_questions_data');
       }
     } catch (error) {
       console.error('Error parsing preview questions:', error);
     }
+  }
+
+  loadSelectedQuestions(selectedQuestionsData) {
+    try {
+      const questionIds = JSON.parse(selectedQuestionsData);
+
+      if (questionIds.length > 0) {
+        this.fetchQuestionDetails(questionIds);
+      }
+    } catch (error) {
+      console.error('Error parsing selected questions:', error);
+    }
+  }
+
+  fetchQuestionDetails(questionIds) {
+    fetch(`/manage/questions?ids=${questionIds.join(',')}&format=json`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.questions && data.questions.length > 0) {
+          this.containerTarget.classList.remove('hidden');
+          this.countTarget.textContent = data.questions.length;
+          this.dataTarget.value = JSON.stringify(data.questions);
+          this.renderQuestions(data.questions);
+
+          if (data.questions[0]?.course_id) {
+            this.setCourseValue(data.questions[0].course_id);
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching question details:', error);
+      });
   }
 
   renderQuestions(questions) {

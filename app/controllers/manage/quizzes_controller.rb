@@ -41,16 +41,6 @@ class Manage::QuizzesController < Manage::BaseController
       @course = Course.find_by(id: params[:course_id])
     end
 
-    if params[:selected_questions].present?
-      @selected_question_ids = JSON.parse(params[:selected_questions])
-      @selected_questions = Question.where(id: @selected_question_ids).includes(:course)
-
-      if @selected_questions.first&.course_id.present?
-        @quiz.course_id = @selected_questions.first.course_id
-        @course = @selected_questions.first.course
-      end
-    end
-
     if session[:preview_questions_data].present?
       @preview_questions_data = session[:preview_questions_data]
       session.delete(:preview_questions_data)
@@ -91,19 +81,44 @@ class Manage::QuizzesController < Manage::BaseController
       return render :new, status: :unprocessable_entity
     end
 
-    if params[:selected_questions].present?
-      selected_question_ids = JSON.parse(params[:selected_questions])
+    if params[:selected_questions_data].present?
+      selected_questions_data = JSON.parse(params[:selected_questions_data])
 
       if @quiz.save
-        selected_question_ids.each do |question_id|
-          question = Question.find_by(id: question_id)
-          QuizQuestion.create(quiz: @quiz, question: question) if question
+        selected_questions_data.each do |question_data|
+          question = if question_data['id'].present?
+                      Question.find_by(id: question_data['id'])
+                    else
+                      nil
+                    end
+
+          if question
+            QuizQuestion.create(quiz: @quiz, question: question)
+          else
+            # Tạo câu hỏi mới nếu không tìm thấy
+            new_question = Question.new(
+              content: question_data['content'],
+              options: question_data['options'],
+              correct_option: question_data['correct_option'],
+              explanation: question_data['explanation'] || 'Không có giải thích',
+              difficulty: question_data['difficulty'] || 'medium',
+              topic: question_data['topic'] || 'other',
+              learning_goal: question_data['learning_goal'] || 'other',
+              course_id: @quiz.course_id,
+              user_id: current_user.id,
+              status: 'active'
+            )
+
+            if new_question.save
+              QuizQuestion.create(quiz: @quiz, question: new_question)
+            else
+              Rails.logger.error("Không thể lưu câu hỏi: #{new_question.errors.full_messages.join(', ')}")
+            end
+          end
         end
 
-        redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully created'
+        redirect_to manage_quiz_path(@quiz), notice: 'Bài kiểm tra đã được tạo thành công với câu hỏi đã chọn'
       else
-        @selected_question_ids = selected_question_ids
-        @selected_questions = Question.where(id: selected_question_ids).includes(:course)
         set_courses
         render :new, status: :unprocessable_entity
       end

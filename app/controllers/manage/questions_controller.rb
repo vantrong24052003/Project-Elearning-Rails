@@ -10,6 +10,13 @@ class Manage::QuestionsController < Manage::BaseController
                  Course.where(user_id: current_user.id).order(:title)
                end
 
+    if params[:ids].present? && params[:format] == 'json'
+      question_ids = params[:ids].split(',')
+      @questions = Question.where(id: question_ids).includes(:course)
+      render json: { questions: @questions.as_json(include: { course: { only: [:id, :title] } }) }
+      return
+    end
+
     @questions = if params[:course_id].present?
                    Question.where(course_id: params[:course_id])
                  elsif params[:search].present?
