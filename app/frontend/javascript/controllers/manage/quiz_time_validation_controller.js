@@ -39,11 +39,9 @@ export default class extends Controller {
 
   validateTitle() {
     const title = this.titleTarget.value.trim()
-    this.titleErrorTarget.textContent = ""
-    this.titleErrorTarget.classList.add("hidden")
 
     if (!title) {
-      alert("Vui lòng nhập tiêu đề bài kiểm tra")
+      alert("Please enter a title for the quiz")
       return false
     }
     return true
@@ -51,11 +49,9 @@ export default class extends Controller {
 
   validateCourse() {
     const course = this.courseTarget.value
-    this.courseErrorTarget.textContent = ""
-    this.courseErrorTarget.classList.add("hidden")
 
     if (!course) {
-      alert("Vui lòng chọn khóa học")
+      alert("Please select a course")
       return false
     }
     return true
@@ -73,32 +69,32 @@ export default class extends Controller {
     let isValid = true
 
     if (!timeLimit || isNaN(timeLimit) || timeLimit <= 0) {
-      alert("Vui lòng nhập thời gian làm bài hợp lệ")
+      alert("Please enter a valid time limit")
       isValid = false
       return isValid
     }
 
     if (!this.startTimeTarget.value || !this.endTimeTarget.value) {
-      alert("Vui lòng chọn đủ thời gian bắt đầu và kết thúc")
+      alert("Please select both start and end times")
       isValid = false
       return isValid
     }
 
     if (startTime < allowedPastTime) {
-      alert("Thời gian bắt đầu không thể ở quá khứ (cho phép sớm hơn hiện tại tối đa 5 phút)")
+      alert("Start time cannot be in the past (allowed to be up to 5 minutes before current time)")
       isValid = false
       return isValid
     }
 
     if (startTime >= endTime) {
-      alert("Thời gian bắt đầu phải trước thời gian kết thúc")
+      alert("Start time must be before end time")
       isValid = false
       return isValid
     }
 
     const totalMinutes = Math.floor((endTime - startTime) / (1000 * 60))
     if (timeLimit > totalMinutes) {
-      alert(`Thời gian làm bài (${timeLimit} phút) không được lớn hơn khoảng thời gian giữa bắt đầu và kết thúc (${totalMinutes} phút)`)
+      alert(`Time limit (${timeLimit} minutes) cannot be greater than the time period between start and end times (${totalMinutes} minutes)`)
       isValid = false
       return isValid
     }

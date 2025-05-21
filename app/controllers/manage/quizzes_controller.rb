@@ -306,7 +306,7 @@ class Manage::QuizzesController < Manage::BaseController
     if video.upload.present?
       upload = video.upload
 
-      transcription_value = upload.transcription  
+      transcription_value = upload.transcription
       result[:transcription] = if transcription_value.present?
                                  transcription_value.to_s
                                else
@@ -316,7 +316,7 @@ class Manage::QuizzesController < Manage::BaseController
       result[:transcription] = 'No transcription available for this video.'
     end
 
-    result  
+    result
   end
 
   def set_quiz
