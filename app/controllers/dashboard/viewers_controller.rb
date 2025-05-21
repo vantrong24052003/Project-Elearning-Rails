@@ -11,7 +11,7 @@ class Dashboard::ViewersController < Dashboard::DashboardController
     unless current_user&.has_role?(:admin) || @course.user_id == current_user&.id || @course.enrollments.exists?(
       user_id: current_user&.id, status: :active
     )
-      redirect_to dashboard_course_path(@course), alert: 'Bạn không có quyền xem khóa học này'
+      redirect_to dashboard_course_path(@course), alert: 'You are not authorized to view this course'
       return
     end
 

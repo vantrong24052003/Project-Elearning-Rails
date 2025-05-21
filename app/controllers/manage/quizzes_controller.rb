@@ -85,6 +85,12 @@ class Manage::QuizzesController < Manage::BaseController
 
     @quiz = Quiz.new(quiz_params)
 
+    unless validate_quiz_time(@quiz)
+      flash.now[:alert] = @quiz.errors.full_messages.join(", ")
+      set_courses
+      return render :new, status: :unprocessable_entity
+    end
+
     if params[:selected_questions].present?
       selected_question_ids = JSON.parse(params[:selected_questions])
 
@@ -94,7 +100,7 @@ class Manage::QuizzesController < Manage::BaseController
           QuizQuestion.create(quiz: @quiz, question: question) if question
         end
 
-        redirect_to manage_quiz_path(@quiz), notice: 'Bài kiểm tra đã được tạo thành công'
+        redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully created'
       else
         @selected_question_ids = selected_question_ids
         @selected_questions = Question.where(id: selected_question_ids).includes(:course)
@@ -175,7 +181,7 @@ class Manage::QuizzesController < Manage::BaseController
           if question_to_delete&.quizzes&.include?(@quiz)
             QuizQuestion.where(quiz: @quiz, question: question_to_delete).destroy_all
             question_to_delete.destroy if question_to_delete.quizzes.count.zero?
-            flash[:notice] = 'Câu hỏi đã được xóa khỏi bài kiểm tra.'
+            flash[:notice] = 'Question has been removed from the quiz.'
           end
         end
 
@@ -194,21 +200,29 @@ class Manage::QuizzesController < Manage::BaseController
           )
         end
 
-        redirect_to manage_quiz_path(@quiz), notice: 'Bài kiểm tra đã được cập nhật thành công.'
+        redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully updated.'
         return
       rescue JSON::ParserError
-        flash[:alert] = 'Dữ liệu câu hỏi không hợp lệ.'
+        flash[:alert] = 'Invalid question data.'
         redirect_to manage_quiz_path(@quiz)
         return
       rescue StandardError => e
-        Rails.logger.error("Lỗi khi cập nhật câu hỏi: #{e.message}")
-        flash[:alert] = "Lỗi khi cập nhật câu hỏi: #{e.message}"
+        Rails.logger.error("Error updating questions: #{e.message}")
+        flash[:alert] = "Error updating questions: #{e.message}"
         redirect_to manage_quiz_path(@quiz)
         return
       end
     end
 
-    if @quiz.update(quiz_params)
+    @quiz.assign_attributes(quiz_params)
+
+    unless validate_quiz_time(@quiz)
+      flash.now[:alert] = @quiz.errors.full_messages.join(", ")
+      set_courses
+      return render :edit, status: :unprocessable_entity
+    end
+
+    if @quiz.save
       redirect_to manage_quiz_path(@quiz), notice: 'Quiz was successfully updated.'
     else
       set_courses
@@ -227,7 +241,7 @@ class Manage::QuizzesController < Manage::BaseController
 
     @quiz.destroy!
 
-    redirect_to manage_quizzes_path, notice: 'Bài kiểm tra đã được xóa thành công.'
+    redirect_to manage_quizzes_path, notice: 'Quiz was successfully deleted.'
   end
 
   private
@@ -241,7 +255,7 @@ class Manage::QuizzesController < Manage::BaseController
     learning_goal = params[:learning_goal] || 'other'
 
     if description.blank? || title.blank?
-      render json: { error: 'Thiếu thông tin cần thiết' }, status: :bad_request
+      render json: { error: 'Missing required information' }, status: :bad_request
       return
     end
 
@@ -257,14 +271,14 @@ class Manage::QuizzesController < Manage::BaseController
       )
 
       if questions.blank? || !questions.is_a?(Array) || questions.empty?
-        render json: { error: 'Không thể tạo câu hỏi từ nội dung phiên âm này' }, status: :unprocessable_entity
+        render json: { error: 'Unable to generate questions from this transcription content' }, status: :unprocessable_entity
         return
       end
 
       render json: questions, status: :ok
     rescue StandardError => e
-      Rails.logger.error("Lỗi khi tạo câu hỏi từ phiên âm: #{e.message}")
-      render json: { error: "Không thể tạo câu hỏi: #{e.message}" }, status: :unprocessable_entity
+      Rails.logger.error("Error generating questions from transcription: #{e.message}")
+      render json: { error: "Unable to generate questions: #{e.message}" }, status: :unprocessable_entity
     end
   end
 
@@ -292,15 +306,17 @@ class Manage::QuizzesController < Manage::BaseController
     if video.upload.present?
       upload = video.upload
 
-      transcription_value = upload.transcription
+      transcription_value = upload.transcription  
       result[:transcription] = if transcription_value.present?
-                                 transcription_value
+                                 transcription_value.to_s
                                else
-                                 'Chưa có phiên âm cho video này.'
+                                 'No transcription available for this video.'
                                end
+    else
+      result[:transcription] = 'No transcription available for this video.'
     end
 
-    result
+    result  
   end
 
   def set_quiz
@@ -313,5 +329,34 @@ class Manage::QuizzesController < Manage::BaseController
 
   def quiz_params
     params.require(:quiz).permit(:title, :is_exam, :time_limit, :course_id, :start_time, :end_time)
+  end
+
+  def validate_quiz_time(quiz)
+    now = Time.current
+    allowed_past_time = now - 5.minutes
+    start_time = quiz.start_time
+    end_time = quiz.end_time
+
+    if start_time.present? && end_time.present?
+      if start_time < allowed_past_time
+        quiz.errors.add(:start_time, "cannot be in the past (allowed to be up to 5 minutes before current time)")
+        return false
+      end
+
+      if start_time >= end_time
+        quiz.errors.add(:end_time, "must be after start time")
+        return false
+      end
+
+      if quiz.time_limit.present?
+        time_diff_minutes = ((end_time - start_time) / 60).to_i
+        if quiz.time_limit > time_diff_minutes
+          quiz.errors.add(:time_limit, "cannot be greater than the time period between start and end times")
+          return false
+        end
+      end
+    end
+
+    true
   end
 end

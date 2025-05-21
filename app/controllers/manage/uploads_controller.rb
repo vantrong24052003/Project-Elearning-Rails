@@ -25,8 +25,6 @@ class Manage::UploadsController < Manage::BaseController
     begin
       if params[:upload] && params[:upload][:video].present?
         video_file = params[:upload][:video]
-
-        # Kiểm tra định dạng file video
         unless video_file.content_type.start_with?('video/')
           respond_to do |format|
             format.html do
@@ -82,7 +80,6 @@ class Manage::UploadsController < Manage::BaseController
           end
         end
       else
-        Rails.logger.error 'Không tìm thấy file video trong params'
         respond_to do |format|
           format.html do
             flash.now[:alert] = 'Please select a video file to upload'
@@ -92,9 +89,6 @@ class Manage::UploadsController < Manage::BaseController
         end
       end
     rescue StandardError => e
-      Rails.logger.error "Lỗi khi tạo upload: #{e.message}"
-      Rails.logger.error e.backtrace.join("\n")
-
       respond_to do |format|
         format.html do
           flash.now[:alert] = 'An error occurred while processing your video. Please try again later.'
@@ -145,7 +139,7 @@ class Manage::UploadsController < Manage::BaseController
 
   def retry
     if @upload.status != 'failed'
-      redirect_to manage_upload_path(@upload), alert: 'Chỉ có thể thử lại các upload đã thất bại.'
+      redirect_to manage_upload_path(@upload), alert: 'Only failed uploads can be retried.'
       return
     end
 
@@ -156,7 +150,7 @@ class Manage::UploadsController < Manage::BaseController
     end
 
     if temp_file_path.blank? || !temp_file_path.include?('/') || !File.exist?(temp_file_path)
-      redirect_to manage_upload_path(@upload), alert: 'Không thể thử lại vì file nguồn đã bị xóa.'
+      redirect_to manage_upload_path(@upload), alert: 'Cannot retry because the source file has been deleted.'
       return
     end
 
@@ -168,7 +162,7 @@ class Manage::UploadsController < Manage::BaseController
 
     VideoProcessingJob.perform_later(@upload.id)
 
-    redirect_to manage_upload_path(@upload), notice: 'Đã khởi động lại quá trình xử lý video.'
+      redirect_to manage_upload_path(@upload), notice: 'Video processing has been restarted.'
   end
 
   private

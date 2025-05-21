@@ -99,14 +99,36 @@ category3 = Category.create!(name: 'Business', description: 'Business and manage
 category4 = Category.create!(name: 'Data Analysis', description: 'Data analysis and visualization.')
 puts '✅ Created categories.'
 
+def fetch_transcription_text(json_url)
+  uri = URI.parse(json_url)
+  bucket = uri.host.split('.').first
+  key = uri.path.sub(/^\//, '')
+
+  s3_conf = YAML.safe_load(ERB.new(File.read(Rails.root.join('config/storage.yml'))).result)['amazon']
+
+  s3 = Aws::S3::Client.new(
+    region: s3_conf['region'],
+    access_key_id: Rails.application.credentials.dig(:aws, :access_key_id),
+    secret_access_key: Rails.application.credentials.dig(:aws, :secret_access_key)
+  )
+
+  s3.head_object(bucket: bucket, key: key)
+  body = s3.get_object(bucket: bucket, key: key).body.read
+  data = JSON.parse(body)
+  data.dig('results', 'transcripts', 0, 'transcript') || 'Không có nội dung transcript'
+
+rescue => e
+  "Không thể đọc transcript: #{e.message}"
+end
+
 puts 'Creating uploads...'
 
-uploads = [
+uploads = [         
   Upload.create!(
-    id: '3499d245-c563-44ab-8d2e-1420ffc79813',
+    id: '0a9126af-f394-42c5-acff-e7bd0e1da25c',
     file_type: 'mp4',
-    cdn_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/3499d245-c563-44ab-8d2e-1420ffc79813/hls/master.m3u8',
-    thumbnail_path: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/3499d245-c563-44ab-8d2e-1420ffc79813/thumbnail.jpg',
+    cdn_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/0a9126af-f394-42c5-acff-e7bd0e1da25c/hls/master.m3u8',
+    thumbnail_path: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/0a9126af-f394-42c5-acff-e7bd0e1da25c/thumbnail.jpg',
     duration: 34,
     status: 'success',
     user_id: instructor.id,
@@ -114,16 +136,18 @@ uploads = [
     updated_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
     formats: %w[mp4 hls],
     progress: 100,
+    transcription: fetch_transcription_text('https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/0a9126af-f394-42c5-acff-e7bd0e1da25c/transcription/transcript.json'),
+    transcription_status: 'completed',
     processing_log: 'Vẽ tranh tặng Crush siêu đơn giản- Lê Công Duy Tính #shorts.mp4',
-    quality_360p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/3499d245-c563-44ab-8d2e-1420ffc79813/hls/360p/playlist.m3u8',
-    quality_480p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/3499d245-c563-44ab-8d2e-1420ffc79813/hls/480p/playlist.m3u8',
-    quality_720p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/3499d245-c563-44ab-8d2e-1420ffc79813/hls/720p/playlist.m3u8'
+    quality_360p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/0a9126af-f394-42c5-acff-e7bd0e1da25c/hls/360p/playlist.m3u8',
+    quality_480p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/0a9126af-f394-42c5-acff-e7bd0e1da25c/hls/480p/playlist.m3u8',
+    quality_720p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/0a9126af-f394-42c5-acff-e7bd0e1da25c/hls/720p/playlist.m3u8'
   ),
   Upload.create!(
-    id: '7c43af26-b9e8-4295-a2c1-d311247a9980',
+    id: '7c9faf8f-c371-4499-91d6-5968c384a4be',
     file_type: 'mp4',
-    cdn_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c43af26-b9e8-4295-a2c1-d311247a9980/hls/master.m3u8',
-    thumbnail_path: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c43af26-b9e8-4295-a2c1-d311247a9980/thumbnail.jpg',
+    cdn_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c9faf8f-c371-4499-91d6-5968c384a4be/hls/master.m3u8',
+    thumbnail_path: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c9faf8f-c371-4499-91d6-5968c384a4be/thumbnail.jpg',
     duration: 30,
     status: 'success',
     user_id: instructor.id,
@@ -131,16 +155,18 @@ uploads = [
     updated_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
     formats: %w[mp4 hls],
     progress: 100,
+    transcription: fetch_transcription_text('https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c9faf8f-c371-4499-91d6-5968c384a4be/transcription/transcript.json'),
+    transcription_status: 'completed',
     processing_log: 'Một biệt đội phản anh hùng _bất thường_.mp4',
-    quality_360p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c43af26-b9e8-4295-a2c1-d311247a9980/hls/360p/playlist.m3u8',
-    quality_480p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c43af26-b9e8-4295-a2c1-d311247a9980/hls/480p/playlist.m3u8',
-    quality_720p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c43af26-b9e8-4295-a2c1-d311247a9980/hls/720p/playlist.m3u8'
+    quality_360p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c9faf8f-c371-4499-91d6-5968c384a4be/hls/360p/playlist.m3u8',
+    quality_480p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c9faf8f-c371-4499-91d6-5968c384a4be/hls/480p/playlist.m3u8',
+    quality_720p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/7c9faf8f-c371-4499-91d6-5968c384a4be/hls/720p/playlist.m3u8'
   ),
   Upload.create!(
-    id: '9d3df3e6-32cc-4c85-a1d5-2a419c301030',
+    id: 'cc2fa2bb-7726-4f2c-9bff-a39773454702',
     file_type: 'mp4',
-    cdn_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/9d3df3e6-32cc-4c85-a1d5-2a419c301030/hls/master.m3u8',
-    thumbnail_path: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/9d3df3e6-32cc-4c85-a1d5-2a419c301030/thumbnail.jpg',
+    cdn_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/cc2fa2bb-7726-4f2c-9bff-a39773454702/hls/master.m3u8',
+    thumbnail_path: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/cc2fa2bb-7726-4f2c-9bff-a39773454702/thumbnail.jpg',
     duration: 24,
     status: 'success',
     user_id: instructor.id,
@@ -148,16 +174,18 @@ uploads = [
     updated_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
     formats: %w[mp4 hls],
     progress: 100,
+    transcription: fetch_transcription_text('https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/cc2fa2bb-7726-4f2c-9bff-a39773454702/transcription/transcript.json'),
+    transcription_status: 'completed',
     processing_log: 'Mất chất luôn 🙃 #takhongngu.mp4',
-    quality_360p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/9d3df3e6-32cc-4c85-a1d5-2a419c301030/hls/360p/playlist.m3u8',
-    quality_480p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/9d3df3e6-32cc-4c85-a1d5-2a419c301030/hls/480p/playlist.m3u8',
-    quality_720p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/9d3df3e6-32cc-4c85-a1d5-2a419c301030/hls/720p/playlist.m3u8'
+    quality_360p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/cc2fa2bb-7726-4f2c-9bff-a39773454702/hls/360p/playlist.m3u8',
+    quality_480p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/cc2fa2bb-7726-4f2c-9bff-a39773454702/hls/480p/playlist.m3u8',
+    quality_720p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/cc2fa2bb-7726-4f2c-9bff-a39773454702/hls/720p/playlist.m3u8'
   ),
   Upload.create!(
-    id: 'e2756ae3-95df-4a16-8323-f6278feae728',
+    id: 'eb44b289-3f1d-4ac3-8090-8849c779b5d4',
     file_type: 'mp4',
-    cdn_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/e2756ae3-95df-4a16-8323-f6278feae728/hls/master.m3u8',
-    thumbnail_path: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/e2756ae3-95df-4a16-8323-f6278feae728/thumbnail.jpg',
+    cdn_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/eb44b289-3f1d-4ac3-8090-8849c779b5d4/hls/master.m3u8',
+    thumbnail_path: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/eb44b289-3f1d-4ac3-8090-8849c779b5d4/thumbnail.jpg',
     duration: 12,
     status: 'success',
     user_id: instructor.id,
@@ -165,10 +193,12 @@ uploads = [
     updated_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
     formats: %w[mp4 hls],
     progress: 100,
+    transcription: fetch_transcription_text('https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/eb44b289-3f1d-4ac3-8090-8849c779b5d4/transcription/transcript.json'),
+    transcription_status: 'completed',
     processing_log: 'đém ngược 10 giây.mp4',
-    quality_360p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/e2756ae3-95df-4a16-8323-f6278feae728/hls/360p/playlist.m3u8',
-    quality_480p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/e2756ae3-95df-4a16-8323-f6278feae728/hls/480p/playlist.m3u8',
-    quality_720p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/e2756ae3-95df-4a16-8323-f6278feae728/hls/720p/playlist.m3u8'
+    quality_360p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/eb44b289-3f1d-4ac3-8090-8849c779b5d4/hls/360p/playlist.m3u8',
+    quality_480p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/eb44b289-3f1d-4ac3-8090-8849c779b5d4/hls/480p/playlist.m3u8',
+    quality_720p_url: 'https://e-learning-s3s.s3.ap-southeast-2.amazonaws.com/uploads/eb44b289-3f1d-4ac3-8090-8849c779b5d4/hls/720p/playlist.m3u8'
   )
 ]
 
@@ -540,26 +570,6 @@ EXAM_QUESTIONS = {
     }
   ]
 }.freeze
-
-puts 'Đang cập nhật dữ liệu phiên âm cho các uploads'
-
-transcription_samples = [
-  'Hôm nay tôi sẽ hướng dẫn các bạn cách vẽ một bức tranh đơn giản để tặng crush. Đầu tiên, chúng ta cần chuẩn bị bút màu và giấy vẽ. Sau đó, hãy phác họa khung cảnh mà bạn muốn vẽ. Tôi sẽ vẽ một phong cảnh thiên nhiên với hoa và cây cối. Tiếp theo, hãy tô màu cho bức tranh bằng những gam màu tươi sáng để tạo sự sinh động. Cuối cùng, viết một lời nhắn nhỏ ở góc bức tranh để thể hiện tình cảm của bạn.',
-  'Một biệt đội phản anh hùng bất thường đã tụ họp lại để thực hiện sứ mệnh quan trọng. Nhóm này bao gồm những người có khả năng đặc biệt nhưng tính cách khá khác thường. Họ không hoàn hảo như các siêu anh hùng truyền thống, mỗi người đều có khuyết điểm và những vấn đề riêng. Tuy nhiên, chính điều này làm cho họ trở nên đặc biệt và gần gũi với khán giả hơn. Những câu chuyện về họ không chỉ là các pha hành động mãn nhãn mà còn chứa đựng nhiều bài học về tình bạn, sự hy sinh và lòng dũng cảm.',
-  'Đôi khi, chúng ta thường bị cuốn vào những tình huống khó xử mà không biết phải làm sao. Điều này có thể khiến ta cảm thấy mất tự tin và mất phương hướng. Tuy nhiên, thay vì tự trách mình, hãy nhớ rằng ai cũng có lúc gặp khó khăn và mắc sai lầm. Quan trọng là ta học được gì từ những trải nghiệm đó. Đừng quá khắt khe với bản thân và hãy cho mình cơ hội để trưởng thành từ những thất bại. Mỗi thử thách đều là cơ hội để ta mạnh mẽ hơn.',
-  'Mười, chín, tám, bảy, sáu, năm, bốn, ba, hai, một, không! Đếm ngược là một cách hiệu quả để tạo cảm giác hồi hộp và mong đợi. Khi chúng ta đếm ngược, não bộ tự động chuẩn bị cho một sự kiện sắp xảy ra, giúp tăng sự tập trung và sẵn sàng. Đây là kỹ thuật được sử dụng phổ biến trong nhiều lĩnh vực từ thể thao, giáo dục đến quản lý thời gian. Bạn có thể áp dụng phương pháp đếm ngược trong cuộc sống hàng ngày để bắt đầu một thói quen mới hoặc hoàn thành công việc hiệu quả hơn.'
-]
-
-Upload.where(status: 'success').each_with_index do |upload, index|
-  sample_text = transcription_samples[index % transcription_samples.length]
-  modified_text = "#{sample_text} Video ID: #{upload.id.split('-').first}"
-  upload.update!(
-    transcription: modified_text,
-    transcription_status: 'completed'
-  )
-end
-
-puts "✅ Đã cập nhật phiên âm cho #{Upload.where(transcription_status: 'completed').count} uploads."
 
 puts 'Đang tạo bài kiểm tra cho các khóa học'
 

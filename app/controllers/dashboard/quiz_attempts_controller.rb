@@ -107,7 +107,7 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
     return if current_user == @quiz_attempt.user
 
     redirect_to dashboard_course_quizzes_path(@course),
-                alert: 'Bạn không có quyền xem bài làm này.'
+                alert: 'You are not authorized to view this quiz attempt.'
   end
 
   def quiz_attempt_params

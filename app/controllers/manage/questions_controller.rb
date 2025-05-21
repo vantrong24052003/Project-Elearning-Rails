@@ -52,7 +52,7 @@ class Manage::QuestionsController < Manage::BaseController
       course_id = params[:course_id]
 
       unless file.content_type.match?(%r{application/(vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet|vnd\.ms-excel|csv)})
-        render json: { error: 'Định dạng file không hỗ trợ. Vui lòng sử dụng Excel (.xlsx, .xls) hoặc CSV (.csv)' },
+        render json: { error: 'Unsupported file format. Please use Excel (.xlsx, .xls) or CSV (.csv)' },
                status: :bad_request
         return
       end
@@ -95,20 +95,20 @@ class Manage::QuestionsController < Manage::BaseController
         end
 
         if request.format.json?
-          render json: { notice: true, message: "Đã lưu thành công #{success_count} câu hỏi",
+          render json: { notice: true, message: "Successfully saved #{success_count} questions",
                          success_count: success_count, total: questions_data.size, errors: error_messages }
           return
         end
 
         if error_messages.any?
-          flash[:alert] = "Đã lưu #{success_count}/#{questions_data.size} câu hỏi. Lỗi: #{error_messages.join('; ')}"
+          flash[:alert] = "Successfully saved #{success_count}/#{questions_data.size} questions. Errors: #{error_messages.join('; ')}"
         else
-          flash[:notice] = "Đã lưu thành công #{success_count} câu hỏi."
+          flash[:notice] = "Successfully saved #{success_count} questions"
         end
 
         redirect_to manage_questions_path
       rescue StandardError => e
-        flash[:alert] = "Đã xảy ra lỗi khi lưu câu hỏi: #{e.message}"
+        flash[:alert] = "An error occurred while saving questions: #{e.message}"
         redirect_to manage_questions_path
       end
       nil
@@ -131,7 +131,7 @@ class Manage::QuestionsController < Manage::BaseController
        params[:question][:status] != 'active' &&
        @question.status == 'active'
       redirect_to manage_question_path(@question),
-                  alert: 'Câu hỏi đang được sử dụng trong bài kiểm tra hiện đang diễn ra và không thể thay đổi trạng thái.'
+                  alert: 'This question is being used in a quiz that is currently active and cannot be changed.'
       return
     end
 

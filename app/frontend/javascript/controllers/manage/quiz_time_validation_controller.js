@@ -10,6 +10,31 @@ export default class extends Controller {
   ]
 
   connect() {
+    const now = new Date()
+
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+
+    // Định dạng chuỗi datetime-local cho các trường input
+    const nowString = `${year}-${month}-${day}T${hours}:${minutes}`
+
+    if (this.hasStartTimeTarget) {
+      this.startTimeTarget.min = nowString
+      this.startTimeTarget.addEventListener('change', this.updateEndTimeMin.bind(this))
+    }
+
+    if (this.hasEndTimeTarget) {
+      this.endTimeTarget.min = nowString
+    }
+  }
+
+  updateEndTimeMin() {
+    if (this.startTimeTarget.value && this.hasEndTimeTarget) {
+      this.endTimeTarget.min = this.startTimeTarget.value
+    }
   }
 
   validateTitle() {
@@ -18,8 +43,7 @@ export default class extends Controller {
     this.titleErrorTarget.classList.add("hidden")
 
     if (!title) {
-      this.titleErrorTarget.textContent = "Vui lòng nhập tiêu đề bài kiểm tra"
-      this.titleErrorTarget.classList.remove("hidden")
+      alert("Vui lòng nhập tiêu đề bài kiểm tra")
       return false
     }
     return true
@@ -31,8 +55,7 @@ export default class extends Controller {
     this.courseErrorTarget.classList.add("hidden")
 
     if (!course) {
-      this.courseErrorTarget.textContent = "Vui lòng chọn khóa học"
-      this.courseErrorTarget.classList.remove("hidden")
+      alert("Vui lòng chọn khóa học")
       return false
     }
     return true
@@ -40,42 +63,44 @@ export default class extends Controller {
 
   validateTime() {
     const timeLimit = parseInt(this.timeLimitTarget.value)
-    const startTime = this.startTimeTarget.value
-    const endTime = this.endTimeTarget.value
+    const startTime = new Date(this.startTimeTarget.value)
+    const endTime = new Date(this.endTimeTarget.value)
+    const now = new Date()
 
-    this.timeLimitErrorTarget.textContent = ""
-    this.timeLimitErrorTarget.classList.add("hidden")
-    this.startTimeErrorTarget.textContent = ""
-    this.startTimeErrorTarget.classList.add("hidden")
-    this.endTimeErrorTarget.textContent = ""
-    this.endTimeErrorTarget.classList.add("hidden")
+    const allowedPastTime = new Date(now)
+    allowedPastTime.setMinutes(allowedPastTime.getMinutes() - 5)
 
     let isValid = true
 
-    // Validate time limit bắt buộc
-    if (!timeLimit) {
-      this.timeLimitErrorTarget.textContent = "Vui lòng nhập thời gian làm bài"
-      this.timeLimitErrorTarget.classList.remove("hidden")
+    if (!timeLimit || isNaN(timeLimit) || timeLimit <= 0) {
+      alert("Vui lòng nhập thời gian làm bài hợp lệ")
       isValid = false
+      return isValid
     }
 
-    // Validate khoảng thời gian
-    if (startTime && endTime) {
-      const start = new Date(startTime)
-      const end = new Date(endTime)
+    if (!this.startTimeTarget.value || !this.endTimeTarget.value) {
+      alert("Vui lòng chọn đủ thời gian bắt đầu và kết thúc")
+      isValid = false
+      return isValid
+    }
 
-      if (start >= end) {
-        this.startTimeErrorTarget.textContent = "Thời gian bắt đầu phải trước thời gian kết thúc"
-        this.startTimeErrorTarget.classList.remove("hidden")
-        isValid = false
-      }
+    if (startTime < allowedPastTime) {
+      alert("Thời gian bắt đầu không thể ở quá khứ (cho phép sớm hơn hiện tại tối đa 5 phút)")
+      isValid = false
+      return isValid
+    }
 
-      const totalMinutes = (end - start) / (1000 * 60)
-      if (timeLimit > totalMinutes) {
-        this.timeLimitErrorTarget.textContent = `Thời gian làm bài không được lớn hơn ${Math.floor(totalMinutes)} phút`
-        this.timeLimitErrorTarget.classList.remove("hidden")
-        isValid = false
-      }
+    if (startTime >= endTime) {
+      alert("Thời gian bắt đầu phải trước thời gian kết thúc")
+      isValid = false
+      return isValid
+    }
+
+    const totalMinutes = Math.floor((endTime - startTime) / (1000 * 60))
+    if (timeLimit > totalMinutes) {
+      alert(`Thời gian làm bài (${timeLimit} phút) không được lớn hơn khoảng thời gian giữa bắt đầu và kết thúc (${totalMinutes} phút)`)
+      isValid = false
+      return isValid
     }
 
     return isValid
