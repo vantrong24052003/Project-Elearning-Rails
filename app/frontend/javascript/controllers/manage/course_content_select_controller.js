@@ -6,8 +6,7 @@ import { Toast } from "../../services/toast_service"
 export default class extends Controller {
   static targets = [
     "form", "courseSelect", "loading", "questionsContainer", "questionTemplate", "questionsData",
-    "controls", "analysis", "analysisLoading", "conceptCount", "coverageBar",
-    "coverageText", "suggestions", "videoSelect", "chapterSelect", "lessonSelect", "videoPreview", "videoTitle", "videoDetailLink"
+    "controls", "videoSelect", "chapterSelect", "lessonSelect", "videoPreview", "videoTitle", "videoDetailLink"
   ]
 
   connect() {
@@ -93,6 +92,10 @@ export default class extends Controller {
     CourseContentApi.getVideoDetails(videoId)
       .then(video => {
         this.videoPreviewTarget.classList.remove('hidden')
+
+        if (this.hasVideoTitleTarget) {
+          this.videoTitleTarget.textContent = video.title || 'Video không có tiêu đề'
+        }
 
         if (this.hasVideoDetailLinkTarget) {
           this.videoDetailLinkTarget.href = `/manage/videos/${videoId}`
@@ -238,10 +241,24 @@ export default class extends Controller {
     const topic = formData.get('topic')
     const learningGoal = formData.get('learning_goal')
     const videoId = this.hasVideoSelectTarget ? this.videoSelectTarget.value : null
-
+    const startTime = formData.get('quiz[start_time]')
+    const endTime = formData.get('quiz[end_time]')
 
     if (!courseId) {
       alert('Vui lòng chọn khóa học')
+      return
+    }
+
+    if (!startTime || !endTime) {
+      alert('Vui lòng nhập thời gian bắt đầu và kết thúc')
+      return
+    }
+
+    const startDate = new Date(startTime)
+    const endDate = new Date(endTime)
+
+    if (startDate >= endDate) {
+      alert('Thời gian kết thúc phải sau thời gian bắt đầu')
       return
     }
 
@@ -256,8 +273,11 @@ export default class extends Controller {
       this.createQuestionsFromVideo(videoId, numQuestions, difficulty, topic, learningGoal)
         .then(questions => {
           this.questions = questions
-          this.displayQuestionsAndAnalysis()
+          this.renderQuestions()
           this.isGenerating = false
+          this.loadingTarget.classList.add("hidden")
+          this.questionsContainerTarget.classList.remove("hidden")
+          this.controlsTarget.classList.remove("hidden")
         })
         .catch(error => {
           Toast.error(`Lỗi khi tạo câu hỏi: ${error.message}`)
@@ -266,34 +286,57 @@ export default class extends Controller {
           this.questionsContainerTarget.classList.remove("hidden")
           this.controlsTarget.classList.remove("hidden")
         })
+    } else {
+      const userDescriptionField = document.querySelector('textarea[name="user_description"]')
+      const description = userDescriptionField && userDescriptionField.value.trim()
+        ? userDescriptionField.value
+        : ''
+
+      if (!description) {
+        Toast.error('Không có nội dung mô tả. Vui lòng nhập mô tả.')
+        this.isGenerating = false
+        this.loadingTarget.classList.add("hidden")
+        return
+      }
+
+      const quizTitle = formData.get('quiz[title]')
+      if (!quizTitle) {
+        Toast.error('Vui lòng nhập tiêu đề bài kiểm tra')
+        this.isGenerating = false
+        this.loadingTarget.classList.add("hidden")
+        return
+      }
+
+      QuizApi.generateQuestions(quizTitle, description, numQuestions, difficulty, topic, learningGoal)
+        .then(questions => {
+          if (questions && questions.error) {
+            Toast.error(`Lỗi: ${questions.error}`)
+            this.isGenerating = false
+            this.loadingTarget.classList.add("hidden")
+            return
+          }
+
+          if (!questions || !Array.isArray(questions) || questions.length === 0) {
+            Toast.error('Không thể tạo câu hỏi từ nội dung này. Vui lòng thử lại.')
+            this.isGenerating = false
+            this.loadingTarget.classList.add("hidden")
+            return
+          }
+
+          Toast.success('Đã tạo câu hỏi thành công!')
+          this.questions = questions
+          this.renderQuestions()
+          this.isGenerating = false
+          this.loadingTarget.classList.add("hidden")
+          this.questionsContainerTarget.classList.remove("hidden")
+          this.controlsTarget.classList.remove("hidden")
+        })
+        .catch(error => {
+          Toast.error(`Lỗi khi tạo câu hỏi: ${error.message}`)
+          this.isGenerating = false
+          this.loadingTarget.classList.add("hidden")
+        })
     }
-  }
-
-  displayQuestionsAndAnalysis() {
-    this.analysisLoadingTarget.classList.add("hidden")
-    this.analysisTarget.classList.remove("hidden")
-
-    const conceptCount = Math.floor(Math.random() * 8) + 5
-    this.conceptCountTarget.textContent = conceptCount
-
-    const coverage = Math.floor(Math.random() * 30) + 70
-    this.coverageBarTarget.style.width = `${coverage}%`
-    this.coverageTextTarget.textContent = `${coverage}%`
-
-    const suggestions = [
-      'Bổ sung thêm ví dụ thực tế để làm rõ khái niệm',
-      'Cân nhắc thêm các câu hỏi về ứng dụng thực tiễn',
-      'Tăng độ phủ của các khái niệm nâng cao'
-    ]
-
-    this.suggestionsTarget.innerHTML = suggestions.map(s => `<li>${s}</li>`).join('')
-
-    this.renderQuestions()
-
-    this.loadingTarget.classList.add("hidden")
-    this.questionsContainerTarget.classList.remove("hidden")
-    this.controlsTarget.classList.remove("hidden")
-    this.isGenerating = false
   }
 
   renderQuestions() {
@@ -450,15 +493,39 @@ export default class extends Controller {
     const form = this.formTarget
     const title = form.querySelector('input[name="quiz[title]"]').value
     const courseId = form.querySelector('select[name="quiz[course_id]"]').value
+    const startTime = form.querySelector('input[name="quiz[start_time]"]').value
+    const endTime = form.querySelector('input[name="quiz[end_time]"]').value
+    const timeLimit = form.querySelector('input[name="quiz[time_limit]"]').value
 
     if (!title || !courseId) {
       alert('Vui lòng điền đầy đủ thông tin bài kiểm tra')
       return
     }
 
+    if (!startTime || !endTime) {
+      alert('Vui lòng nhập thời gian bắt đầu và kết thúc')
+      return
+    }
+
+    const startDate = new Date(startTime)
+    const endDate = new Date(endTime)
+    const now = new Date()
+    const allowedPastTime = new Date(now)
+    allowedPastTime.setMinutes(allowedPastTime.getMinutes() - 5)
+
+    if (startDate >= endDate) {
+      alert('Thời gian kết thúc phải sau thời gian bắt đầu')
+      return
+    }
+
+    const totalMinutes = Math.floor((endDate - startDate) / (1000 * 60))
+    if (parseInt(timeLimit) > totalMinutes) {
+      alert(`Thời gian làm bài (${timeLimit} phút) không thể lớn hơn khoảng thời gian giữa bắt đầu và kết thúc (${totalMinutes} phút)`)
+      return
+    }
+
     const questionsData = []
     const questionItems = this.questionsContainerTarget.querySelectorAll('.question-item')
-
 
     questionItems.forEach((item, index) => {
       const content = item.querySelector('.question-content').value
@@ -466,7 +533,6 @@ export default class extends Controller {
       const difficulty = item.querySelector('.question-difficulty').value
       const topic = item.querySelector('.question-topic').value
       const learningGoal = item.querySelector('.question-learning-goal').value
-
 
       const optionElements = item.querySelectorAll('.option-text')
 

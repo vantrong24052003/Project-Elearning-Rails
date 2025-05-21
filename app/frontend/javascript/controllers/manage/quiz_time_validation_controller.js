@@ -18,7 +18,6 @@ export default class extends Controller {
     const hours = String(now.getHours()).padStart(2, '0')
     const minutes = String(now.getMinutes()).padStart(2, '0')
 
-    // Định dạng chuỗi datetime-local cho các trường input
     const nowString = `${year}-${month}-${day}T${hours}:${minutes}`
 
     if (this.hasStartTimeTarget) {

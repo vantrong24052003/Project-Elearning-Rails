@@ -32,13 +32,6 @@
                   <span class="edit-text">Sửa câu hỏi</span>
                   <span class="save-text hidden">Lưu thay đổi</span>
                 </button>
-
-                <%= button_to manage_quiz_path(@quiz),
-                      method: :delete,
-                      data: { turbo_confirm: "Bạn có chắc chắn muốn xóa bài kiểm tra này không? Tất cả câu hỏi liên quan cũng sẽ bị xóa." },
-                      class: "btn btn-outline btn-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" do %>
-                  Xóa bài kiểm tra
-                <% end %>
               </div>
             </div>
           </div>
