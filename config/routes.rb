@@ -10,29 +10,14 @@ Rails.application.routes.draw do
     passwords: 'users/passwords'
   }
 
-  namespace :dashboard do
-    root to: 'courses#index'
-
-    resources :courses, only: %i[index show new edit create update destroy] do
-      resources :quizzes do
-        resources :attempts
-        resources :quiz_attempts, only: %i[index show new create edit update destroy]
-        resources :quiz_statuses, only: %i[index update] do
-          collection do
-            get 'get_ip'
-          end
-        end
-      end
-      resources :payments
-      resources :viewers
+  namespace :manage do
+    devise_scope :user do
+      get 'login', to: 'sessions#new'
+      post 'login', to: 'sessions#create'
+      delete 'logout', to: 'sessions#destroy'
     end
 
-    resources :enrollments, only: %i[index]
-    resources :profiles, only: %i[show update]
-  end
-
-  namespace :manage do
-    root to: 'courses#index'
+    root to: 'overviews#index'
 
     resources :courses do
       member do
@@ -65,6 +50,28 @@ Rails.application.routes.draw do
     resources :faqs
     resources :payments
     resources :reviews
+    resources :overviews, only: [:index]
+  end
+
+  namespace :dashboard do
+    root to: 'courses#index'
+
+    resources :courses, only: %i[index show new edit create update destroy] do
+      resources :quizzes do
+        resources :attempts
+        resources :quiz_attempts, only: %i[index show new create edit update destroy]
+        resources :quiz_statuses, only: %i[index update] do
+          collection do
+            get 'get_ip'
+          end
+        end
+      end
+      resources :payments
+      resources :viewers
+    end
+
+    resources :enrollments, only: %i[index]
+    resources :profiles, only: %i[show update]
   end
 
   root to: 'home#index'

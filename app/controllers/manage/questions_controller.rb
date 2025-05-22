@@ -4,14 +4,20 @@ class Manage::QuestionsController < Manage::BaseController
   before_action :set_question, only: %i[show edit update destroy]
 
   def index
-    @courses = Course.all.order(:title)
+    @courses = if current_user.has_role?(:admin)
+                 Course.all.order(:title)
+               else
+                 Course.where(user_id: current_user.id).order(:title)
+               end
 
     @questions = if params[:course_id].present?
                    Question.where(course_id: params[:course_id])
                  elsif params[:search].present?
                    Question.where('content ILIKE ?', "%#{params[:search]}%")
-                 else
+                 elsif current_user.has_role?(:admin)
                    Question.all
+                 else
+                   Question.where(user_id: current_user.id)
                  end
 
     @questions = @questions.order(created_at: :desc)
@@ -25,11 +31,19 @@ class Manage::QuestionsController < Manage::BaseController
 
   def new
     @question = Question.new
-    @courses = Course.all.order(:title)
+    @courses = if current_user.has_role?(:admin)
+                 Course.all.order(:title)
+               else
+                 Course.where(user_id: current_user.id).order(:title)
+               end
   end
 
   def edit
-    @courses = Course.all.order(:title)
+    @courses = if current_user.has_role?(:admin)
+                 Course.all.order(:title)
+               else
+                 Course.where(user_id: current_user.id).order(:title)
+               end
   end
 
   def create
@@ -166,6 +180,9 @@ class Manage::QuestionsController < Manage::BaseController
     questions = questions.where(learning_goal: params[:learning_goal]) if params[:learning_goal].present?
     questions = questions.where(course_id: params[:course_id]) if params[:course_id].present?
     questions = questions.where(status: params[:status]) if params[:status].present?
+
+    questions = questions.where(user_id: current_user.id) unless current_user.has_role?(:admin)
+
     questions
   end
 end

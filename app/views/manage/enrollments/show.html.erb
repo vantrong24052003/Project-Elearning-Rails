@@ -1,0 +1,143 @@
+<div class="mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Chi tiết đăng ký khóa học</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Mã đăng ký: <%= @enrollment.payment_code %></p>
+      </div>
+      <%= link_to manage_enrollments_path, class: "btn btn-outline" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+        Quay lại
+      <% end %>
+    </div>
+
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg">
+      <div class="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h2 class="text-lg md:text-xl text-blue-600 dark:text-purple-400 font-medium">Thông tin đăng ký</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Chi tiết về đăng ký khóa học này</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 md:p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Thông tin học viên -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Thông tin học viên</h3>
+            <div class="flex items-center mb-4">
+              <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mr-4 flex-shrink-0">
+                <% if @enrollment.user.avatar.present? %>
+                  <img src="<%= @enrollment.user.avatar %>" alt="<%= @enrollment.user.name %>" class="w-full h-full object-cover">
+                <% else %>
+                  <div class="bg-blue-500 dark:bg-indigo-600 h-full w-full flex items-center justify-center">
+                    <span class="text-white text-xl font-medium"><%= @enrollment.user.name.first.upcase %></span>
+                  </div>
+                <% end %>
+              </div>
+              <div>
+                <p class="text-lg font-medium text-gray-900 dark:text-white"><%= @enrollment.user.name %></p>
+                <p class="text-sm text-gray-500 dark:text-gray-400"><%= @enrollment.user.email %></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thông tin khóa học -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Thông tin khóa học</h3>
+            <div class="space-y-3">
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Tên khóa học</p>
+                <p class="text-base font-medium text-gray-900 dark:text-white"><%= @enrollment.course.title %></p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Giá khóa học</p>
+                <p class="text-base font-medium text-gray-900 dark:text-white"><%= number_to_currency(@enrollment.course.price, unit: "₫", precision: 0) %></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thông tin thanh toán -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Thông tin thanh toán</h3>
+            <div class="space-y-3">
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Trạng thái</p>
+                <div class="flex flex-col gap-2">
+                  <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full
+                    <%= case @enrollment.status
+                        when 'pending' then 'bg-yellow-100 text-yellow-600 border border-yellow-200 dark:bg-yellow-600/20 dark:text-yellow-400 dark:border-yellow-600/30'
+                        when 'paid' then 'bg-green-100 text-green-600 border border-green-200 dark:bg-green-600/20 dark:text-green-400 dark:border-green-600/30'
+                        when 'completed' then 'bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-600/20 dark:text-blue-400 dark:border-blue-600/30'
+                        when 'cancelled' then 'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:text-red-400 dark:border-red-600/30'
+                        end %>">
+                    <%= @enrollment.status.titleize %>
+                  </span>
+                  <% if @enrollment.paid_at.present? %>
+                    <div class="flex items-center gap-2 text-green-600 dark:text-green-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                      </svg>
+                      <span class="text-sm">Đã thanh toán vào <%= @enrollment.paid_at.strftime("%d/%m/%Y %H:%M") %></span>
+                    </div>
+                  <% elsif @enrollment.status == 'pending' %>
+                    <div class="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                      </svg>
+                      <span class="text-sm">Chưa thanh toán</span>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Số tiền</p>
+                <p class="text-base font-medium text-gray-900 dark:text-white"><%= number_to_currency(@enrollment.amount, unit: "₫", precision: 0) %></p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Phương thức thanh toán</p>
+                <p class="text-base font-medium text-gray-900 dark:text-white"><%= @enrollment.payment_method&.titleize %></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thông tin thời gian -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Thông tin thời gian</h3>
+            <div class="space-y-3">
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Thời gian đăng ký</p>
+                <p class="text-base font-medium text-gray-900 dark:text-white"><%= @enrollment.created_at.strftime("%d/%m/%Y %H:%M") %></p>
+              </div>
+              <% if @enrollment.enrolled_at.present? %>
+                <div>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Thời gian bắt đầu học</p>
+                  <p class="text-base font-medium text-gray-900 dark:text-white"><%= @enrollment.enrolled_at.strftime("%d/%m/%Y %H:%M") %></p>
+                </div>
+              <% end %>
+              <% if @enrollment.completed_at.present? %>
+                <div>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Thời gian hoàn thành</p>
+                  <p class="text-base font-medium text-gray-900 dark:text-white"><%= @enrollment.completed_at.strftime("%d/%m/%Y %H:%M") %></p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <% if @enrollment.note.present? %>
+          <div class="mt-6 bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Ghi chú</h3>
+            <p class="text-base text-gray-700 dark:text-gray-300"><%= @enrollment.note %></p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

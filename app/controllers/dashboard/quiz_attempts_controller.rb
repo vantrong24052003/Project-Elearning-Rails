@@ -44,8 +44,6 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
       else
         redirect_to dashboard_course_quiz_path(@course, @quiz),
                     alert: 'An error occurred while updating the assignment.'
-        redirect_to dashboard_course_quiz_path(@course, @quiz),
-                    alert: 'An error occurred while updating the assignment.'
       end
     elsif params[:time_spent].present?
       if @quiz_attempt.update(

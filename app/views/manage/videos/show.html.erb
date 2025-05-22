@@ -326,6 +326,7 @@
           <%= button_to manage_video_path(@video),
                 method: :delete,
                 data: {
+                  turbo: false,
                   turbo_confirm: "Bạn có chắc chắn muốn xóa video \"#{@video.title}\"?",
                   turbo_frame: "_top"
                 },
@@ -627,7 +628,7 @@
                   <h3 class="text-base font-semibold text-amber-700 dark:text-amber-400">
                     <div class="flex items-center">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 21H8a4 4 0 0 1-4-4v-8a4 4 0 0 1 4-4h12"></path>
+                        <path d="M18 21H8a4 4 0 0 1-4-4v-8a4 4 0 0 1 4-4h12a2 2 0 0 1 2 2v4"></path>
                         <path d="m3 7 5 5"></path>
                         <path d="M21 5V3H3"></path>
                         <path d="m17 7 4-4"></path>

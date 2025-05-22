@@ -33,27 +33,12 @@
                   <span class="save-text hidden">Lưu thay đổi</span>
                 </button>
 
-                <%= link_to manage_quiz_path(@quiz),
-                      data: {
-                        turbo_method: :delete,
-                        turbo_confirm: "Bạn có chắc chắn muốn xóa bài kiểm tra này không? Tất cả câu hỏi liên quan cũng sẽ bị xóa."
-                      },
+                <%= button_to manage_quiz_path(@quiz),
+                      method: :delete,
+                      data: { turbo_confirm: "Bạn có chắc chắn muốn xóa bài kiểm tra này không? Tất cả câu hỏi liên quan cũng sẽ bị xóa." },
                       class: "btn btn-outline btn-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" do %>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
                   Xóa bài kiểm tra
                 <% end %>
-
-                <button type="button" class="btn btn-outline btn-sm" onclick="window.print()">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2h-2"></path>
-                    <rect x="6" y="14" width="12" height="8"></rect>
-                  </svg>
-                  In
-                </button>
               </div>
             </div>
           </div>
@@ -120,13 +105,6 @@
                         <span   class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-600 border border-purple-200 dark:bg-purple-600/20 dark:text-purple-400 dark:border-purple-600/30 view-only">
                           <%= question.learning_goal&.capitalize || 'Không có mục tiêu' %>
                         </span>
-
-                        <button type="button" class="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 delete-question hidden edit-only" data-action="click->manage--course-content-select#deleteQuestion" data-question-id="<%= question.id %>">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 6h18"></path>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                          </svg>
-                        </button>
                       </div>
                     </div>
                     <div class="p-4">
@@ -177,19 +155,6 @@
                   </div>
                 <% end %>
               </div>
-
-              <div class="hidden controls" data-manage--course-content-select-target="controls">
-                <div class="flex justify-end mt-6">
-                  <button type="button" class="btn btn-primary" data-action="click->manage--course-content-select#saveQuiz">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                      <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                      <polyline points="7 3 7 8 15 8"></polyline>
-                    </svg>
-                    Lưu thay đổi
-                  </button>
-                </div>
-              </div>
             <% else %>
               <div class="text-center py-8">
                 <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -212,29 +177,78 @@
       <div class="lg:col-span-1">
         <div class="space-y-6">
           <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Thông tin tổng quan</h3>
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Thông tin tổng quan</h3>
+              <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('edit_quiz_modal').showModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                </svg>
+                Sửa thông tin
+              </button>
+            </div>
 
             <div class="space-y-4">
+              <div>
+                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Tiêu đề</h4>
+                <p class="text-gray-900 dark:text-white"><%= @quiz.title %></p>
+              </div>
+
               <div>
                 <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Khóa học</h4>
                 <p class="text-gray-900 dark:text-white"><%= @quiz.course.title %></p>
               </div>
 
               <div>
+                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Thời gian làm bài</h4>
+                <p class="text-gray-900 dark:text-white"><%= @quiz.time_limit %> phút</p>
+              </div>
+
+              <div>
+                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Thời gian bắt đầu</h4>
+                <p class="text-gray-900 dark:text-white">
+                  <% if @quiz.start_time.present? %>
+                    <%= @quiz.start_time.strftime("%H:%M %d/%m/%Y") %>
+                  <% else %>
+                    <span class="text-gray-500 dark:text-gray-400">Chưa thiết lập</span>
+                  <% end %>
+                </p>
+              </div>
+
+              <div>
+                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Thời gian kết thúc</h4>
+                <p class="text-gray-900 dark:text-white">
+                  <% if @quiz.end_time.present? %>
+                    <%= @quiz.end_time.strftime("%H:%M %d/%m/%Y") %>
+                  <% else %>
+                    <span class="text-gray-500 dark:text-gray-400">Chưa thiết lập</span>
+                  <% end %>
+                </p>
+              </div>
+
+              <div>
+                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Loại bài kiểm tra</h4>
+                <p class="text-gray-900 dark:text-white">
+                  <%= @quiz.is_exam ? 'Bài thi' : 'Bài tập thực hành' %>
+                </p>
+              </div>
+            </div>
+
+            <div class="space-y-4 mt-6">
+              <div>
                 <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Độ khó trung bình</h4>
+                <%
+                  difficulty_counts = { 'easy' => 0, 'medium' => 0, 'hard' => 0 }
+                  @quiz.questions.each do |q|
+                    difficulty_counts[q.difficulty] += 1 if difficulty_counts.key?(q.difficulty)
+                  end
+
+                  total = @quiz.questions.count
+                  easy_percent = total > 0 ? (difficulty_counts['easy'] * 100.0 / total).round : 0
+                  medium_percent = total > 0 ? (difficulty_counts['medium'] * 100.0 / total).round : 0
+                  hard_percent = total > 0 ? (difficulty_counts['hard'] * 100.0 / total).round : 0
+                %>
+
                 <div class="flex items-center">
-                  <%
-                    difficulty_counts = { 'easy' => 0, 'medium' => 0, 'hard' => 0 }
-                    @quiz.questions.each do |q|
-                      difficulty_counts[q.difficulty] += 1 if difficulty_counts.key?(q.difficulty)
-                    end
-
-                    total = @quiz.questions.count
-                    easy_percent = total > 0 ? (difficulty_counts['easy'] * 100.0 / total).round : 0
-                    medium_percent = total > 0 ? (difficulty_counts['medium'] * 100.0 / total).round : 0
-                    hard_percent = total > 0 ? (difficulty_counts['hard'] * 100.0 / total).round : 0
-                  %>
-
                   <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 overflow-hidden">
                     <div class="flex h-full">
                       <div class="bg-green-500 h-2.5" style="width: <%= easy_percent %>%"></div>
@@ -279,7 +293,12 @@
 
               <div>
                 <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Ngày tạo</h4>
-                <p class="text-gray-900 dark:text-white"><%= @quiz.created_at.strftime("%d/%m/%Y") %></p>
+                <p class="text-gray-900 dark:text-white"><%= @quiz.created_at.strftime("%H:%M %d/%m/%Y") %></p>
+              </div>
+
+              <div>
+                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Cập nhật lần cuối</h4>
+                <p class="text-gray-900 dark:text-white"><%= @quiz.updated_at.strftime("%H:%M %d/%m/%Y") %></p>
               </div>
 
               <div>
@@ -293,3 +312,130 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Dialog -->
+<dialog id="edit_quiz_modal" class="modal">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg mb-4">Sửa thông tin bài kiểm tra</h3>
+    <%= form_with model: @quiz, url: manage_quiz_path(@quiz), method: :patch,
+        data: {
+          controller: "manage--quiz-time-validation",
+          action: "submit->manage--quiz-time-validation#validateBeforeSubmit"
+        } do |f| %>
+      <div class="space-y-4">
+        <div class="form-control">
+          <%= f.label :title, 'Tiêu đề bài kiểm tra', class: 'label' %>
+          <%= f.text_field :title, class: 'input input-bordered', required: true %>
+        </div>
+
+        <div class="form-control">
+          <%= f.label :course_id, 'Khóa học', class: 'label' %>
+          <%= f.select :course_id,
+            @courses.map { |c| [c.title, c.id] },
+            { include_blank: 'Chọn khóa học' },
+            { class: 'select select-bordered', required: true }
+          %>
+        </div>
+
+        <div class="form-control">
+          <%= f.label :time_limit, 'Thời gian làm bài (phút)', class: 'label' %>
+          <%= f.number_field :time_limit, min: 1, class: 'input input-bordered', value: 15,
+              data: { manage__quiz_time_validation_target: "timeLimit" } %>
+          <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="timeLimitError"></div>
+        </div>
+
+        <div class="form-control">
+          <%= f.label :start_time, 'Thời gian bắt đầu', class: 'label' %>
+          <%= f.datetime_local_field :start_time, class: 'input input-bordered',
+              data: { manage__quiz_time_validation_target: "startTime" } %>
+          <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="startTimeError"></div>
+        </div>
+
+        <div class="form-control">
+          <%= f.label :end_time, 'Thời gian kết thúc', class: 'label' %>
+          <%= f.datetime_local_field :end_time, class: 'input input-bordered',
+              data: { manage__quiz_time_validation_target: "endTime" } %>
+          <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="endTimeError"></div>
+        </div>
+
+        <div class="form-control">
+          <label class="label">Loại bài kiểm tra</label>
+          <div class="flex gap-4">
+            <label class="label cursor-pointer">
+              <%= f.radio_button :is_exam, false, class: 'radio radio-primary', checked: true %>
+              <span class="label-text ml-2">Bài tập thực hành</span>
+            </label>
+            <label class="label cursor-pointer">
+              <%= f.radio_button :is_exam, true, class: 'radio radio-primary' %>
+              <span class="label-text ml-2">Bài thi</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-action">
+        <button type="button" class="btn" onclick="edit_quiz_modal.close()">Hủy</button>
+        <%= f.submit "Lưu thay đổi", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('edit_quiz_form');
+  const startTimeInput = document.getElementById('start_time');
+  const endTimeInput = document.getElementById('end_time');
+  const timeLimitInput = document.getElementById('time_limit');
+  const submitBtn = document.getElementById('submit_btn');
+
+  function validateTime() {
+    let isValid = true;
+    const startTime = new Date(startTimeInput.value);
+    const endTime = new Date(endTimeInput.value);
+    const timeLimit = parseInt(timeLimitInput.value);
+
+    // Reset error messages
+    document.querySelectorAll('.text-error').forEach(el => {
+      el.classList.add('hidden');
+      el.textContent = '';
+    });
+
+    // Validate start time and end time
+    if (startTime && endTime) {
+      if (startTime >= endTime) {
+        document.getElementById('start_time_error').textContent = 'Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc';
+        document.getElementById('start_time_error').classList.remove('hidden');
+        isValid = false;
+      }
+
+      // Calculate total minutes between start and end
+      const totalMinutes = (endTime - startTime) / (1000 * 60);
+
+      // Validate time limit
+      if (timeLimit > totalMinutes) {
+        document.getElementById('time_limit_error').textContent = `Thời gian làm bài phải nhỏ hơn startTime và endTime)`;
+        document.getElementById('time_limit_error').classList.remove('hidden');
+        isValid = false;
+      }
+    }
+
+    return isValid;
+  }
+
+  // Add event listeners for real-time validation
+  [startTimeInput, endTimeInput, timeLimitInput].forEach(input => {
+    input.addEventListener('change', validateTime);
+  });
+
+  // Validate before form submission
+  form.addEventListener('submit', function(e) {
+    if (!validateTime()) {
+      e.preventDefault();
+    }
+  });
+});
+</script>

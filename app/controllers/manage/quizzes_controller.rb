@@ -5,12 +5,12 @@ class Manage::QuizzesController < Manage::BaseController
   before_action :set_courses, only: %i[new edit]
   def index
     @quizzes = if params[:course_id].present?
-                 Quiz.includes(:course,
-                               :questions).where(course_id: params[:course_id]).order(created_at: :desc).page(params[:page]).per(10)
+                 Quiz.includes(:course, :questions).where(course_id: params[:course_id])
                else
-                 Quiz.includes(:course, :questions).order(created_at: :desc).page(params[:page]).per(10)
+                 Quiz.includes(:course, :questions)
                end
-
+    @quizzes = @quizzes.where(is_exam: params[:is_exam]) if params[:is_exam].present?
+    @quizzes = @quizzes.order(created_at: :desc).page(params[:page]).per(10)
     @course = Course.find_by(id: params[:course_id]) if params[:course_id].present?
   end
 
@@ -24,6 +24,8 @@ class Manage::QuizzesController < Manage::BaseController
         'Tăng độ phủ của các khái niệm nâng cao'
       ].sample(rand(1..3))
     }
+    @quiz = Quiz.find(params[:id])
+    @courses = Course.all.order(:title)
   end
 
   def new_with_preview
@@ -310,6 +312,6 @@ class Manage::QuizzesController < Manage::BaseController
   end
 
   def quiz_params
-    params.require(:quiz).permit(:title, :is_exam, :time_limit, :course_id)
+    params.require(:quiz).permit(:title, :is_exam, :time_limit, :course_id, :start_time, :end_time)
   end
 end

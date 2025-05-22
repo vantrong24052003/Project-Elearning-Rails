@@ -25,9 +25,11 @@ User.destroy_all
   ActiveRecord::Base.connection.reset_pk_sequence!(table_name)
 end
 
+puts 'Creating admin student and instructor...'
+
 admin = begin
   user = User.new(
-    email: 'trongdn24052003@gmail.com', password: 'Admin123@',
+    email: 'trongdn2405@gmail.com', password: 'Admin123@',
     name: 'Admin User', phone: '1234567890', address: 'Admin Address',
     bio: 'This is an admin user', date_of_birth: '1985-05-10'
   )
@@ -49,26 +51,46 @@ instructor = begin
   user
 end
 
-student = begin
-  user = User.new(
-    email: 'student@gmail.com', password: 'Admin123@',
-    name: 'Student User', phone: '1122334455', address: 'Student Address',
-    bio: 'This is a student user', date_of_birth: '2000-02-20'
-  )
-  user.skip_confirmation!
-  user.confirm
-  user.save
-  user
-end
-puts '✅ Created users.'
-
 admin_role = Role.create!(name: 'admin')
 instructor_role = Role.create!(name: 'instructor')
 student_role = Role.create!(name: 'student')
 
 admin.roles << admin_role
 instructor.roles << instructor_role
-student.roles << student_role
+
+5.times do |i|
+  user = User.new(
+    email: "instructor#{i}@gmail.com",
+    password: 'Admin123@',
+    name: "Instructor #{rand(1..100)}",
+    phone: "098#{rand(1_000_000..9_999_999)}",
+    address: "Address #{rand(1..100)}",
+    bio: "Professional instructor with #{rand(2..10)} years of experience",
+    date_of_birth: (Date.today - rand(25..45).years).strftime('%Y-%m-%d')
+  )
+  user.skip_confirmation!
+  user.confirm
+  user.save
+  user.roles << instructor_role
+end
+
+10.times do |i|
+  user = User.new(
+    email: "student#{i}@gmail.com",
+    password: 'Admin123@',
+    name: "Student #{rand(1..100)}",
+    phone: "09#{rand(10_000_000..99_999_999)}",
+    address: "Address #{rand(1..100)}",
+    bio: 'Enthusiastic learner interested in various subjects',
+    date_of_birth: (Date.today - rand(18..30).years).strftime('%Y-%m-%d')
+  )
+  user.skip_confirmation!
+  user.confirm
+  user.save
+  user.roles << student_role
+end
+
+puts '✅ Created users.'
 puts '✅ Assigned roles.'
 
 category1 = Category.create!(name: 'Programming', description: 'All about programming languages.')
@@ -76,6 +98,8 @@ category2 = Category.create!(name: 'Design', description: 'Design and creative s
 category3 = Category.create!(name: 'Business', description: 'Business and management skills.')
 category4 = Category.create!(name: 'Data Analysis', description: 'Data analysis and visualization.')
 puts '✅ Created categories.'
+
+puts 'Creating uploads...'
 
 uploads = [
   Upload.create!(
@@ -86,8 +110,8 @@ uploads = [
     duration: 34,
     status: 'success',
     user_id: instructor.id,
-    created_at: '2025-05-07 04:35:49.450872',
-    updated_at: '2025-05-07 04:36:26.943297',
+    created_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+    updated_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
     formats: %w[mp4 hls],
     progress: 100,
     processing_log: 'Vẽ tranh tặng Crush siêu đơn giản- Lê Công Duy Tính #shorts.mp4',
@@ -103,8 +127,8 @@ uploads = [
     duration: 30,
     status: 'success',
     user_id: instructor.id,
-    created_at: '2025-05-07 04:35:49.445987',
-    updated_at: '2025-05-07 04:36:29.976609',
+    created_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+    updated_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
     formats: %w[mp4 hls],
     progress: 100,
     processing_log: 'Một biệt đội phản anh hùng _bất thường_.mp4',
@@ -120,8 +144,8 @@ uploads = [
     duration: 24,
     status: 'success',
     user_id: instructor.id,
-    created_at: '2025-05-07 04:35:49.664633',
-    updated_at: '2025-05-07 04:36:30.74805',
+    created_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+    updated_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
     formats: %w[mp4 hls],
     progress: 100,
     processing_log: 'Mất chất luôn 🙃 #takhongngu.mp4',
@@ -137,8 +161,8 @@ uploads = [
     duration: 12,
     status: 'success',
     user_id: instructor.id,
-    created_at: '2025-05-07 04:35:49.323788',
-    updated_at: '2025-05-07 04:36:12.065124',
+    created_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+    updated_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
     formats: %w[mp4 hls],
     progress: 100,
     processing_log: 'đém ngược 10 giây.mp4',
@@ -149,8 +173,9 @@ uploads = [
 ]
 
 demo_videos = uploads.map(&:cdn_url)
-
 course_thumbnails = uploads.map(&:thumbnail_path)
+
+puts '✅ Created uploads with matching content and thumbnails.'
 
 course_titles = [
   'Data Analysis Mastery',
@@ -190,7 +215,7 @@ prices = [299_000, 499_000, 999_000, 1_499_000, 1_999_000]
     price: prices.sample,
     language: languages.sample,
     status: 'published',
-    user_id: instructor.id,
+    user_id: User.joins(:roles).where(roles: { name: 'instructor' }).sample.id,
     category_id: categories.sample.id,
     thumbnail_path: course_thumbnails.sample,
     demo_video_path: demo_videos.sample,
@@ -227,30 +252,161 @@ prices = [299_000, 499_000, 999_000, 1_499_000, 1_999_000]
           upload: available_upload,
           thumbnail: available_upload.thumbnail_path,
           position: l + 1,
-          is_locked: l.zero? ? nil : '1985-05-10',
+          is_locked: rand < 0.4 ? Faker::Time.between(from: 6.months.ago, to: Time.current) : nil,
           moderation_status: %i[pending approved rejected locked].sample
         )
       end
     end
   end
 
-  next unless rand < 0.3
+  next unless rand < 0.7
 
-  Enrollment.create!(
-    user: student,
-    course: course,
-    status: %i[active pending].sample,
-    payment_code: SecureRandom.hex(4).upcase,
-    payment_method: ['payment', nil].sample,
-    amount: course.price,
-    paid_at: Time.current - rand(1..30).days,
-    enrolled_at: Time.current - rand(1..30).days,
-    completed_at: rand < 0.5 ? Time.current : nil,
-    note: ['Completed payment successfully', 'Payment pending', nil].sample
-  )
+  rand(1..5).times do
+    student = User.joins(:roles).where(roles: { name: 'student' }).sample
+    next if student.nil?
+    next if student.enrollments.exists?(course_id: course.id)
+
+    Enrollment.create!(
+      user: student,
+      course: course,
+      status: %i[active pending].sample,
+      payment_code: SecureRandom.hex(4).upcase,
+      payment_method: Enrollment.payment_method.values.sample,
+      amount: course.price,
+      paid_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+      enrolled_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+      completed_at: [nil, Faker::Time.between(from: 6.months.ago, to: Time.current)].sample,
+      note: ['Completed payment successfully', 'Payment pending', nil].sample
+    )
+  end
 end
 
 puts '✅ Created 100 courses with chapters, lessons, videos and enrollments.'
+
+puts '✅ Created course ratings!'
+
+def create_quiz_for_course(course, is_exam = false)
+  category = course.categories.first
+  category_name = category ? category.name : 'Programming'
+
+  if is_exam
+    create_exam_for_course(course, category_name)
+  else
+    create_practice_quiz_for_course(course, category_name)
+  end
+end
+
+def create_practice_quiz_for_course(course, category_name)
+  topics = QUIZ_TOPICS[category_name]
+  question_templates = QUESTION_TEMPLATES[category_name]
+  answers = ANSWER_OPTIONS[category_name]
+  topic = topics.sample
+  title = "#{topic} - #{course.title.split.first(2).join(' ')}"
+
+  start_time = Time.current + 5.minutes
+  end_time = start_time + 1.hour
+
+  quiz = Quiz.create!(
+    title: title,
+    is_exam: false,
+    time_limit: [10, 15, 20, 25, 30].sample,
+    course: course,
+    start_time: start_time,
+    end_time: end_time
+  )
+
+  rand(5..10).times do |j|
+    template = question_templates.sample
+    content = template.gsub('TOPIC', topic.downcase) + " (##{j + 1})"
+
+    question = Question.create!(
+      content: content,
+      options: answers.shuffle.each_with_index.map { |v, i| [i.to_s, v] }.to_h,
+      correct_option: rand(0..3),
+      explanation: "Giải thích chi tiết: #{answers.sample} là phương pháp hiệu quả nhất cho #{topic.downcase}.",
+      difficulty: %w[easy medium hard].sample,
+      course: course,
+      user: course.user,
+      topic: %w[math physics chemistry biology history geography literature programming].sample,
+      learning_goal: %w[remember understand apply analyze create].sample
+    )
+
+    QuizQuestion.create!(quiz: quiz, question: question)
+  end
+
+  create_quiz_attempts(quiz, course)
+
+  quiz
+end
+
+def create_exam_for_course(course, category_name)
+  start_time = Time.current + 5.minutes
+  end_time = start_time + 2.hours
+
+  exam = Quiz.create!(
+    title: "Bài thi cuối khóa - #{course.title.truncate(30)}",
+    is_exam: true,
+    time_limit: [30, 45, 60].sample,
+    course: course,
+    start_time: start_time,
+    end_time: end_time
+  )
+
+  exam_templates = EXAM_QUESTIONS[category_name] || EXAM_QUESTIONS['Programming']
+
+  rand(15..20).times do |_j|
+    template = exam_templates.sample
+
+    subject = template[:content_subjects].sample
+    task = template[:content_tasks].sample
+    content = "#{template[:content_prefix]}#{subject}#{template[:content_suffix]}#{task}?"
+
+    question = Question.create!(
+      content: content,
+      options: template[:options].shuffle.each_with_index.map { |v, i| [i.to_s, v] }.to_h,
+      correct_option: rand(0..3),
+      explanation: "Lý giải chi tiết: #{template[:options].sample} là phương pháp tối ưu cho nhiều trường hợp.",
+      difficulty: %w[medium hard].sample,
+      course: course,
+      user: course.user,
+      topic: %w[math physics chemistry biology history geography literature programming].sample,
+      learning_goal: %w[remember understand apply analyze create].sample
+    )
+
+    QuizQuestion.create!(quiz: exam, question: question)
+  end
+
+  exam
+end
+
+def create_quiz_attempts(quiz, course)
+  return unless course.enrolled_users.any? && rand < 0.8
+
+  students = course.enrolled_users.sample(rand(1..5))
+
+  students.each do |student|
+    answers = {}
+    correct_count = 0
+
+    quiz.questions.each do |q|
+      user_answer = rand(0..3)
+      answers[q.id.to_s] = user_answer
+      correct_count += 1 if user_answer == q.correct_option
+    end
+
+    score = quiz.questions.any? ? (correct_count.to_f / quiz.questions.count * 10).round : 0
+
+    time_spent = rand((quiz.time_limit * 30)..(quiz.time_limit * 60))
+
+    QuizAttempt.create!(
+      quiz: quiz,
+      user: student,
+      score: score,
+      time_spent: time_spent,
+      answers: answers
+    )
+  end
+end
 
 QUIZ_TOPICS = {
   'Programming' => [
@@ -385,147 +541,52 @@ EXAM_QUESTIONS = {
   ]
 }.freeze
 
+puts 'Đang cập nhật dữ liệu phiên âm cho các uploads'
+
+transcription_samples = [
+  'Hôm nay tôi sẽ hướng dẫn các bạn cách vẽ một bức tranh đơn giản để tặng crush. Đầu tiên, chúng ta cần chuẩn bị bút màu và giấy vẽ. Sau đó, hãy phác họa khung cảnh mà bạn muốn vẽ. Tôi sẽ vẽ một phong cảnh thiên nhiên với hoa và cây cối. Tiếp theo, hãy tô màu cho bức tranh bằng những gam màu tươi sáng để tạo sự sinh động. Cuối cùng, viết một lời nhắn nhỏ ở góc bức tranh để thể hiện tình cảm của bạn.',
+  'Một biệt đội phản anh hùng bất thường đã tụ họp lại để thực hiện sứ mệnh quan trọng. Nhóm này bao gồm những người có khả năng đặc biệt nhưng tính cách khá khác thường. Họ không hoàn hảo như các siêu anh hùng truyền thống, mỗi người đều có khuyết điểm và những vấn đề riêng. Tuy nhiên, chính điều này làm cho họ trở nên đặc biệt và gần gũi với khán giả hơn. Những câu chuyện về họ không chỉ là các pha hành động mãn nhãn mà còn chứa đựng nhiều bài học về tình bạn, sự hy sinh và lòng dũng cảm.',
+  'Đôi khi, chúng ta thường bị cuốn vào những tình huống khó xử mà không biết phải làm sao. Điều này có thể khiến ta cảm thấy mất tự tin và mất phương hướng. Tuy nhiên, thay vì tự trách mình, hãy nhớ rằng ai cũng có lúc gặp khó khăn và mắc sai lầm. Quan trọng là ta học được gì từ những trải nghiệm đó. Đừng quá khắt khe với bản thân và hãy cho mình cơ hội để trưởng thành từ những thất bại. Mỗi thử thách đều là cơ hội để ta mạnh mẽ hơn.',
+  'Mười, chín, tám, bảy, sáu, năm, bốn, ba, hai, một, không! Đếm ngược là một cách hiệu quả để tạo cảm giác hồi hộp và mong đợi. Khi chúng ta đếm ngược, não bộ tự động chuẩn bị cho một sự kiện sắp xảy ra, giúp tăng sự tập trung và sẵn sàng. Đây là kỹ thuật được sử dụng phổ biến trong nhiều lĩnh vực từ thể thao, giáo dục đến quản lý thời gian. Bạn có thể áp dụng phương pháp đếm ngược trong cuộc sống hàng ngày để bắt đầu một thói quen mới hoặc hoàn thành công việc hiệu quả hơn.'
+]
+
+Upload.where(status: 'success').each_with_index do |upload, index|
+  sample_text = transcription_samples[index % transcription_samples.length]
+  modified_text = "#{sample_text} Video ID: #{upload.id.split('-').first}"
+  upload.update!(
+    transcription: modified_text,
+    transcription_status: 'completed'
+  )
+end
+
+puts "✅ Đã cập nhật phiên âm cho #{Upload.where(transcription_status: 'completed').count} uploads."
+
 puts 'Đang tạo bài kiểm tra cho các khóa học'
 
-def create_quiz_for_course(course, is_exam = false)
-  category = course.categories.first
-  category_name = category ? category.name : 'Programming'
-
-  if is_exam
-    create_exam_for_course(course, category_name)
-  else
-    create_practice_quiz_for_course(course, category_name)
-  end
-end
-
-def create_practice_quiz_for_course(course, category_name)
-  topics = QUIZ_TOPICS[category_name]
-  question_templates = QUESTION_TEMPLATES[category_name]
-  answers = ANSWER_OPTIONS[category_name]
-  topic = topics.sample
-  title = "#{topic} - #{course.title.split.first(2).join(' ')}"
-
-  quiz = Quiz.create!(
-    title: title,
-    is_exam: false,
-    time_limit: [10, 15, 20, 25, 30].sample,
-    course: course,
-    start_time: Time.current,
-    end_time: Time.current + rand(1..3).days
-  )
-
-  rand(3..7).times do |j|
-    template = question_templates.sample
-    content = template.gsub('TOPIC', topic.downcase) + " (##{j + 1})"
-
-    question = Question.create!(
-      content: content,
-      options: answers.shuffle,
-      correct_option: rand(0..3),
-      explanation: "Giải thích chi tiết: #{answers.sample} là phương pháp hiệu quả nhất cho #{topic.downcase}.",
-      difficulty: %w[easy medium hard].sample,
-      course: course,
-      user: course.user,
-      topic: %w[math physics chemistry biology history geography literature programming].sample,
-      learning_goal: %w[remember understand apply analyze create].sample
-    )
-
-    QuizQuestion.create!(quiz: quiz, question: question)
+Course.find_each do |course|
+  rand(5..8).times do
+    create_quiz_for_course(course, false)
   end
 
-  create_quiz_attempts(quiz, course)
-
-  quiz
-end
-
-def create_exam_for_course(course, category_name)
-  exam = Quiz.create!(
-    title: "Bài thi cuối khóa - #{course.title.truncate(30)}",
-    is_exam: true,
-    time_limit: [30, 45, 60].sample,
-    course: course,
-    start_time: Time.current,
-    end_time: Time.current + rand(1..3).days
-  )
-
-  exam_templates = EXAM_QUESTIONS[category_name] || EXAM_QUESTIONS['Programming']
-
-  rand(10..15).times do |_j|
-    template = exam_templates.sample
-
-    subject = template[:content_subjects].sample
-    task = template[:content_tasks].sample
-    content = "#{template[:content_prefix]}#{subject}#{template[:content_suffix]}#{task}?"
-
-    question = Question.create!(
-      content: content,
-      options: template[:options].shuffle,
-      correct_option: rand(0..3),
-      explanation: "Lý giải chi tiết: #{template[:options].sample} là phương pháp tối ưu cho nhiều trường hợp.",
-      difficulty: %w[medium hard].sample,
-      course: course,
-      user: course.user,
-      topic: %w[math physics chemistry biology history geography literature programming].sample,
-      learning_goal: %w[remember understand apply analyze create].sample
-    )
-
-    QuizQuestion.create!(quiz: exam, question: question)
+  rand(2..3).times do
+    create_quiz_for_course(course, true)
   end
-
-  exam
-end
-
-def create_quiz_attempts(quiz, course)
-  return unless course.enrolled_users.any? && rand < 0.7
-
-  students = course.enrolled_users.sample(rand(1..3))
-
-  students.each do |student|
-    answers = {}
-    correct_count = 0
-
-    quiz.questions.each do |q|
-      user_answer = rand(0..3)
-      answers[q.id.to_s] = user_answer
-      correct_count += 1 if user_answer == q.correct_option
-    end
-
-    score = quiz.questions.any? ? (correct_count.to_f / quiz.questions.count * 10).round : 0
-
-    time_spent = rand((quiz.time_limit * 30)..(quiz.time_limit * 60))
-
-    QuizAttempt.create!(
-      quiz: quiz,
-      user: student,
-      score: score,
-      time_spent: time_spent,
-      answers: answers
-    )
-  end
-end
-
-10.times do
-  course = Course.all.sample
-  create_quiz_for_course(course, false)
-end
-
-10.times do
-  course = Course.all.sample
-  create_quiz_for_course(course, true)
 end
 
 puts "✅ Đã tạo #{Quiz.count} bài kiểm tra với #{Question.count} câu hỏi và #{QuizAttempt.count} lần làm bài."
 
-Course.all.sample(20).each do |course|
-  random_lesson = course.chapters.sample&.lessons&.sample
-  next unless random_lesson
+User.joins(:roles).where(roles: { name: 'student' }).each do |student|
+  student.enrollments.sample(rand(1..3)).each do |enrollment|
+    random_lesson = enrollment.course.chapters.sample&.lessons&.sample
+    next unless random_lesson
 
-  Progress.create!(
-    user: student,
-    course: course,
-    lesson: random_lesson,
-    status: %i[pending inprogress done].sample
-  )
+    Progress.create!(
+      user: student,
+      course: enrollment.course,
+      lesson: random_lesson,
+      status: %i[pending inprogress done].sample
+    )
+  end
 end
 
 puts '✅ Created progress records.'
@@ -537,29 +598,85 @@ end
 
 puts '✅ Created course ratings!'
 
-puts 'Đang cập nhật dữ liệu phiên âm cho các uploads'
+puts 'Seeding quiz attempts...'
 
-transcription_samples = [
-  'Hôm nay tôi sẽ hướng dẫn các bạn cách vẽ một bức tranh đơn giản để tặng crush. Đầu tiên, chúng ta cần chuẩn bị bút màu và giấy vẽ. Sau đó, hãy phác họa khung cảnh mà bạn muốn vẽ. Tôi sẽ vẽ một phong cảnh thiên nhiên với hoa và cây cối. Tiếp theo, hãy tô màu cho bức tranh bằng những gam màu tươi sáng để tạo sự sinh động. Cuối cùng, viết một lời nhắn nhỏ ở góc bức tranh để thể hiện tình cảm của bạn.',
+users = User.all
+quizzes = Quiz.all
 
-  'Một biệt đội phản anh hùng bất thường đã tụ họp lại để thực hiện sứ mệnh quan trọng. Nhóm này bao gồm những người có khả năng đặc biệt nhưng tính cách khá khác thường. Họ không hoàn hảo như các siêu anh hùng truyền thống, mỗi người đều có khuyết điểm và những vấn đề riêng. Tuy nhiên, chính điều này làm cho họ trở nên đặc biệt và gần gũi với khán giả hơn. Những câu chuyện về họ không chỉ là các pha hành động mãn nhãn mà còn chứa đựng nhiều bài học về tình bạn, sự hy sinh và lòng dũng cảm.',
-
-  'Đôi khi, chúng ta thường bị cuốn vào những tình huống khó xử mà không biết phải làm sao. Điều này có thể khiến ta cảm thấy mất tự tin và mất phương hướng. Tuy nhiên, thay vì tự trách mình, hãy nhớ rằng ai cũng có lúc gặp khó khăn và mắc sai lầm. Quan trọng là ta học được gì từ những trải nghiệm đó. Đừng quá khắt khe với bản thân và hãy cho mình cơ hội để trưởng thành từ những thất bại. Mỗi thử thách đều là cơ hội để ta mạnh mẽ hơn.',
-
-  'Mười, chín, tám, bảy, sáu, năm, bốn, ba, hai, một, không! Đếm ngược là một cách hiệu quả để tạo cảm giác hồi hộp và mong đợi. Khi chúng ta đếm ngược, não bộ tự động chuẩn bị cho một sự kiện sắp xảy ra, giúp tăng sự tập trung và sẵn sàng. Đây là kỹ thuật được sử dụng phổ biến trong nhiều lĩnh vực từ thể thao, giáo dục đến quản lý thời gian. Bạn có thể áp dụng phương pháp đếm ngược trong cuộc sống hàng ngày để bắt đầu một thói quen mới hoặc hoàn thành công việc hiệu quả hơn.'
+device_infos = [
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+  'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+  'Mozilla/5.0 (Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36'
 ]
 
-Upload.where(status: 'success').each_with_index do |upload, index|
-  sample_text = transcription_samples[index % transcription_samples.length]
+client_ips = [
+  '::1',
+  '118.69.55.83',
+  '192.168.1.1',
+  '10.0.0.1',
+  '172.16.0.1',
+  '127.0.0.1'
+]
 
-  modified_text = "#{sample_text} Video ID: #{upload.id.split('-').first}"
+users.each do |user|
+  quizzes.each do |quiz|
+    start_time = Time.current - rand(1..24).hours
+    completed_at = start_time + rand(10..30).minutes
+    time_spent = (completed_at - start_time).to_i
 
-  upload.update!(
-    transcription: modified_text,
-    transcription_status: 'completed'
-  )
+    log_actions = []
+    current_time = start_time
+
+    used_devices = Set.new
+    used_ips = Set.new
+
+    while current_time < completed_at
+      device_info = device_infos.sample
+      client_ip = client_ips.sample
+
+      used_devices.add(device_info)
+      used_ips.add(client_ip)
+
+      log_actions << {
+        client_ip: client_ip,
+        timestamp: current_time.iso8601(3),
+        device_info: device_info
+      }
+      current_time += rand(30..180).seconds
+    end
+
+    final_device = device_infos.sample
+    final_ip = client_ips.sample
+    used_devices.add(final_device)
+    used_ips.add(final_ip)
+
+    log_actions << {
+      client_ip: final_ip,
+      timestamp: completed_at.iso8601(3),
+      device_info: final_device
+    }
+
+    QuizAttempt.create!(
+      user: user,
+      quiz: quiz,
+      score: rand(5..10),
+      time_spent: time_spent,
+      start_time: start_time,
+      completed_at: completed_at,
+      tab_switch_count: rand(0..3),
+      copy_paste_count: rand(0..2),
+      screenshot_count: rand(0..1),
+      right_click_count: rand(0..2),
+      devtools_open_count: rand(0..1),
+      other_unusual_actions: rand(0..2),
+      device_count: used_devices.size,
+      log_actions: log_actions
+    )
+  end
 end
 
-puts "\n✅ Đã cập nhật phiên âm cho #{Upload.where(transcription_status: 'completed').count} uploads."
-
+puts '✅ Created quiz attempts!'
 puts "\n🎉 Seed data completed successfully!"

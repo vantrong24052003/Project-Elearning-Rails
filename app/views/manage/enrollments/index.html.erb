@@ -1,0 +1,404 @@
+<div class="mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Quản lý đăng ký khóa học</h1>
+    </div>
+
+    <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+      <div class="rounded-lg p-5 bg-white dark:bg-gray-800 text-gray-800 dark:text-white" data-controller="manage--enrollments">
+        <%= form_with url: manage_enrollments_path, method: :get, id: "search_filter_form", data: {
+          turbo_frame: "enrollments_data",
+          manage__enrollments_target: "filterForm"
+        } do |f| %>
+          <div class="space-y-5">
+            <div class="flex flex-col lg:flex-row gap-4 items-center">
+              <div class="w-full lg:flex-1">
+                <div class="relative group">
+                  <%= f.text_field :search, value: params[:search],
+                          class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 pl-10 pr-12 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 focus:border-blue-500 dark:focus:border-purple-500 transition-all",
+                          placeholder: "Tìm kiếm theo mã đăng ký, tên học viên hoặc khóa học...",
+                          autocomplete: "off",
+                          data: {
+                            manage__enrollments_target: "searchInput",
+                            action: "input->manage--enrollments#search"
+                          }
+                      %>
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                  </div>
+                  <div class="absolute inset-y-0 right-0 flex items-center">
+                    <% if params[:search].present? %>
+                      <button type="button" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white px-2" data-action="manage--enrollments#clearSearch">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    <% end %>
+                    <button type="submit" class="h-full px-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white focus:outline-none border-l border-gray-300 dark:border-gray-600">
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
+                <div class="w-full md:w-auto">
+                  <%= f.select :status,
+                            [["Tất cả trạng thái", ""], ["Đang chờ", "pending"], ["Đang học", "active"], ["Đã hoàn thành", "completed"]],
+                            { selected: params[:status] },
+                            {
+                              class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
+                              data: {
+                                manage__enrollments_target: "statusSelect",
+                                action: "change->manage--enrollments#filterByStatus"
+                              }
+                            }
+                        %>
+                </div>
+
+                <div class="w-full md:w-auto">
+                  <%= f.select :paid_at,
+                            [["Tất cả thanh toán", ""], ["Đã thanh toán", "paid"], ["Chưa thanh toán", "unpaid"]],
+                            { selected: params[:paid_at] },
+                            {
+                              class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
+                              data: {
+                                manage__enrollments_target: "paidAtSelect",
+                                action: "change->manage--enrollments#filterByPaidAt"
+                              }
+                            }
+                        %>
+                </div>
+
+                <div class="w-full md:w-auto">
+                  <%= f.select :payment_method,
+                            [["Tất cả phương thức", ""], ["Chuyển khoản", "bank_transfer"], ["Thẻ tín dụng", "credit_card"], ["Ví điện tử", "e_wallet"]],
+                            { selected: params[:payment_method] },
+                            {
+                              class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
+                              data: {
+                                manage__enrollments_target: "paymentMethodSelect",
+                                action: "change->manage--enrollments#filterByPaymentMethod"
+                              }
+                            }
+                        %>
+                </div>
+
+                <div class="w-full md:w-auto">
+                  <button type="button"
+                          class="w-full rounded-md hover:opacity-70 bg-gray-50 dark:bg-gray-700 flex items-center justify-center h-10 px-4"
+                          data-action="manage--enrollments#resetFilters">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="1 4 1 10 7 10"></polyline>
+                      <polyline points="23 20 23 14 17 14"></polyline>
+                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                    </svg>
+                    Xóa tất cả
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg">
+      <div class="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h2 class="text-lg md:text-xl text-blue-600 dark:text-purple-400 font-medium">Danh sách đăng ký</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Quản lý tất cả đăng ký khóa học của học viên</p>
+          </div>
+        </div>
+      </div>
+
+      <%= turbo_frame_tag "enrollments_data" do %>
+        <div class="p-4 md:p-6">
+          <div class="overflow-x-auto overflow-y-auto max-h-[70vh]">
+            <table class="table table-zebra w-full">
+              <thead class="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10">
+                <tr>
+                  <th class="text-left">STT</th>
+                  <th class="text-left">Mã đăng ký</th>
+                  <th class="text-left">Học viên</th>
+                  <th class="text-left">Khóa học</th>
+                  <th class="text-left">Trạng thái</th>
+                  <th class="text-left">Số tiền</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <% if @enrollments.any? %>
+                  <% @enrollments.each_with_index do |enrollment, index| %>
+                    <tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800/50">
+                      <td class="py-3 px-4">
+                        <div class="flex items-center">
+                          <%= (@enrollments.offset_value || 0) + index + 1 %>
+                        </div>
+                      </td>
+
+                      <td class="py-3 px-4">
+                        <div class="text-sm text-gray-900 dark:text-white"><%= enrollment.payment_code %></div>
+                      </td>
+
+                      <td class="py-3 px-4">
+                        <div class="flex items-center">
+                          <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mr-3 flex-shrink-0">
+                            <% if enrollment.user.avatar.present? %>
+                              <img src="<%= enrollment.user.avatar %>" alt="<%= enrollment.user.name %>" class="w-full h-full object-cover">
+                            <% else %>
+                              <div class="bg-blue-500 dark:bg-indigo-600 h-full w-full flex items-center justify-center">
+                                <span class="text-white text-sm font-medium"><%= enrollment.user.name.first.upcase %></span>
+                              </div>
+                            <% end %>
+                          </div>
+                          <div>
+                            <p class="font-medium text-gray-800 dark:text-white"><%= enrollment.user.name %></p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400"><%= enrollment.user.email %></p>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td class="py-3 px-4">
+                        <div class="text-sm text-gray-900 dark:text-white"><%= enrollment.course.title %></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400"><%= number_to_currency(enrollment.course.price, unit: "₫", precision: 0) %></div>
+                      </td>
+
+                      <td class="py-3 px-4">
+                        <div class="flex flex-col gap-1">
+                          <div class="flex items-center gap-1">
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Trạng thái học:</span>
+                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full
+                              <%= case enrollment.status
+                                  when 'pending' then 'bg-yellow-100 text-yellow-600 border border-yellow-200 dark:bg-yellow-600/20 dark:text-yellow-400 dark:border-yellow-600/30'
+                                  when 'active' then 'bg-green-100 text-green-600 border border-green-200 dark:bg-green-600/20 dark:text-green-400 dark:border-green-600/30'
+                                  when 'completed' then 'bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-600/20 dark:text-blue-400 dark:border-blue-600/30'
+                                  end %>">
+                              <%= case enrollment.status
+                                  when 'pending' then 'Đang chờ'
+                                  when 'active' then 'Đang học'
+                                  when 'completed' then 'Đã hoàn thành'
+                                  end %>
+                            </span>
+                          </div>
+
+                          <div class="flex items-center gap-1">
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Trạng thái thanh toán:</span>
+                            <% if enrollment.paid_at.present? %>
+                              <div class="flex items-center gap-1 text-green-600 dark:text-green-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                <span class="text-xs">Đã thanh toán: <%= enrollment.paid_at.in_time_zone("Hanoi").strftime("%d/%m/%Y %H:%M") %></span>
+                              </div>
+                            <% else %>
+                              <div class="flex items-center gap-1 text-yellow-600 dark:text-yellow-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <circle cx="12" cy="12" r="10"></circle>
+                                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                                <span class="text-xs">Chưa thanh toán</span>
+                              </div>
+                            <% end %>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td class="py-3 px-4">
+                        <div class="text-sm text-gray-900 dark:text-white"><%= number_to_currency(enrollment.amount, unit: "₫", precision: 0) %></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400"><%= enrollment.payment_method&.titleize %></div>
+                      </td>
+
+                      <td class="py-3 px-4 text-right">
+                        <div class="flex items-center justify-end gap-3">
+                          <% if enrollment.paid_at.nil? %>
+                            <%= button_to manage_enrollment_path(enrollment, enrollment: { paid_at: Time.current }), 
+                                method: :patch,
+                                class: "text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 p-2 rounded-md",
+                                title: "Xác nhận đã thanh toán",
+                                data: { 
+                                  turbo_confirm: "Bạn có chắc chắn muốn xác nhận đã thanh toán cho đăng ký của \"#{enrollment.user.name}\"?"
+                                } do %>
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                              </svg>
+                            <% end %>
+                          <% else %>
+                            <%= button_to manage_enrollment_path(enrollment, enrollment: { paid_at: nil }),
+                                method: :patch,
+                                class: "text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 p-2 rounded-md",
+                                title: "Hủy xác nhận thanh toán",
+                                data: {
+                                  turbo_confirm: "Bạn có chắc chắn muốn hủy xác nhận thanh toán cho đăng ký của \"#{enrollment.user.name}\"?"
+                                } do %>
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                              </svg>
+                            <% end %>
+                          <% end %>
+
+                          <%= link_to manage_enrollment_path(enrollment),
+                              class: "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 p-2 rounded-md",
+                              title: "Xem chi tiết",
+                              data: { turbo: false } do %>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                              <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                          <% end %>
+                        </div>
+                      </td>
+                    </tr>
+                  <% end %>
+                <% else %>
+                  <tr>
+                    <td colspan="8" class="py-10 text-center text-gray-500 dark:text-gray-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                      </svg>
+                      <p>Không tìm thấy đăng ký nào</p>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-4 mb-2 border-t border-gray-200 dark:border-gray-700 pt-4">
+            <div class="text-sm text-gray-800 dark:text-white flex items-center" data-controller="manage--enrollments">
+              <span class="mr-2">Hiển thị:</span>
+              <%= form_with url: manage_enrollments_path, method: :get, data: {
+                turbo_frame: "enrollments_data",
+                manage__enrollments_target: "filterForm"
+              } do |f| %>
+                <%= f.hidden_field :page, value: 1 %>
+                <% request.query_parameters.except(:page, :per_page, :authenticity_token).each do |key, value| %>
+                  <%= f.hidden_field key, value: value %>
+                <% end %>
+                <%= f.select :per_page,
+                        options_for_select([10, 25, 50, 100], params[:per_page].to_i > 0 ? params[:per_page].to_i : 10),
+                        {},
+                        {
+                          class: "select select-bordered select-sm",
+                          data: {
+                            manage__enrollments_target: "perPageSelect",
+                            action: "change->manage--enrollments#changePerPage"
+                          }
+                        }
+                    %>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-2 gap-4">
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+              <% if @enrollments.respond_to?(:total_count) && @enrollments.total_count > 0 %>
+                Hiển thị <%= @enrollments.offset_value + 1 %>-<%= [@enrollments.offset_value + @enrollments.limit_value, @enrollments.total_count].min %> trong số <%= @enrollments.total_count %> đăng ký
+              <% else %>
+                0 đăng ký
+              <% end %>
+            </div>
+
+            <div class="flex items-center justify-center mt-4">
+              <div class="flex items-center gap-1">
+                <% if @enrollments.current_page > 2 %>
+                  <%= link_to url_for(request.params.merge(page: 1)),
+                      class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
+                      data: { turbo_frame: "enrollments_data" } do %>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m11 17-5-5 5-5" />
+                      <path d="m18 17-5-5 5-5" />
+                    </svg>
+                  <% end %>
+                <% else %>
+                  <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m11 17-5-5 5-5" />
+                      <path d="m18 17-5-5 5-5" />
+                    </svg>
+                  </span>
+                <% end %>
+
+                <% if @enrollments.respond_to?(:prev_page) && @enrollments.prev_page %>
+                  <%= link_to url_for(request.params.merge(page: @enrollments.prev_page)),
+                      class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
+                      data: { turbo_frame: "enrollments_data" } do %>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m15 18-6-6 6-6" />
+                    </svg>
+                  <% end %>
+                <% else %>
+                  <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m15 18-6-6 6-6" />
+                    </svg>
+                  </span>
+                <% end %>
+
+                <% start_page = [1, @enrollments.current_page - 2].max %>
+                <% end_page = [@enrollments.total_pages, @enrollments.current_page + 2].min %>
+
+                <% (start_page..end_page).each do |page| %>
+                  <% if page == @enrollments.current_page %>
+                    <span class="flex items-center justify-center w-9 h-9 rounded-md border border-blue-500 dark:border-purple-700 bg-blue-50 dark:bg-purple-700/30 text-blue-700 dark:text-white font-medium">
+                      <%= page %>
+                    </span>
+                  <% else %>
+                    <%= link_to page, url_for(request.params.merge(page: page)),
+                          class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
+                          data: { turbo_frame: "enrollments_data" } %>
+                  <% end %>
+                <% end %>
+
+                <% if @enrollments.respond_to?(:next_page) && @enrollments.next_page %>
+                  <%= link_to url_for(request.params.merge(page: @enrollments.next_page)),
+                      class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
+                      data: { turbo_frame: "enrollments_data" } do %>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  <% end %>
+                <% else %>
+                  <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </span>
+                <% end %>
+
+                <% if @enrollments.respond_to?(:total_pages) && @enrollments.respond_to?(:current_page) && @enrollments.current_page < @enrollments.total_pages - 1 %>
+                  <%= link_to url_for(request.params.merge(page: @enrollments.total_pages)),
+                      class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
+                      data: { turbo_frame: "enrollments_data" } do %>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m13 17 5-5-5-5" />
+                      <path d="m6 17 5-5-5-5" />
+                    </svg>
+                  <% end %>
+                <% else %>
+                  <span class="flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m13 17 5-5-5-5" />
+                      <path d="m6 17 5-5-5-5" />
+                    </svg>
+                  </span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
