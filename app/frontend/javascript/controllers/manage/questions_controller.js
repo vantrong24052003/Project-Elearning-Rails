@@ -90,8 +90,7 @@ export default class extends Controller {
       return
     }
 
-    const url = new URL('/manage/quizzes/new', window.location.origin)
-    url.searchParams.append('selected_questions', JSON.stringify(this.selectedQuestions))
-    window.location.href = url.toString()
+    sessionStorage.setItem('selected_questions_data', JSON.stringify(this.selectedQuestions))
+    window.location.href = '/manage/quizzes/new'
   }
 }
