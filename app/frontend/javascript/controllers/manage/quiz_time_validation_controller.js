@@ -18,11 +18,9 @@ export default class extends Controller {
     const hours = String(now.getHours()).padStart(2, '0')
     const minutes = String(now.getMinutes()).padStart(2, '0')
 
-    // Định dạng chuỗi datetime-local cho các trường input
     const nowString = `${year}-${month}-${day}T${hours}:${minutes}`
 
     if (this.hasStartTimeTarget) {
-      this.startTimeTarget.min = nowString
       this.startTimeTarget.addEventListener('change', this.updateEndTimeMin.bind(this))
     }
 
@@ -76,12 +74,6 @@ export default class extends Controller {
 
     if (!this.startTimeTarget.value || !this.endTimeTarget.value) {
       alert("Please select both start and end times")
-      isValid = false
-      return isValid
-    }
-
-    if (startTime < allowedPastTime) {
-      alert("Start time cannot be in the past (allowed to be up to 5 minutes before current time)")
       isValid = false
       return isValid
     }
