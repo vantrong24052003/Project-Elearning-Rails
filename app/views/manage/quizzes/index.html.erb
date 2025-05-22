@@ -103,7 +103,7 @@
                 </div>
                 <% unless @course.present? %>
                   <div class="w-full md:w-auto">
-                    <%= f.collection_select :course_id, Course.all, :id, :title, { include_blank: 'Tất cả khóa học', selected: params[:course_id] },
+                    <%= f.collection_select :course_id, Course.where(user_id: current_user.id), :id, :title, { include_blank: 'Tất cả khóa học', selected: params[:course_id] },
                       {
                         class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700",
                         data: {

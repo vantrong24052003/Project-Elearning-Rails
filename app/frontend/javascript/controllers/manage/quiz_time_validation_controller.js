@@ -21,7 +21,6 @@ export default class extends Controller {
     const nowString = `${year}-${month}-${day}T${hours}:${minutes}`
 
     if (this.hasStartTimeTarget) {
-      this.startTimeTarget.min = nowString
       this.startTimeTarget.addEventListener('change', this.updateEndTimeMin.bind(this))
     }
 
@@ -75,12 +74,6 @@ export default class extends Controller {
 
     if (!this.startTimeTarget.value || !this.endTimeTarget.value) {
       alert("Please select both start and end times")
-      isValid = false
-      return isValid
-    }
-
-    if (startTime < allowedPastTime) {
-      alert("Start time cannot be in the past (allowed to be up to 5 minutes before current time)")
       isValid = false
       return isValid
     }
