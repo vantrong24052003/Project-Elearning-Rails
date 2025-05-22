@@ -1,13 +1,18 @@
 # Name of your application. Used to uniquely configure containers.
-service: elearning
+service: project-rails-learning
 
 # Name of the container image.
-image: vantrong1/elearning
+image: vantrong1/project-rails-learning
 
 # Deploy to these servers.
 servers:
   web:
     - 103.171.90.90
+
+ssh:
+  user: root  # hoặc user bạn muốn sử dụng
+  keys:
+    - ~/.ssh/id_ssh_vps
   # job:
   #   hosts:
   #     - 192.168.0.1
@@ -17,9 +22,9 @@ servers:
 # Remove this section when using multiple web servers and ensure you terminate SSL at your load balancer.
 #
 # Note: If using Cloudflare, set encryption mode in SSL/TLS setting to "Full" to enable CF-to-app encryption.
-# proxy:
-#   ssl: true
-#   host: app.example.com
+proxy:
+  ssl: false
+  # host: app.example.com
 
 # Credentials for your image host.
 registry:
