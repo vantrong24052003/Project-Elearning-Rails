@@ -100,7 +100,7 @@ builder:
 # Use accessory services (secrets come from .kamal/secrets).
 accessories:
   db:
-    image: postgresql
+    image: postgres:17.5
     host: 103.171.90.90
     # Change to 3306 to expose port to the world instead of just local network.
     port: "127.0.0.1:5432:5432"
