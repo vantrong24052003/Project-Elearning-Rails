@@ -64,8 +64,9 @@ RUN groupadd --system --gid 1000 rails && \
 USER 1000:1000
 
 # Healthcheck with longer timeout and grace period
-HEALTHCHECK --interval=10s --timeout=30s --start-period=30s --retries=3 \
+HEALTHCHECK --interval=10s --timeout=30s --start-period=60s --retries=5 \
   CMD curl --fail http://localhost:80 || exit 1
+
 
 # Entrypoint and startup
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
