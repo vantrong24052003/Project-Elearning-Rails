@@ -12,16 +12,10 @@ ENV RAILS_ENV="production" \
     BUNDLE_WITHOUT="development"
 FROM base AS build
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y \
-    build-essential \
-    git \
-    libpq-dev \
-    pkg-config \
-    libyaml-dev \
-    nodejs \
-    npm && \
-    npm install -g yarn && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+    apt-get install --no-install-recommends -y build-essential git libpq-dev libyaml-dev pkg-config && \
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install --no-install-recommends -y nodejs && \
+    corepack enable && \
 COPY Gemfile Gemfile.lock ./
 RUN bundle install && \
     bundle exec bootsnap precompile --gemfile
