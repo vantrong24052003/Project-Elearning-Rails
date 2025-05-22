@@ -33,7 +33,8 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential git libpq-dev libyaml-dev pkg-config && \
     curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install --no-install-recommends -y nodejs && \
-    npm install -g yarn && \
+    corepack enable && \
+    corepack prepare yarn@3.6.1 --activate && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
