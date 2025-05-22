@@ -40,6 +40,7 @@ registry:
 env:
   secret:
     - RAILS_MASTER_KEY
+    - POSTGRES_PASSWORD
   clear:
     # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
     # When you start using multiple servers, you should split out job processing to a dedicated machine.
@@ -53,7 +54,7 @@ env:
 
     # Match this to any external database server to configure Active Record correctly
     # Use elearning-db for a db accessory server on same machine via local kamal docker network.
-    # DB_HOST: 192.168.0.2
+    DB_HOST: project-rails-learning-db
 
     # Log everything from Rails
     # RAILS_LOG_LEVEL: debug

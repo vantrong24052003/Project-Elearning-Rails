@@ -3,10 +3,10 @@
     adapter: postgresql
     encoding: unicode
     pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    username: <%= Rails.application.credentials.dig(:db_development, :username) %>
-    password: <%= Rails.application.credentials.dig(:db_development, :password) %>
+    username: <%= Rails.application.credentials.dig(:db_production, :username) || 'postgres' %>
+    password: <%= Rails.application.credentials.dig(:db_production, :password) || 'password' %>
     host: <%= Rails.application.credentials.dig(:db_development, :host) || 'localhost' %>
-    port: <%= Rails.application.credentials.dig(:db_development, :port) || 5432 %>
+    port: <%= Rails.application.credentials.dig(:db_development, :port) ||  project-rails-learning-db%>
 
 
   development:
@@ -17,8 +17,6 @@
     primary: &primary_production
       <<: *default
       database: elearning_production
-      username: <%= Rails.application.credentials.dig(:db_production, :username) %>
-      password: <%= Rails.application.credentials.dig(:db_production, :password) %>
     cache:
       <<: *primary_production
       database: elearning_production_cache
@@ -31,3 +29,40 @@
       <<: *primary_production
       database: elearning_production_cable
       migrations_paths: db/cable_migrate
+
+
+
+
+
+
+
+
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  username: <%= ENV['POSTGRES_USER'] || 'postgres' %>
+  password: <%= ENV['POSTGRES_PASSWORD'] || 'password' %>
+  host: <%= ENV['DB_HOST'] || 'e_commerce_rails-db' %>
+  pool: 5
+development:
+  <<: *default
+  database: e_commerce_rails_development
+test:
+  <<: *default
+  database: e_commerce_rails_test
+production:
+  primary: &primary_production
+    <<: *default
+    database: e_commerce_rails_production
+  cache:
+    <<: *primary_production
+    database: e_commerce_rails_production_cache
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *primary_production
+    database: e_commerce_rails_production_queue
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *primary_production
+    database: e_commerce_rails_production_cable
+    migrations_paths: db/cable_migrate
