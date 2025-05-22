@@ -265,43 +265,6 @@
               </div>
 
               <div>
-                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Phân loại theo chủ đề</h4>
-                <%
-                  topic_counts = {}
-                  @quiz.questions.each do |q|
-                    topic = q.topic.presence || 'other'
-                    topic_counts[topic] ||= 0
-                    topic_counts[topic] += 1
-                  end
-
-                  top_topics = topic_counts.sort_by { |k, v| -v }.first(5)
-                %>
-
-                <% if top_topics.any? %>
-                  <div class="grid grid-cols-2 gap-2 text-sm">
-                    <% top_topics.each do |topic, count| %>
-                      <div class="flex items-center justify-between">
-                        <span class="text-gray-700 dark:text-gray-300"><%= topic.capitalize %></span>
-                        <span class="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-0.5 rounded-full text-xs"><%= count %></span>
-                      </div>
-                    <% end %>
-                  </div>
-                <% else %>
-                  <p class="text-gray-600 dark:text-gray-400 text-sm">Không có dữ liệu</p>
-                <% end %>
-              </div>
-
-              <div>
-                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Ngày tạo</h4>
-                <p class="text-gray-900 dark:text-white"><%= @quiz.created_at.strftime("%H:%M %d/%m/%Y") %></p>
-              </div>
-
-              <div>
-                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Cập nhật lần cuối</h4>
-                <p class="text-gray-900 dark:text-white"><%= @quiz.updated_at.strftime("%H:%M %d/%m/%Y") %></p>
-              </div>
-
-              <div>
                 <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Số lượt làm bài</h4>
                 <p class="text-gray-900 dark:text-white"><%= @quiz.quiz_attempts.count %> lượt</p>
               </div>
@@ -325,7 +288,9 @@
       <div class="space-y-4">
         <div class="form-control">
           <%= f.label :title, 'Tiêu đề bài kiểm tra', class: 'label' %>
-          <%= f.text_field :title, class: 'input input-bordered', required: true %>
+          <%= f.text_field :title, class: 'input input-bordered', required: true,
+              data: { manage__quiz_time_validation_target: "title" } %>
+          <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="titleError"></div>
         </div>
 
         <div class="form-control">
@@ -333,13 +298,15 @@
           <%= f.select :course_id,
             @courses.map { |c| [c.title, c.id] },
             { include_blank: 'Chọn khóa học' },
-            { class: 'select select-bordered', required: true }
+            { class: 'select select-bordered', required: true, 
+              data: { manage__quiz_time_validation_target: "course" } }
           %>
+          <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="courseError"></div>
         </div>
 
         <div class="form-control">
           <%= f.label :time_limit, 'Thời gian làm bài (phút)', class: 'label' %>
-          <%= f.number_field :time_limit, min: 1, class: 'input input-bordered', value: 15,
+          <%= f.number_field :time_limit, min: 1, class: 'input input-bordered',require: true,
               data: { manage__quiz_time_validation_target: "timeLimit" } %>
           <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="timeLimitError"></div>
         </div>
@@ -383,59 +350,3 @@
     <button>close</button>
   </form>
 </dialog>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const form = document.getElementById('edit_quiz_form');
-  const startTimeInput = document.getElementById('start_time');
-  const endTimeInput = document.getElementById('end_time');
-  const timeLimitInput = document.getElementById('time_limit');
-  const submitBtn = document.getElementById('submit_btn');
-
-  function validateTime() {
-    let isValid = true;
-    const startTime = new Date(startTimeInput.value);
-    const endTime = new Date(endTimeInput.value);
-    const timeLimit = parseInt(timeLimitInput.value);
-
-    // Reset error messages
-    document.querySelectorAll('.text-error').forEach(el => {
-      el.classList.add('hidden');
-      el.textContent = '';
-    });
-
-    // Validate start time and end time
-    if (startTime && endTime) {
-      if (startTime >= endTime) {
-        document.getElementById('start_time_error').textContent = 'Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc';
-        document.getElementById('start_time_error').classList.remove('hidden');
-        isValid = false;
-      }
-
-      // Calculate total minutes between start and end
-      const totalMinutes = (endTime - startTime) / (1000 * 60);
-
-      // Validate time limit
-      if (timeLimit > totalMinutes) {
-        document.getElementById('time_limit_error').textContent = `Thời gian làm bài phải nhỏ hơn startTime và endTime)`;
-        document.getElementById('time_limit_error').classList.remove('hidden');
-        isValid = false;
-      }
-    }
-
-    return isValid;
-  }
-
-  // Add event listeners for real-time validation
-  [startTimeInput, endTimeInput, timeLimitInput].forEach(input => {
-    input.addEventListener('change', validateTime);
-  });
-
-  // Validate before form submission
-  form.addEventListener('submit', function(e) {
-    if (!validateTime()) {
-      e.preventDefault();
-    }
-  });
-});
-</script>

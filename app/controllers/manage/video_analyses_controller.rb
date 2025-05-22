@@ -5,19 +5,19 @@ class Manage::VideoAnalysesController < Manage::BaseController
 
   def create
     if @video.upload&.transcription.blank?
-      render json: { error: 'Video này chưa có bản ghi âm (transcription)' }, status: :bad_request
+      render json: { error: 'This video has no transcription' }, status: :bad_request
       return
     end
 
     if @video.upload&.duration.blank?
-      render json: { error: 'Video này chưa có thông tin về thời lượng' }, status: :bad_request
+      render json: { error: 'This video has no duration information' }, status: :bad_request
       return
     end
 
     course = @video.lesson&.chapter&.course
 
     if course.blank?
-      render json: { error: 'Không tìm thấy thông tin khóa học' }, status: :bad_request
+      render json: { error: 'Course information not found' }, status: :bad_request
       return
     end
 
@@ -40,7 +40,7 @@ class Manage::VideoAnalysesController < Manage::BaseController
 
     render json: result
   rescue StandardError => e
-    render json: { error: "Đã xảy ra lỗi: #{e.message}" }, status: :internal_server_error
+    render json: { error: "An error occurred: #{e.message}" }, status: :internal_server_error
   end
 
   private

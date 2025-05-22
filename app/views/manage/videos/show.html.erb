@@ -246,96 +246,100 @@
         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Hành động</h3>
         
         <% if @video.upload&.status == 'success' %>
-          <% if @video.moderation_status == 'pending' %>
-            <div class="grid grid-cols-1 gap-2 mb-2">
-              <%= button_to manage_video_moderation_path(@video),
-                    method: :patch,
-                    params: { action_type: 'approve' },
-                    class: "btn btn-xs btn-success w-full flex items-center justify-center gap-1",
-                    data: { turbo_confirm: "Bạn có chắc chắn muốn chấp thuận video này không?" } do %>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-                <span class="text-xs">Chấp thuận</span>
-              <% end %>
+          <% if current_user.has_role?(:admin) %>
+            <% if @video.moderation_status == 'pending' %>
+              <div class="grid grid-cols-1 gap-2 mb-2">
+                <%= button_to manage_video_moderation_path(@video),
+                      method: :patch,
+                      params: { action_type: 'approve' },
+                      class: "btn btn-xs btn-success w-full flex items-center justify-center gap-1",
+                      data: { turbo_confirm: "Are you sure you want to approve this video?" } do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span class="text-xs">Approve</span>
+                <% end %>
 
-              <%= button_to manage_video_moderation_path(@video),
-                    method: :patch,
-                    params: { action_type: 'reject' },
-                    class: "btn btn-xs btn-error w-full flex items-center justify-center gap-1",
-                    data: { turbo_confirm: "Bạn có chắc chắn muốn từ chối video này không?" } do %>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-                <span class="text-xs">Từ chối</span>
-              <% end %>
-            </div>
-          <% elsif @video.moderation_status == 'approved' %>
-            <div class="mb-2">
-              <%= button_to manage_video_moderation_path(@video),
-                    method: :patch,
-                    params: { action_type: 'lock' },
-                    class: "btn btn-xs btn-warning w-full flex items-center justify-center gap-1",
-                    data: { turbo_confirm: "Bạn có chắc chắn muốn khóa video này không?" } do %>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                <span class="text-xs">Khóa video</span>
-              <% end %>
-            </div>
-          <% elsif @video.moderation_status == 'rejected' %>
-            <div class="mb-2">
-              <%= button_to manage_video_moderation_path(@video),
-                    method: :patch,
-                    params: { action_type: 'approve' },
-                    class: "btn btn-xs btn-success w-full flex items-center justify-center gap-1",
-                    data: { turbo_confirm: "Bạn có chắc chắn muốn chấp thuận lại video này không?" } do %>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-                <span class="text-xs">Chấp thuận lại</span>
-              <% end %>
-            </div>
-          <% elsif @video.moderation_status == 'locked' %>
-            <div class="mb-2">
-              <%= button_to manage_video_moderation_path(@video),
-                    method: :patch,
-                    params: { action_type: 'approve' },
-                    class: "btn btn-xs btn-success w-full flex items-center justify-center gap-1",
-                    data: { turbo_confirm: "Bạn có chắc chắn muốn mở khóa video này không?" } do %>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
-                </svg>
-                <span class="text-xs">Mở khóa video</span>
-              <% end %>
-            </div>
+                <%= button_to manage_video_moderation_path(@video),
+                      method: :patch,
+                      params: { action_type: 'reject' },
+                      class: "btn btn-xs btn-error w-full flex items-center justify-center gap-1",
+                      data: { turbo_confirm: "Bạn có chắc chắn muốn từ chối video này không?" } do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                  <span class="text-xs">Reject</span>
+                <% end %>
+              </div>
+            <% elsif @video.moderation_status == 'approved' %>
+              <div class="mb-2">
+                <%= button_to manage_video_moderation_path(@video),
+                      method: :patch,
+                      params: { action_type: 'lock' },
+                      class: "btn btn-xs btn-warning w-full flex items-center justify-center gap-1",
+                      data: { turbo_confirm: "Are you sure you want to lock this video?" } do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  <span class="text-xs">Lock Video</span>
+                <% end %>
+              </div>
+            <% elsif @video.moderation_status == 'rejected' %>
+              <div class="mb-2">
+                <%= button_to manage_video_moderation_path(@video),
+                      method: :patch,
+                      params: { action_type: 'approve' },
+                      class: "btn btn-xs btn-success w-full flex items-center justify-center gap-1",
+                      data: { turbo_confirm: "Are you sure you want to approve this video?" } do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span class="text-xs">Approve Again</span>
+                <% end %>
+              </div>
+            <% elsif @video.moderation_status == 'locked' %>
+              <div class="mb-2">
+                <%= button_to manage_video_moderation_path(@video),
+                      method: :patch,
+                      params: { action_type: 'approve' },
+                      class: "btn btn-xs btn-success w-full flex items-center justify-center gap-1",
+                      data: { turbo_confirm: "Are you sure you want to unlock this video?" } do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                  </svg>
+                  <span class="text-xs">Unlock Video</span>
+                <% end %>
+              </div>
+            <% end %>
           <% end %>
         <% end %>
 
         <div class="grid grid-cols-2 gap-2">
-          <button type="button" class="btn btn-xs btn-outline w-full flex items-center justify-center gap-1" onclick="document.getElementById('editVideoModal').showModal()">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-            </svg>
-            <span class="text-xs">Sửa</span>
-          </button>
+          <% if current_user.has_role?(:admin) || (current_user.has_role?(:instructor) && @video.upload&.user_id == current_user.id) %>
+            <button type="button" class="btn btn-xs btn-outline w-full flex items-center justify-center gap-1" onclick="document.getElementById('editVideoModal').showModal()">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+              </svg>
+              <span class="text-xs">Edit</span>
+            </button>
 
-          <%= button_to manage_video_path(@video),
-                method: :delete,
-                data: {
-                  turbo: false,
-                  turbo_confirm: "Bạn có chắc chắn muốn xóa video \"#{@video.title}\"?",
-                  turbo_frame: "_top"
-                },
-                class: "btn btn-xs btn-error w-full flex items-center justify-center gap-1" do %>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-            <span class="text-xs">Xóa</span>
+            <%= button_to manage_video_path(@video),
+                  method: :delete,
+                  data: {
+                    turbo: false,
+                    turbo_confirm: "Bạn có chắc chắn muốn xóa video \"#{@video.title}\" không?",
+                    turbo_frame: "_top"
+                  },
+                  class: "btn btn-xs btn-error w-full flex items-center justify-center gap-1" do %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span class="text-xs">Delete</span>
+            <% end %>
           <% end %>
         </div>
       </div>
