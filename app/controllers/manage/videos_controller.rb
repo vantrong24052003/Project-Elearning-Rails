@@ -3,7 +3,7 @@
 class Manage::VideosController < Manage::BaseController
   before_action :set_video, only: %i[show edit update destroy]
   before_action :authorize_admin, only: %i[index]
-  
+
   def index
     @videos = filter_videos
   end
@@ -42,7 +42,10 @@ class Manage::VideosController < Manage::BaseController
   private
 
   def authorize_admin
-    redirect_to manage_root_path, alert: 'You are not authorized to access this page' unless current_user.has_role?(:admin)
+    unless current_user.has_role?(:admin)
+      redirect_to manage_root_path,
+                  alert: 'You are not authorized to access this page'
+    end
   end
 
   def filter_videos

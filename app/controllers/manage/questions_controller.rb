@@ -13,7 +13,7 @@ class Manage::QuestionsController < Manage::BaseController
     if params[:ids].present? && params[:format] == 'json'
       question_ids = params[:ids].split(',')
       @questions = Question.where(id: question_ids).includes(:course)
-      render json: { questions: @questions.as_json(include: { course: { only: [:id, :title] } }) }
+      render json: { questions: @questions.as_json(include: { course: { only: %i[id title] } }) }
       return
     end
 
@@ -108,7 +108,8 @@ class Manage::QuestionsController < Manage::BaseController
         end
 
         if error_messages.any?
-          flash[:alert] = "Successfully saved #{success_count}/#{questions_data.size} questions. Errors: #{error_messages.join('; ')}"
+          flash[:alert] =
+            "Successfully saved #{success_count}/#{questions_data.size} questions. Errors: #{error_messages.join('; ')}"
         else
           flash[:notice] = "Successfully saved #{success_count} questions"
         end

@@ -3,9 +3,9 @@
 class VideoProcessingJob < ApplicationJob
   queue_as :default
 
-  retry_on StandardError, wait: 5.seconds, attempts: 3
+  retry_on StandardError, wait: 10.seconds, attempts: 3
 
-  sidekiq_options unique: :until_executed, lock_ttl: 1.hour
+  sidekiq_options unique: :until_executed, lock_ttl: 2.hour
 
   def perform(upload_id)
     upload = Upload.find(upload_id)
@@ -238,6 +238,15 @@ class VideoProcessingJob < ApplicationJob
     result
   end
 
+  # bitrate: Số lượng dữ liệu truyền trong mỗi giây video
+  # width, height: chiều rộng, chiều cao của video  ảnh hưởng độ phân giải Độ phân giải
+  # segments_path: Giúp người dùng xem video ngay lập tức mà không cần tải toàn bộ file.
+  # bandwidth: Tốc độ truyền tải tối đa của video
+  # duration : Thời gian video
+  # resolution: Độ phân giải video
+  # playlist_path: Danh sách các file video nhỏ hơn
+  # ffmpeg_cmd: Lệnh ffmpeg để chuyển đổi video
+  # ffmpeg: Phần mềm mã nguồn mở để xử lý video
   def build_ffmpeg_command(mp4_path, width, height, bitrate, segments_path, playlist_path)
     "ffmpeg -y -i #{mp4_path} " \
     "-vf scale=#{width}:#{height} " \
@@ -387,8 +396,8 @@ class VideoProcessingJob < ApplicationJob
     attrs[:status] = status if status.present?
 
     if status == 'success'
-      additional_attrs[:cdn_url] = additional_attrs[:cdn_url].presence || '/placeholder_url'
-      additional_attrs[:thumbnail_path] = additional_attrs[:thumbnail_path].presence || '/placeholder_thumbnail'
+      additional_attrs[:cdn_url] = additional_attrs[:cdn_url].presence
+      additional_attrs[:thumbnail_path] = additional_attrs[:thumbnail_path].presence
     end
 
     attrs.merge!(additional_attrs) if additional_attrs.present?
