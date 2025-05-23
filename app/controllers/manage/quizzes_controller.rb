@@ -333,11 +333,6 @@ class Manage::QuizzesController < Manage::BaseController
 
   def set_quiz
     @quiz = Quiz.includes(questions: [:quiz_questions]).joins(:course).where(courses: { user_id: current_user.id }).find_by(id: params[:id])
-
-    unless @quiz
-      flash[:alert] = 'Không tìm thấy bài kiểm tra'
-      redirect_to manage_quizzes_path
-    end
   end
 
   def set_courses

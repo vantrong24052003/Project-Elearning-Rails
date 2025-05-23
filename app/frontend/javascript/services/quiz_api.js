@@ -23,7 +23,7 @@ export class QuizApi {
 
   static async logAction(courseId, quizId, attemptId, actionType, extraData = {}) {
     return await ApiService.put(
-      `/dashboard/courses/${courseId}/quiz_statuses/${attemptId}`,
+      `/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_statuses/${attemptId}`,
       {
         quiz_id: quizId,
         action_type: actionType,
@@ -36,7 +36,7 @@ export class QuizApi {
 
   static async updateBehaviorCounts(courseId, quizId, attemptId, counts) {
     return await ApiService.put(
-      `/dashboard/courses/${courseId}/quiz_statuses/${attemptId}`,
+      `/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_statuses/${attemptId}`,
       {
         quiz_id: quizId,
         behavior_counts: {
@@ -91,7 +91,7 @@ export class QuizApi {
     }
 
     return await ApiService.put(
-      `/dashboard/courses/${courseId}/quiz_statuses/${attemptId}`,
+      `/dashboard/courses/${courseId}/quizzes/${quizId}/quiz_statuses/${attemptId}`,
       {
         quiz_id: quizId,
         client_ip: clientIp,
