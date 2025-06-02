@@ -1,0 +1,216 @@
+<div class="container mx-auto px-4 py-8 bg-white dark:bg-gray-900 text-gray-800 dark:text-white"
+     data-controller="dashboard--quiz-timer dashboard--quiz-proctor dashboard--quiz-flag dashboard--quiz-ip-detector dashboard--quiz-cache"
+     data-dashboard--quiz-timer-mode-value="<%= @mode %>"
+     data-dashboard--quiz-proctor-mode-value="<%= @mode %>"
+     data-dashboard--quiz-timer-total-questions-value="<%= @questions.size %>"
+     data-dashboard--quiz-flag-total-questions-value="<%= @questions.size %>"
+     data-dashboard--quiz-timer-course-id-value="<%= @course.id %>"
+     data-dashboard--quiz-proctor-course-id-value="<%= @course.id %>"
+     data-dashboard--quiz-timer-quiz-id-value="<%= @quiz.id %>"
+     data-dashboard--quiz-proctor-quiz-id-value="<%= @quiz.id %>"
+     data-dashboard--quiz-timer-attempt-id-value="<%= @quiz_attempt&.id %>"
+     data-dashboard--quiz-proctor-attempt-id-value="<%= @quiz_attempt&.id %>"
+     data-dashboard--quiz-ip-detector-start-value="<%= params[:start] == 'true' %>"
+     data-dashboard--quiz-ip-detector-has-ip-value="<%= params[:client_ip].present? %>">
+
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div class="lg:col-span-1">
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-200 dark:border-gray-700 sticky top-4">
+        <div class="mb-4">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            <%= @quiz.title %>
+          </h2>
+          <p class="text-gray-600 dark:text-gray-300 text-sm">
+            <%= @quiz.is_exam ? "Bài thi" : "Bài kiểm tra" %> • <%= @questions.size %> câu hỏi
+          </p>
+
+          <% if @quiz.start_time || @quiz.end_time %>
+            <div class="mt-2 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+              <% if @quiz.start_time %>
+                <div class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Mở từ: <%= @quiz.start_time.strftime("%d/%m/%Y %H:%M") %>
+                </div>
+              <% end %>
+
+              <% if @quiz.end_time %>
+                <div class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Kết thúc: <%= @quiz.end_time.strftime("%d/%m/%Y %H:%M") %>
+                </div>
+
+                <% if @quiz.end_time > Time.current && @quiz.end_time < Time.current + 3.hours %>
+                  <div class="text-xs text-red-600 dark:text-red-400 font-medium">
+                    Còn <%= distance_of_time_in_words(Time.current, @quiz.end_time) %> trước khi kết thúc
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="mb-6 text-center">
+          <div class="text-3xl font-bold text-gray-900 dark:text-white mb-1"
+               data-dashboard--quiz-timer-target="display"
+               data-time-limit="<%= @quiz.time_limit %>">
+            <%= @quiz.time_limit %>:00
+          </div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">Thời gian còn lại</div>
+
+          <div class="mt-2 flex justify-center">
+            <button type="button"
+                    class="px-3 py-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-white rounded-lg text-sm <%= @quiz.is_exam ? 'hidden' : '' %>"
+                    data-dashboard--quiz-timer-target="pauseBtn"
+                    data-action="click->dashboard--quiz-timer#togglePause">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Tạm dừng
+            </button>
+            <button type="button"
+                    class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm hidden <%= @quiz.is_exam ? 'hidden' : '' %>"
+                    data-dashboard--quiz-timer-target="resumeBtn"
+                    data-action="click->dashboard--quiz-timer#togglePause">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Tiếp tục
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <div class="text-sm text-gray-600 dark:text-gray-300 mb-2">Câu hỏi:</div>
+          <div class="grid grid-cols-5 gap-2" data-dashboard--quiz-flag-target="questionNav">
+            <% @questions.each_with_index do |question, index| %>
+              <button type="button"
+                      class="w-full aspect-square bg-gray-500 rounded flex items-center justify-center text-white font-medium text-sm"
+                      data-dashboard--quiz-flag-target="questionNavItem"
+                      data-question-id="<%= question.id %>"
+                      data-index="<%= index %>"
+                      data-action="click->dashboard--quiz-flag#goToQuestion">
+                <%= index + 1 %>
+              </button>
+            <% end %>
+          </div>
+
+          <div class="mt-3 text-xs text-gray-400 flex flex-col gap-1">
+            <div class="flex items-center">
+              <div class="w-3 h-3 bg-gray-500 rounded mr-2"></div>
+              <span>Chưa trả lời</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-3 h-3 bg-green-500 rounded mr-2"></div>
+              <span>Đã trả lời</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-3 h-3 bg-yellow-500 rounded mr-2"></div>
+              <span>Đã đánh dấu</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 space-y-2">
+          <button type="button"
+                  class="w-full py-3 bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white rounded-lg font-medium"
+                  data-dashboard--quiz-timer-target="submitBtn"
+                  data-action="click->dashboard--quiz-timer#submitForm">
+            Nộp bài
+          </button>
+          <% unless @quiz.is_exam? %>
+            <%= link_to dashboard_course_quizzes_path(@course),
+                      class: "w-full py-2 border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-center block text-sm",
+                      data: { dashboard__quiz_timer_target: "cancelBtn", action: "click->dashboard--quiz-timer#cancel" } do %>
+              Hủy bỏ
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-3 select-none">
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+        <div class="flex justify-between items-center mb-6">
+          <div class="text-gray-600 dark:text-gray-300">
+            Câu <span data-dashboard--quiz-flag-target="currentQuestionDisplay">1</span> / <%= @questions.size %>
+          </div>
+
+          <div class="flex gap-2">
+            <button type="button"
+                    class="px-3 py-1 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-white rounded"
+                    data-dashboard--quiz-flag-target="flagBtn"
+                    data-action="click->dashboard--quiz-flag#flagCurrentQuestion">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+              </svg>
+              <span>Đánh dấu</span>
+            </button>
+          </div>
+        </div>
+
+        <%= form_with url: @quiz_attempt && @quiz_attempt.persisted? ?
+                      dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt) :
+                      dashboard_course_quiz_quiz_attempts_path(@course, @quiz),
+                    method: @quiz_attempt && @quiz_attempt.persisted? ? :patch : :post,
+                    data: { dashboard__quiz_timer_target: "form" } do |f| %>
+          <%= f.hidden_field :time_spent, data: { dashboard__quiz_timer_target: "timeSpent" } %>
+          <%= f.hidden_field :mode, value: @mode %>
+
+          <div data-dashboard--quiz-timer-target="questionContainer" class="question-container">
+            <% @questions.each_with_index do |question, index| %>
+              <div class="question mb-8 <%= index == 0 ? '' : 'hidden' %>"
+                   data-dashboard--quiz-flag-target="questionContainer"
+                   data-question-id="<%= question.id %>">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  <%= question.content %>
+                </h3>
+
+                <div class="space-y-3">
+                  <% question.options.each do |option_key, option_value| %>
+                    <div class="flex items-start">
+                      <div class="flex items-center h-6 mt-1">
+                        <%= f.radio_button "answers[#{question.id}]", option_key,
+                                          id: "answer_#{question.id}_#{option_key}",
+                                          class: "h-5 w-5 text-blue-600 dark:text-purple-600 focus:ring-blue-500 dark:focus:ring-purple-500 border-gray-300 dark:border-gray-600" %>
+                      </div>
+                      <div class="ml-3">
+                        <label for="answer_<%= question.id %>_<%= option_key %>" class="text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+                          <%= option_value %>
+                        </label>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <div class="flex justify-between mt-8">
+          <button type="button"
+                  class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-white rounded-lg"
+                  data-action="click->dashboard--quiz-flag#prevQuestion">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Câu trước
+          </button>
+
+          <button type="button"
+                  class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-white rounded-lg"
+                  data-action="click->dashboard--quiz-flag#nextQuestion">
+            Câu tiếp
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,442 @@
+<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <div class="flex flex-col gap-4">
+    <div class="flex items-center gap-3 mb-4">
+      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
+        <%= params[:ai] ? "Tạo bài kiểm tra với AI" : "Tạo bài kiểm tra mới" %>
+      </h1>
+    </div>
+
+    <% if params[:ai] %>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" data-controller="manage--course-content-select">
+        <div class="lg:col-span-1 space-y-6">
+          <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Thiết lập bài kiểm tra</h2>
+
+            <%= form_with model: @quiz, url: manage_quizzes_path, method: :post, data: { manage__course_content_select_target: "form" } do |f| %>
+              <%= hidden_field_tag :questions_data, '', data: { manage__course_content_select_target: "questionsData" } %>
+
+              <div class="mb-4">
+                <%= f.label :title, 'Tiêu đề bài kiểm tra', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= f.text_field :title, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', placeholder: 'Nhập tiêu đề bài kiểm tra', required: true, data: { manage__quiz_time_validation_target: "title" } %>
+              </div>
+
+              <div class="mb-4">
+                <%= f.label :course_id, 'Khóa học', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= f.select :course_id,
+                  @courses.map { |c| [c.title, c.id] },
+                  { include_blank: 'Chọn khóa học' },
+                  {
+                    class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
+                    required: true,
+                    data: { 
+                      manage__quiz_time_validation_target: "course",
+                      manage__course_content_select_target: "courseSelect",
+                      action: "change->manage--course-content-select#loadChapters"
+                    }
+                  }
+                %>
+                <% if @course.present? %>
+                  <p class="mt-1 text-xs text-green-600 dark:text-green-400">Đã chọn khóa học: <%= @course.title %></p>
+                <% end %>
+              </div>
+
+              <!-- Chọn Chapter -->
+              <div class="mb-4">
+                <label for="chapter_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Chương</label>
+                <select id="chapter_id" name="chapter_id"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  data-manage--course-content-select-target="chapterSelect"
+                  data-action="change->manage--course-content-select#loadLessons">
+                  <option value="">Chọn chương</option>
+                </select>
+              </div>
+
+              <!-- Chọn Lesson -->
+              <div class="mb-4">
+                <label for="lesson_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bài học</label>
+                <select id="lesson_id" name="lesson_id"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  data-manage--course-content-select-target="lessonSelect"
+                  data-action="change->manage--course-content-select#loadVideos">
+                  <option value="">Chọn bài học</option>
+                </select>
+              </div>
+
+              <!-- Chọn Video -->
+              <div class="mb-4">
+                <label for="video_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Video</label>
+                <select id="video_id" name="video_id"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  data-manage--course-content-select-target="videoSelect"
+                  data-action="change->manage--course-content-select#showVideoPreview">
+                  <option value="">Chọn video</option>
+                </select>
+              </div>
+
+              <!-- Video Preview -->
+              <div class="mb-6 hidden" data-manage--course-content-select-target="videoPreview">
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                  <div class="p-3 bg-gray-50 dark:bg-gray-800">
+                    <div class="flex justify-between items-center">
+                      <div class="flex gap-2 mx-auto">
+                        <a href="#" class="btn btn-sm btn-outline" data-manage--course-content-select-target="videoDetailLink">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                          </svg>
+                          Xem chi tiết video
+                        </a>
+                        <button type="button"
+                                class="btn btn-sm btn-primary"
+                                data-action="manage--course-content-select#extractVideoContent">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 3v4a1 1 0 0 0 1 1h4"></path>
+                            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path>
+                            <path d="M9 9l1 6l3 -4l3 4l1 -6"></path>
+                          </svg>
+                          Lấy nội dung từ video
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <%= f.label :time_limit, 'Thời gian làm bài (phút)', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= f.number_field :time_limit, min: 1, 
+                    class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', 
+                    value: 15,
+                    required: true,
+                    data: { 
+                      manage__quiz_time_validation_target: "timeLimit"
+                    } %>
+              </div>
+
+              <div class="mb-4">
+                <%= f.label :start_time, 'Thời gian bắt đầu', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= f.datetime_local_field :start_time, 
+                    class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
+                    required: true,
+                    value: Time.current.strftime('%Y-%m-%dT%H:%M'),
+                    data: { 
+                      manage__quiz_time_validation_target: "startTime"
+                    } %>
+              </div>
+
+              <div class="mb-4">
+                <%= f.label :end_time, 'Thời gian kết thúc', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= f.datetime_local_field :end_time, 
+                    class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
+                    required: true,
+                    value: (Time.current + 1.hour).strftime('%Y-%m-%dT%H:%M'),
+                    data: { 
+                      manage__quiz_time_validation_target: "endTime"
+                    } %>
+              </div>
+
+              <div class="mb-4">
+                <div class="flex justify-between items-center mb-1">
+                  <%= f.label :is_exam, 'Loại bài kiểm tra', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300' %>
+                </div>
+                <div class="flex gap-4">
+                  <div class="flex items-center">
+                    <%= f.radio_button :is_exam, false, class: 'h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800', checked: true %>
+                    <%= f.label :is_exam_false, 'Bài tập thực hành', class: 'ml-2 text-sm text-gray-700 dark:text-gray-300' %>
+                  </div>
+                  <div class="flex items-center">
+                    <%= f.radio_button :is_exam, true, class: 'h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800' %>
+                    <%= f.label :is_exam_true, 'Bài thi', class: 'ml-2 text-sm text-gray-700 dark:text-gray-300' %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mô tả người dùng - phần quan trọng nhất cho AI -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Mô tả của bạn
+                  <span class="text-green-600 dark:text-green-400">(Ưu tiên sử dụng)</span>
+                </label>
+                <textarea name="user_description" rows="4" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="Mô tả chi tiết các khái niệm, định nghĩa, quy trình, ví dụ, ứng dụng thực tế và các điểm quan trọng cần kiểm tra"></textarea>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Nhập đầy đủ chi tiết về nội dung muốn kiểm tra. Ví dụ: định nghĩa, công thức, quy trình, các bước thực hiện, điểm khác biệt giữa các khái niệm, ví dụ thực tế, v.v. Nội dung chi tiết sẽ giúp AI tạo câu hỏi chất lượng cao.</p>
+              </div>
+
+              <div class="mb-4">
+                <%= label_tag :num_questions, 'Số lượng câu hỏi', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= number_field_tag :num_questions, 5, min: 1, max: 20, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white' %>
+              </div>
+
+              <div class="mb-4">
+                <%= label_tag :difficulty, 'Độ khó', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= select_tag :difficulty,
+                  options_for_select([
+                    ['Dễ (cơ bản)', 'easy'],
+                    ['Trung bình', 'medium'],
+                    ['Khó (nâng cao)', 'hard'],
+                    ['Kết hợp các mức độ', 'mixed']
+                  ], 'medium'),
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
+                %>
+              </div>
+
+              <div class="mb-4">
+                <%= label_tag :topic, 'Chủ đề', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= select_tag :topic,
+                  options_for_select([
+                    ['Toán học', 'math'],
+                    ['Vật lý', 'physics'],
+                    ['Hóa học', 'chemistry'],
+                    ['Sinh học', 'biology'],
+                    ['Lịch sử', 'history'],
+                    ['Địa lý', 'geography'],
+                    ['Văn học', 'literature'],
+                    ['Lập trình', 'programming']
+                  ], 'programming'),
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
+                %>
+              </div>
+
+              <div class="mb-4">
+                <%= label_tag :learning_goal, 'Mục tiêu học tập', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+                <%= select_tag :learning_goal,
+                  options_for_select([
+                    ['Ghi nhớ', 'remember'],
+                    ['Hiểu', 'understand'],
+                    ['Áp dụng', 'apply'],
+                    ['Phân tích', 'analyze'],
+                    ['Sáng tạo', 'create']
+                  ], 'understand'),
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
+                %>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Dựa trên Thang đo Bloom: Từ đơn giản (ghi nhớ) đến phức tạp (sáng tạo)</p>
+              </div>
+
+              <div class="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-700/30 rounded-lg p-4 mb-4">
+                <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">Các kiểu câu hỏi muốn tạo:</h3>
+                <div class="space-y-2">
+                  <div class="flex items-center">
+                    <%= check_box_tag 'question_types[]', 'knowledge', true, class: 'h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-700 focus:ring-blue-500' %>
+                    <label for="question_types_knowledge" class="ml-2 text-sm text-blue-700 dark:text-blue-300">Câu hỏi kiến thức (kiểm tra hiểu biết và ghi nhớ)</label>
+                  </div>
+                  <div class="flex items-center">
+                    <%= check_box_tag 'question_types[]', 'application', true, class: 'h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-700 focus:ring-blue-500' %>
+                    <label for="question_types_application" class="ml-2 text-sm text-blue-700 dark:text-blue-300">Câu hỏi áp dụng (vận dụng kiến thức vào tình huống)</label>
+                  </div>
+                  <div class="flex items-center">
+                    <%= check_box_tag 'question_types[]', 'analysis', true, class: 'h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-700 focus:ring-blue-500' %>
+                    <label for="question_types_analysis" class="ml-2 text-sm text-blue-700 dark:text-blue-300">Câu hỏi phân tích (phân tích quan hệ giữa các khái niệm)</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-gray-200 dark:border-gray-700">
+                <button type="button" class="w-full btn btn-primary" data-action="manage--course-content-select#generateQuestions">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.05 4.03a9 9 0 0 0-4.17 2.44 8 8 0 1 0 2.83 13.93"></path>
+                    <path d="M18 2v4h-4"></path>
+                    <path d="M4 11a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"></path>
+                    <path d="M14 10h4"></path>
+                    <path d="M14 14h4"></path>
+                    <path d="M14 18h4"></path>
+                  </svg>
+                  Tạo câu hỏi với AI
+                </button>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2">
+          <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Câu hỏi được tạo ra</h2>
+
+              <div class="flex items-center gap-3 hidden" data-manage--course-content-select-target="controls">
+
+                <button type="button" class="btn btn-sm btn-primary" data-action="manage--course-content-select#saveQuiz">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                  </svg>
+                  Lưu bài kiểm tra
+                </button>
+              </div>
+            </div>
+
+            <div data-manage--course-content-select-target="loading" class="text-center py-12 hidden">
+              <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 dark:border-blue-500"></div>
+              <p class="mt-4 text-gray-600 dark:text-gray-400">Đang tạo câu hỏi...</p>
+            </div>
+
+            <div data-manage--course-content-select-target="questionsContainer" class="hidden space-y-8 max-h-[calc(100vh-220px)] overflow-y-auto pr-2">
+              <!-- Nội dung câu hỏi sẽ được thêm vào bằng Stimulus -->
+            </div>
+
+            <template data-manage--course-content-select-target="questionTemplate">
+              <div class="question-item border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                <div class="bg-gray-50 dark:bg-gray-800 px-4 py-3 flex justify-between items-center">
+                  <h3 class="font-medium text-gray-800 dark:text-white">Câu hỏi <span class="question-number"></span></h3>
+                  <div class="flex items-center gap-2">
+                    <select class="question-difficulty select select-sm select-bordered">
+                      <option value="easy">Dễ</option>
+                      <option value="medium" selected>Trung bình</option>
+                      <option value="hard">Khó</option>
+                    </select>
+                    <select class="question-topic select select-sm select-bordered">
+                      <option value="math">Toán học</option>
+                      <option value="physics">Vật lý</option>
+                      <option value="chemistry">Hóa học</option>
+                      <option value="biology">Sinh học</option>
+                      <option value="history">Lịch sử</option>
+                      <option value="geography">Địa lý</option>
+                      <option value="literature">Văn học</option>
+                      <option value="programming" selected>Lập trình</option>
+                      <option value="other">Khác</option>
+                    </select>
+                    <select class="question-learning-goal select select-sm select-bordered">
+                      <option value="remember">Ghi nhớ</option>
+                      <option value="understand" selected>Hiểu</option>
+                      <option value="apply">Áp dụng</option>
+                      <option value="analyze">Phân tích</option>
+                      <option value="create">Sáng tạo</option>
+                      <option value="other">Khác</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="p-4">
+                  <div class="mb-4">
+                    <textarea class="question-content w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" rows="2"></textarea>
+                  </div>
+
+                  <div class="space-y-2 mb-4 options-container">
+                  </div>
+
+                  <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Giải thích</label>
+                    <textarea class="explanation w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" rows="3"></textarea>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    <% else %>
+      <!-- Form tạo bài kiểm tra thông thường -->
+      <div class="bg-white dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Thông tin bài kiểm tra</h2>
+
+        <%= form_with model: @quiz, url: manage_quizzes_path, method: :post,
+            data: {
+              controller: "manage--quiz-time-validation",
+              action: "submit->manage--quiz-time-validation#validateBeforeSubmit"
+            } do |f| %>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="mb-4">
+              <%= f.label :title, 'Tiêu đề bài kiểm tra', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+              <%= f.text_field :title, class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', 
+                  placeholder: 'Nhập tiêu đề bài kiểm tra', 
+                  required: true,
+                  data: { 
+                    manage__quiz_time_validation_target: "title"
+                  } %>
+              <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="titleError"></div>
+            </div>
+
+            <div class="mb-4">
+              <%= f.label :course_id, 'Khóa học', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+              <%= f.select :course_id,
+                @courses.map { |c| [c.title, c.id] },
+                { include_blank: 'Chọn khóa học' },
+                {
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
+                  required: true,
+                  data: { 
+                    manage__quiz_time_validation_target: "course",
+                    manage__course_content_select_target: "courseSelect",
+                    action: "change->manage--course-content-select#loadChapters"
+                  }
+                }
+              %>
+              <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="courseError"></div>
+              <% if @course.present? %>
+                <p class="mt-1 text-xs text-green-600 dark:text-green-400">Đã chọn khóa học: <%= @course.title %></p>
+              <% end %>
+            </div>
+
+            <div class="mb-4">
+              <%= f.label :time_limit, 'Thời gian làm bài (phút)', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+              <%= f.number_field :time_limit, min: 1, 
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white', 
+                  value: 15,
+                  required: true,
+                  data: { 
+                    manage__quiz_time_validation_target: "timeLimit"
+                  } %>
+              <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="timeLimitError"></div>
+            </div>
+
+            <div class="mb-4">
+              <%= f.label :start_time, 'Thời gian bắt đầu', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+              <%= f.datetime_local_field :start_time, 
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
+                  required: true,
+                  value: Time.current.strftime('%Y-%m-%dT%H:%M'),
+                  data: { 
+                    manage__quiz_time_validation_target: "startTime"
+                  } %>
+              <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="startTimeError"></div>
+            </div>
+
+            <div class="mb-4">
+              <%= f.label :end_time, 'Thời gian kết thúc', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+              <%= f.datetime_local_field :end_time, 
+                  class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
+                  required: true,
+                  value: (Time.current + 1.hour).strftime('%Y-%m-%dT%H:%M'),
+                  data: { 
+                    manage__quiz_time_validation_target: "endTime"
+                  } %>
+              <div class="text-error text-sm mt-1 hidden" data-manage--quiz-time-validation-target="endTimeError"></div>
+            </div>
+
+            <div class="mb-4">
+              <div class="flex justify-between items-center mb-1">
+                <%= f.label :is_exam, 'Loại bài kiểm tra', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300' %>
+              </div>
+              <div class="flex gap-4">
+                <div class="flex items-center">
+                  <%= f.radio_button :is_exam, false, class: 'h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800', checked: true %>
+                  <%= f.label :is_exam_false, 'Bài tập thực hành', class: 'ml-2 text-sm text-gray-700 dark:text-gray-300' %>
+                </div>
+                <div class="flex items-center">
+                  <%= f.radio_button :is_exam, true, class: 'h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800' %>
+                  <%= f.label :is_exam_true, 'Bài thi', class: 'ml-2 text-sm text-gray-700 dark:text-gray-300' %>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview questions từ sessionStorage -->
+          <div class="hidden border-t border-gray-200 dark:border-gray-700 pt-6 mt-4"
+               data-controller="manage--quizzes-preview"
+               data-manage--quizzes-preview-target="container">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Câu hỏi từ danh sách đã chọn (<span data-manage--quizzes-preview-target="count">0</span>)
+            </h3>
+            <%= hidden_field_tag :selected_questions_data, '', data: { manage__quizzes_preview_target: "data" } %>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto p-2" 
+                 data-manage--quizzes-preview-target="list">
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 mt-6">
+            <%= link_to "Hủy", manage_quizzes_path, class: "btn btn-ghost" %>
+            <%= f.submit "Tạo bài kiểm tra", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

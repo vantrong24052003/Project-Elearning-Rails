@@ -1,0 +1,107 @@
+<div class="min-h-screen text-gray-800 dark:text-white p-6">
+  <div class="container">
+    <div class="mb-6">
+      <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white"><%= @course.title %></h1>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg overflow-hidden">
+          <div class="h-72 overflow-hidden relative group mb-6">
+            <img src="<%= @course.thumbnail_path.presence || 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg' %>" alt="<%= @course.title %>" class="w-full h-full object-cover transition-transform  group-hover:scale-105" onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg';">
+            <div class="absolute inset-0 bg-gradient-to-t from-gray-100/80 to-transparent dark:from-gray-900/80 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity "></div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3 mb-6">
+            <span class="<%= @course.status == 'published' ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 border-green-200 dark:border-green-500/30' : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400 border-yellow-200 dark:border-yellow-500/30' %> px-3 py-1.5 rounded-full text-xs font-medium inline-flex items-center border backdrop-blur-sm">
+              <% if @course.status == 'published' %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              Published
+              <% else %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v10M12 16h.01" />
+              </svg>
+              Draft
+              <% end %>
+            </span>
+
+            <span class="bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600/30 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm">
+              <%= @course.language&.capitalize %>
+            </span>
+          </div>
+
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Description</h2>
+          <p class="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed"><%= @course.description %></p>
+
+          <% if @course.categories.any? %>
+          <h3 class="text-md font-bold text-gray-900 dark:text-white mb-3">Categories</h3>
+          <div class="flex flex-wrap gap-2 mb-6">
+            <% @course.categories.each do |category| %>
+            <span class="bg-blue-100 dark:bg-purple-900/40 text-blue-600 dark:text-purple-300 border border-blue-200 dark:border-purple-500/30 px-3 py-1.5 rounded-full text-xs font-medium transition-all  hover:bg-blue-200 dark:hover:bg-purple-800/50 cursor-default">
+              <%= category.name %>
+            </span>
+            <% end %>
+          </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Course Details</h2>
+
+          <div class="space-y-4">
+            <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700/50">
+              <span class="text-gray-500 dark:text-gray-400 font-medium">Price:</span>
+              <span class="text-blue-600 dark:text-purple-300 font-bold text-lg"><%= number_to_currency(@course.price, unit: "₫", precision: 0, delimiter: ".") %></span>
+            </div>
+
+            <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700/50">
+              <span class="text-gray-500 dark:text-gray-400 font-medium">Status:</span>
+              <span class="<%= @course.status == 'published' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400' %> font-medium">
+                <%= @course.status.capitalize %>
+              </span>
+            </div>
+
+            <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700/50">
+              <span class="text-gray-500 dark:text-gray-400 font-medium">Language:</span>
+              <span class="text-gray-800 dark:text-white"><%= @course.language&.capitalize %></span>
+            </div>
+
+            <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700/50">
+              <span class="text-gray-500 dark:text-gray-400 font-medium">Instructor:</span>
+              <span class="text-gray-800 dark:text-white"><%= @course.user&.name || "Unknown" %></span>
+            </div>
+
+            <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700/50">
+              <span class="text-gray-500 dark:text-gray-400 font-medium">Created:</span>
+              <span class="text-gray-800 dark:text-white"><%= @course.created_at.strftime("%d/%m/%Y") %></span>
+            </div>
+
+            <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700/50">
+              <span class="text-gray-500 dark:text-gray-400 font-medium">Last updated:</span>
+              <span class="text-gray-800 dark:text-white"><%= @course.updated_at.strftime("%d/%m/%Y") %></span>
+            </div>
+          </div>
+
+          <div class="mt-8 grid grid-cols-1 gap-3">
+            <%= link_to edit_manage_course_path(@course),
+                data: { turbo: false },
+                class: "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white text-center font-medium py-2.5 px-4 rounded-lg  shadow-lg flex items-center justify-center" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+              <path d="m15 5 4 4" />
+            </svg>
+            Chỉnh sửa
+            <% end %>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

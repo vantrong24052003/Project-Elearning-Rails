@@ -1,0 +1,79 @@
+<%= form_with model: [:manage, @course], html: { class: "space-y-6" } do |f| %>
+  <% if @course.errors.any? %>
+    <div class="bg-red-100 dark:bg-red-900/50 border border-red-300 dark:border-red-500 rounded-md p-4 mb-6">
+      <h2 class="text-red-700 dark:text-red-300 text-md font-medium mb-2">
+        <%= pluralize(@course.errors.count, "error") %> prohibited this course from being saved:
+      </h2>
+      <ul class="list-disc list-inside text-red-600 dark:text-red-200 text-sm">
+        <% @course.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid md:grid-cols-2 gap-6">
+    <div>
+      <div class="mb-4">
+        <%= f.label :title, "Tiêu đề", class: "block text-gray-700 dark:text-gray-300 mb-1 text-sm" %>
+        <%= f.text_field :title, class: "w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-2 px-3 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", placeholder: "Nhập tiêu đề khóa học" %>
+      </div>
+
+      <div class="mb-4">
+        <%= f.label :price, "Giá", class: "block text-gray-700 dark:text-gray-300 mb-1 text-sm" %>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <span class="text-gray-500 dark:text-gray-400">₫</span>
+          </div>
+          <%= f.number_field :price, min: 0, step: 1000, class: "w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-2 pl-8 pr-3 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", placeholder: "0" %>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <%= f.label :language, "Ngôn ngữ", class: "block text-gray-700 dark:text-gray-300 mb-1 text-sm" %>
+        <%= f.select :language, [["Tiếng Anh", "english"], ["Tiếng Việt", "vietnamese"], ["Tiếng Tây Ban Nha", "spanish"], ["Tiếng Pháp", "french"], ["Tiếng Đức", "german"]], {}, { class: "w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-2 px-3 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500" } %>
+      </div>
+
+      <div class="mb-4">
+        <%= f.label :status, "Trạng thái", class: "block text-gray-700 dark:text-gray-300 mb-1 text-sm" %>
+        <%= f.select :status, [["Bản nháp", "draft"], ["Đã xuất bản", "published"]], {}, { class: "w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-2 px-3 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500" } %>
+      </div>
+    </div>
+
+    <div>
+      <div class="mb-4">
+        <%= f.label :description, "Mô tả", class: "block text-gray-700 dark:text-gray-300 mb-1 text-sm" %>
+        <%= f.text_area :description, rows: 5, class: "w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-2 px-3 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", placeholder: "Nhập mô tả khóa học" %>
+      </div>
+
+      <div class="mb-4">
+        <%= f.label :thumbnail_path, "Ảnh bìa", class: "block text-gray-700 dark:text-gray-300 mb-1 text-sm" %>
+        <%= f.text_field :thumbnail_path, class: "w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-2 px-3 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", placeholder: "URL của ảnh bìa" %>
+      </div>
+
+      <% if @categories.present? %>
+      <div class="mb-4">
+        <span class="block text-gray-700 dark:text-gray-300 mb-1 text-sm">Danh mục</span>
+        <div class="flex flex-wrap gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-3">
+          <% @categories.each do |category| %>
+            <label class="inline-flex items-center">
+              <%= check_box_tag "course[category_ids][]", category.id, @course.categories.include?(category), id: "course_category_#{category.id}", class: "rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-blue-600 dark:text-purple-600 mr-1 focus:ring-blue-500 dark:focus:ring-purple-500" %>
+              <span class="text-gray-700 dark:text-gray-300 text-sm"><%= category.name %></span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flex justify-end gap-3">
+    <% if @course.persisted? %>
+      <%= link_to "Hủy", manage_course_path(@course), class: "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-white font-medium py-2 px-4 rounded-md " %>
+      <%= f.submit "Cập nhật", class: "bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md " %>
+    <% else %>
+      <%= link_to "Hủy", manage_courses_path, class: "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-white font-medium py-2 px-4 rounded-md " %>
+      <%= f.submit "Tạo khóa học", class: "bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md " %>
+    <% end %>
+  </div>
+<% end %>

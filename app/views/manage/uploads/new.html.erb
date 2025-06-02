@@ -1,0 +1,135 @@
+<div class="mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <div class="flex flex-col gap-4">
+    <div class="flex items-center gap-3 mb-4">
+      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Tải lên video mới</h1>
+    </div>
+
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg overflow-hidden">
+      <div class="p-6">
+        <div class="mb-6">
+          <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Hướng dẫn tải lên</h2>
+          <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4 text-sm text-blue-800 dark:text-blue-300">
+            <ul class="list-disc list-inside space-y-1">
+              <li>Định dạng được hỗ trợ: Tất cả định dạng video phổ biến (MP4, MOV, AVI, MKV, WebM, FLV, WMV, 3GP, ...)</li>
+              <li>Kích thước tệp tối đa: 2GB</li>
+              <li>Độ phân giải tối đa: 720p</li>
+              <li>Hệ thống sẽ tự động chuyển đổi thành định dạng HLS và tạo thumbnail</li>
+              <li>Hỗ trợ kéo thả nhiều file và tải lên cùng lúc</li>
+              <li>Hỗ trợ truyền phát thích ứng (Adaptive Streaming) để người xem có trải nghiệm tốt nhất trên mọi thiết bị</li>
+            </ul>
+          </div>
+        </div>
+
+        <div data-controller="manage--upload-form" class="mb-6">
+          <div class="mb-6">
+            <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 text-center cursor-pointer"
+                data-manage--upload-form-target="dropzone"
+                data-action="click->manage--upload-form#openFileDialog 
+                           dragover->manage--upload-form#handleDragOver 
+                           dragenter->manage--upload-form#handleDragEnter 
+                           dragleave->manage--upload-form#handleDragLeave 
+                           drop->manage--upload-form#handleDrop">
+
+              <div data-manage--upload-form-target="uploadUI">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p class="mb-1 text-gray-900 dark:text-gray-300 font-medium">Kéo và thả video tại đây</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">hoặc <button type="button" class="text-blue-600 dark:text-blue-400 underline" data-action="click->manage--upload-form#openFileDialog">nhấn để chọn tệp</button></p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Có thể chọn nhiều file cùng lúc</p>
+              </div>
+
+              <div class="hidden text-left" data-manage--upload-form-target="fileList">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="font-medium text-gray-900 dark:text-white">Danh sách video</h3>
+                </div>
+
+                <template data-manage--upload-form-target="uploadTemplate">
+                  <div class="file-item mb-4 p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
+                    <div class="flex justify-between items-start mb-2">
+                      <div>
+                        <p class="file-name text-gray-900 dark:text-white font-medium truncate max-w-xs"></p>
+                        <p class="file-size text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
+                        <p class="file-status text-xs text-gray-500 dark:text-gray-400 mt-1">Chờ xác nhận</p>
+                      </div>
+                      <div class="file-actions">
+                        <button type="button" class="delete-file text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400 underline">Xóa</button>
+                      </div>
+                    </div>
+
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700 mt-2 hidden">
+                      <div class="progress-bar bg-blue-600 h-1.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-end mt-1">
+                      <span class="progress-text text-xs text-gray-500 dark:text-gray-400 hidden">0%</span>
+                    </div>
+                  </div>
+                </template>
+
+                <!-- Khi không có files -->
+                <div data-manage--upload-form-target="noFilesMessage" class="text-center py-8">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 00-2 2z" />
+                  </svg>
+                  <p class="text-gray-500 dark:text-gray-400">Chưa có video nào được chọn</p>
+                </div>
+              </div>
+
+              <div class="hidden" data-manage--upload-form-target="errorUI">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-red-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="mb-1 text-gray-900 dark:text-white font-medium">Tải lên thất bại</p>
+                <p class="text-sm text-red-500 dark:text-red-400" data-manage--upload-form-target="errorMessage"></p>
+                <button class="mt-3 text-sm text-blue-600 dark:text-blue-400 hover:underline" data-action="click->manage--upload-form#resetUpload">Thử lại</button>
+              </div>
+
+              <!-- UI khi upload thành công -->
+              <div class="hidden" data-manage--upload-form-target="successUI">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-green-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="mb-1 text-gray-900 dark:text-white font-medium">Tải lên thành công!</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Video đang được xử lý và sẽ sẵn sàng trong vài phút</p>
+                <div class="mt-4">
+                  <button type="button" class="btn btn-primary" data-action="manage--upload-form#resetUpload">
+                    Tải lên video khác
+                  </button>
+                  <button type="button" class="btn btn-outline ml-2" data-action="manage--upload-form#goToList">
+                    Xem danh sách videos
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 flex justify-center gap-3">
+              <button type="button" class="btn btn-primary hidden" data-manage--upload-form-target="confirmButton" data-action="manage--upload-form#startUploads">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Bắt đầu tải lên
+              </button>
+
+              <button type="button" class="btn btn-outline hidden" data-manage--upload-form-target="uploadMoreButton" data-action="manage--upload-form#uploadMore">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="16"></line>
+                  <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+                Thêm video
+              </button>
+
+              <button type="button" class="btn btn-ghost hidden" data-manage--upload-form-target="cancelButton" data-action="manage--upload-form#resetUpload">
+                Hủy
+              </button>
+            </div>
+
+            <input type="file" class="hidden" multiple data-manage--upload-form-target="fileInput" data-action="change->manage--upload-form#handleFileChange" accept="video/*">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

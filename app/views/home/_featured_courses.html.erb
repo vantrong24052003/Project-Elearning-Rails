@@ -1,0 +1,81 @@
+<div class="dark:bg-gray-900 py-24">
+  <div class="container mx-auto px-4">
+    <h2 class="text-3xl md:text-4xl font-bold mb-6 text-center animate-fade-in-up">Featured Course Bundles</h2>
+    <p class="dark:text-gray-400 mb-12 text-center max-w-2xl mx-auto text-lg animate-fade-in-up animation-delay-150">
+      Accelerate your career with our carefully curated course bundles. Save time and money while mastering
+      in-demand skills.
+    </p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <% if @featured_courses.present? %>
+        <% @featured_courses.each_with_index do |course, index| %>
+          <div class="animate-fade-in-up" style="animation-delay: <%= index * 100 %>ms">
+            <div class="dark:bg-gray-800 dark:border-gray-700 overflow-hidden transform hover:scale-105 transition-transform  flex flex-col h-full rounded-lg shadow-md">
+              <div class="p-0">
+                <div class="relative">
+                  <% if course.thumbnail_path.present? && (course.thumbnail_path.start_with?('http://') || course.thumbnail_path.start_with?('https://')) %>
+                    <%= image_tag course.thumbnail_path, alt: course.title, class: "w-full h-48 object-cover" %>
+                  <% else %>
+                    <%= image_tag "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg", alt: course.title, class: "w-full h-48 object-cover" %>
+                  <% end %>
+
+                  <% # Display course category badge if available %>
+                  <% if @course_categories && @course_categories[course.id].present? %>
+                    <div class="absolute top-2 left-2">
+                      <span class="bg-purple-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                        <%= @course_categories[course.id].first.category.name %>
+                      </span>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+              <div class="p-6 flex-1 flex flex-col">
+                <h3 class="text-xl font-bold mb-3 truncate"><%= course.title %></h3>
+                <p class="text-gray-400 text-sm mb-4 flex-grow"><%= truncate(course.description, length: 100) %></p>
+
+                <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
+                  <% if course.user && course.user.avatar.present? %>
+                    <%= image_tag course.user.avatar, class: "h-6 w-6 rounded-full mr-2" %>
+                  <% else %>
+                    <div class="h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mr-2">
+                      <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                        <%= course.user&.name&.first&.upcase || "U" %>
+                      </span>
+                    </div>
+                  <% end %>
+                  <span><%= course.user&.name || course.user&.email&.split('@')&.first || "Instructor" %></span>
+                </div>
+
+                <% if course.price.present? %>
+                  <div class="text-lg font-bold text-purple-600 dark:text-purple-400">
+                    <%= number_to_currency(course.price, unit: "₫", precision: 0) %>
+                  </div>
+                <% else %>
+                  <div class="text-lg font-bold text-green-600 dark:text-green-400">
+                    Free
+                  </div>
+                <% end %>
+              </div>
+              <div class="dark:bg-gray-800 border-t dark:border-gray-700 p-4 mt-auto">
+                <%= link_to dashboard_course_path(course), class: "w-full" do %>
+                <button class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-2 px-4 rounded-lg">
+                  Learn More
+                </button>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="col-span-4 text-center py-8">
+          <div class="max-w-md mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <p class="mt-4 text-xl font-medium text-gray-500 dark:text-gray-400">No courses available yet</p>
+            <p class="mt-2 text-gray-500 dark:text-gray-400">Check back soon for new courses!</p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

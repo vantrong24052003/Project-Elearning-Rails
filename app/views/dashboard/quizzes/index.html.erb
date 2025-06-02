@@ -1,0 +1,590 @@
+<div class="container mx-auto px-4 py-8 bg-white dark:bg-gray-900 text-gray-800 dark:text-white" data-controller="dashboard--quiz-index">
+  <div class="mb-6">
+
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        Bài kiểm tra - <%= @course.title %>
+      </h1>
+
+      <button onclick="quiz_stats_modal.showModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white text-sm rounded-lg  flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        Thống kê bài kiểm tra
+      </button>
+    </div>
+
+    <p class="text-gray-600 dark:text-gray-300 max-w-3xl">
+      Hoàn thành các bài kiểm tra để đánh giá kiến thức của bạn và theo dõi tiến trình học tập.
+      Mỗi bài kiểm tra có thời gian làm bài riêng, hãy cố gắng hoàn thành đúng thời gian quy định.
+    </p>
+  </div>
+
+  <% practice_quizzes = @quizzes.where(is_exam: false) %>
+  <% exam_quizzes = @quizzes.where(is_exam: true) %>
+
+  <% if practice_quizzes.any? || exam_quizzes.any? %>
+    <div class="mb-8">
+      <% if practice_quizzes.any? %>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-5">Bài kiểm tra</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <% practice_quizzes.each do |quiz| %>
+            <div class="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <div class="p-4 md:p-6">
+                <div class="flex items-center justify-between mb-3 md:mb-4">
+                  <h3 class="text-lg md:text-xl font-semibold text-gray-900 dark:text-white truncate max-w-[70%]" title="<%= quiz.title %>">
+                    <%= quiz.title %>
+                  </h3>
+
+                  <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-purple-500 text-blue-700 dark:text-white whitespace-nowrap flex-shrink-0">
+                    Bài kiểm tra
+                  </span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 md:gap-6 mb-4 text-gray-600 dark:text-gray-300 text-sm md:text-base">
+                  <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <%= quiz.questions.count %> câu hỏi
+                  </div>
+
+                  <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <%= quiz.time_limit %> phút
+                  </div>
+                </div>
+
+                <% if quiz.start_time.present? || quiz.end_time.present? %>
+                  <div class="mb-4 text-gray-600 dark:text-gray-300 text-sm">
+                    <% if quiz.start_time.present? %>
+                      <div class="flex items-center mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                        </svg>
+                        <span>Bắt đầu: <%= quiz.start_time.strftime("%d/%m/%Y %H:%M") %></span>
+                      </div>
+                    <% end %>
+                    <% if quiz.end_time.present? %>
+                      <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                        </svg>
+                        <span>Kết thúc: <%= quiz.end_time.strftime("%d/%m/%Y %H:%M") %></span>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
+
+                <div class="mt-4 md:mt-6">
+                  <% if current_user.has_role?(:admin) || current_user == @course.user || Enrollment.exists?(user: current_user, course: @course, status: :active) %>
+                    <% already_attempted = QuizAttempt.exists?(quiz: quiz, user: current_user) %>
+                    <% if already_attempted %>
+                      <% latest_attempt = QuizAttempt.where(quiz: quiz, user: current_user).order(created_at: :desc).first %>
+                      <%= link_to dashboard_course_quiz_quiz_attempt_path(@course, quiz, latest_attempt),
+                          class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-600 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white text-sm md:text-base rounded-lg transition block font-medium" do %>
+                        Xem kết quả (<%= latest_attempt.score %>%)
+                      <% end %>
+                    <% else %>
+                      <%
+                        current_time = Time.current
+                        quiz_available = true
+                        quiz_upcoming = false
+                        quiz_expired = false
+
+                        if quiz.start_time.present? && current_time < quiz.start_time
+                          quiz_available = false
+                          quiz_upcoming = true
+                        end
+
+                        if quiz.end_time.present? && current_time > quiz.end_time
+                          quiz_available = false
+                          quiz_expired = true
+                        end
+                      %>
+
+                      <%= link_to dashboard_course_quiz_path(@course, quiz, start: true),
+                            class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm md:text-base rounded-lg transition block font-medium",
+                            data: { quiz_id: quiz.id, quiz_type: quiz.is_exam? ? 'exam' : 'practice' } do %>
+                          <%= quiz.is_exam? ? 'Làm bài thi' : 'Làm bài kiểm tra' %>
+                        <% end %>
+                    <% end %>
+                  <% else %>
+                    <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">
+                      Cần đăng ký khóa học
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if exam_quizzes.any? %>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-5 mt-10">Bài thi</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <% exam_quizzes.each do |quiz| %>
+            <div class="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <div class="p-4 md:p-6">
+                <div class="flex items-center justify-between mb-3 md:mb-4">
+                  <h3 class="text-lg md:text-xl font-semibold text-gray-900 dark:text-white truncate max-w-[70%]" title="<%= quiz.title %>">
+                    <%= quiz.title %>
+                  </h3>
+
+                  <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 dark:bg-red-500/80 text-red-700 dark:text-white whitespace-nowrap flex-shrink-0">
+                    Bài thi
+                  </span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 md:gap-6 mb-4 text-gray-600 dark:text-gray-300 text-sm md:text-base">
+                  <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <%= quiz.questions.count %> câu hỏi
+                  </div>
+
+                  <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <%= quiz.time_limit %> phút
+                  </div>
+                </div>
+
+                <% if quiz.start_time.present? || quiz.end_time.present? %>
+                  <div class="mb-4 text-gray-600 dark:text-gray-300 text-sm">
+                    <% if quiz.start_time.present? %>
+                      <div class="flex items-center mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                        </svg>
+                        <span>Bắt đầu: <%= quiz.start_time.strftime("%d/%m/%Y %H:%M") %></span>
+                      </div>
+                    <% end %>
+                    <% if quiz.end_time.present? %>
+                      <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                        </svg>
+                        <span>Kết thúc: <%= quiz.end_time.strftime("%d/%m/%Y %H:%M") %></span>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
+
+                <div class="mt-4 md:mt-6">
+                  <% if current_user.has_role?(:admin) || current_user == @course.user || Enrollment.exists?(user: current_user, course: @course, status: :active) %>
+                    <% already_attempted = QuizAttempt.exists?(quiz: quiz, user: current_user) %>
+                    <% if already_attempted %>
+                      <% latest_attempt = QuizAttempt.where(quiz: quiz, user: current_user).order(created_at: :desc).first %>
+                      <%= link_to dashboard_course_quiz_quiz_attempt_path(@course, quiz, latest_attempt),
+                          class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-600 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white text-sm md:text-base rounded-lg transition block font-medium" do %>
+                        Xem kết quả (<%= latest_attempt.score %>%)
+                      <% end %>
+                    <% else %>
+                      <%
+                        current_time = Time.current
+                        quiz_available = true
+                        quiz_upcoming = false
+                        quiz_expired = false
+
+                        if quiz.start_time.present? && current_time < quiz.start_time
+                          quiz_available = false
+                          quiz_upcoming = true
+                        end
+
+                        if quiz.end_time.present? && current_time > quiz.end_time
+                          quiz_available = false
+                          quiz_expired = true
+                        end
+                      %>
+
+                      <% if quiz_available %>
+                        <%= link_to dashboard_course_quiz_path(@course, quiz, start: true),
+                            class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm md:text-base rounded-lg transition block font-medium",
+                            data: { quiz_id: quiz.id, quiz_type: quiz.is_exam? ? 'exam' : 'practice' } do %>
+                          <%= quiz.is_exam? ? 'Làm bài thi' : 'Làm bài kiểm tra' %>
+                        <% end %>
+                      <% elsif quiz_upcoming %>
+                        <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">
+                          Mở từ <%= quiz.start_time.strftime("%d/%m/%Y %H:%M") %>
+                        </span>
+                      <% elsif quiz_expired %>
+                        <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">
+                          Đã kết thúc
+                        </span>
+                      <% end %>
+                    <% end %>
+                  <% else %>
+                    <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">
+                      Cần đăng ký khóa học
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Chưa có bài kiểm tra hoặc bài thi nào</h3>
+      <p class="text-gray-600 dark:text-gray-400">Khóa học này hiện chưa có bài kiểm tra hoặc bài thi nào. Vui lòng quay lại sau.</p>
+    </div>
+  <% end %>
+
+  <dialog id="quiz_stats_modal" class="modal">
+    <div class="modal-box bg-white dark:bg-gray-800 text-gray-800 dark:text-white max-w-5xl w-11/12">
+      <h3 class="font-bold text-2xl mb-6">Thống kê bài kiểm tra</h3>
+      <div class="tabs">
+        <input type="radio" name="quiz_stats_tabs" class="tab" aria-label="Bảng xếp hạng" checked="checked" />
+        <div class="tab-content border-base-300 dark:border-gray-700 bg-base-100 dark:bg-gray-800 p-6">
+          <div class="rounded-lg">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-center">
+                <div class="text-sm text-gray-500 dark:text-gray-400">Tổng số người làm</div>
+                <div class="text-2xl font-bold"><%= @total_user_attempts || 0 %></div>
+              </div>
+              <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-center">
+                <div class="text-sm text-gray-500 dark:text-gray-400">Điểm cao nhất</div>
+                <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                  <%= @highest_score || 0 %>
+                </div>
+                <% if @highest_score_user %>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">bởi <%= @highest_score_user.name || @highest_score_user.email %></div>
+                <% end %>
+              </div>
+              <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-center">
+                <div class="text-sm text-gray-500 dark:text-gray-400">Số bài kiểm tra</div>
+                <div class="text-2xl font-bold text-blue-600 dark:text-purple-400">
+                  <%= @quizzes.count %>
+                </div>
+              </div>
+            </div>
+            <h4 class="font-semibold text-lg mb-3 text-gray-800 dark:text-gray-200">Bảng xếp hạng (Top 50)</h4>
+            <div class="overflow-x-auto max-h-96 scrollbar scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
+              <table class="table table-zebra bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 w-full">
+                <thead class="text-gray-700 dark:text-gray-300 sticky top-0 bg-gray-100 dark:bg-gray-700 z-10">
+                  <tr>
+                    <th class="text-center">Hạng</th>
+                    <th>Học viên</th>
+                    <th>Điểm cao nhất</th>
+                    <th>Số lần làm</th>
+                    <th>Lần làm gần nhất</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if @top_users && @top_users.any? %>
+                    <% @top_users.each_with_index do |user_data, index| %>
+                      <tr class="<%= index < 3 ? 'bg-gray-50 dark:bg-gray-600' : '' %>">
+                        <td class="text-center">
+                          <% if index == 0 %>
+                            <div class="bg-yellow-500 text-white w-8 h-8 rounded-full flex items-center justify-center mx-auto font-bold">1</div>
+                          <% elsif index == 1 %>
+                            <div class="bg-gray-400 text-white w-8 h-8 rounded-full flex items-center justify-center mx-auto font-bold">2</div>
+                          <% elsif index == 2 %>
+                            <div class="bg-amber-700 text-white w-8 h-8 rounded-full flex items-center justify-center mx-auto font-bold">3</div>
+                          <% else %>
+                            <%= index + 1 %>
+                          <% end %>
+                        </td>
+                        <td>
+                          <div class="flex items-center gap-3">
+                            <div class="avatar">
+                              <div class="w-8 h-8 rounded-full">
+                                <img src="https://www.gravatar.com/avatar/<%= Digest::MD5.hexdigest(user_data[:user].email.downcase) %>?s=80&d=identicon" alt="<%= user_data[:user].name || user_data[:user].email %>" />
+                              </div>
+                            </div>
+                            <div>
+                              <div class="font-semibold"><%= user_data[:user].name || user_data[:user].email %></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="badge badge-<%= user_data[:best_score] >= 70 ? 'success' : (user_data[:best_score] >= 40 ? 'warning' : 'error') %>">
+                            <%= user_data[:best_score] %>%
+                          </div>
+                        </td>
+                        <td><%= user_data[:attempts_count] %></td>
+                        <td><%= user_data[:last_attempt_at]&.strftime("%d/%m/%Y %H:%M") || 'N/A' %></td>
+                      </tr>
+                    <% end %>
+                  <% else %>
+                    <tr>
+                      <td colspan="5" class="text-center py-8">
+                        <div class="text-gray-500 dark:text-gray-400">Chưa có dữ liệu xếp hạng</div>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <input type="radio" name="quiz_stats_tabs" class="tab" aria-label="Bài kiểm tra" />
+        <div class="tab-content border-base-300 dark:border-gray-700 bg-base-100 dark:bg-gray-800 p-6">
+          <div class="rounded-lg">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div class="bg-gray-100 dark:bg-gray-700 p-5 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Điểm cao nhất</h4>
+                <div class="text-center">
+                  <span class="text-4xl font-bold text-yellow-600 dark:text-yellow-400"><%= @practice_best_score %>%</span>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Điểm số cao nhất đạt được</p>
+                </div>
+                <% if @practice_best_attempt %>
+                  <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                    <div class="flex justify-between py-1 border-b border-gray-300 dark:border-gray-600">
+                      <span>Bài kiểm tra</span>
+                      <span class="text-gray-800 dark:text-gray-200"><%= @practice_best_attempt.quiz.title %></span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-gray-300 dark:border-gray-600">
+                      <span>Ngày làm</span>
+                      <span class="text-gray-800 dark:text-gray-200"><%= @practice_best_attempt.created_at.strftime("%d/%m/%Y") %></span>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+              <div class="bg-gray-100 dark:bg-gray-700 p-5 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Thống kê làm bài</h4>
+                <div class="text-center">
+                  <span class="text-3xl font-bold"><%= @completed_practice_quizzes_count %>/<%= @practice_quizzes.count %></span>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">bài kiểm tra đã hoàn thành</p>
+                </div>
+                <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                  <div class="flex justify-between py-1 border-b border-gray-300 dark:border-gray-600">
+                    <span>Số lần làm bài</span>
+                    <span class="text-gray-800 dark:text-gray-200"><%= @practice_attempts ? @practice_attempts.count : 0 %></span>
+                  </div>
+                  <div class="flex justify-between py-1 border-b border-gray-300 dark:border-gray-600">
+                    <span>Thời gian làm bài</span>
+                    <span class="text-gray-800 dark:text-gray-200"><%= Time.at(@practice_total_time_spent || 0).utc.strftime("%H:%M:%S") %></span>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-gray-100 dark:bg-gray-700 p-5 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Thống kê điểm số</h4>
+                <div class="space-y-3 mt-2">
+                  <%
+                    if @practice_attempts && @practice_attempts.any?
+                      good_scores = @practice_attempts.count {|a| a.score >= 70}
+                      medium_scores = @practice_attempts.count {|a| a.score >= 40 && a.score < 70}
+                      poor_scores = @practice_attempts.count {|a| a.score < 40}
+                      total = @practice_attempts.count
+                      good_pct = total > 0 ? (good_scores.to_f / total * 100).round : 0
+                      medium_pct = total > 0 ? (medium_scores.to_f / total * 100).round : 0
+                      poor_pct = total > 0 ? (poor_scores.to_f / total * 100).round : 0
+                    else
+                      good_pct = medium_pct = poor_pct = 0
+                    end
+                  %>
+                  <div class="flex items-center">
+                    <div class="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-4 mr-3">
+                      <div class="bg-green-500 h-4 rounded-full" style="width: <%= good_pct %>%"></div>
+                    </div>
+                    <span class="text-sm whitespace-nowrap">Tốt (≥70%)</span>
+                  </div>
+                  <div class="flex items-center">
+                    <div class="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-4 mr-3">
+                      <div class="bg-yellow-500 h-4 rounded-full" style="width: <%= medium_pct %>%"></div>
+                    </div>
+                    <span class="text-sm whitespace-nowrap">Trung bình (40-69%)</span>
+                  </div>
+                  <div class="flex items-center">
+                    <div class="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-4 mr-3">
+                      <div class="bg-red-500 h-4 rounded-full" style="width: <%= poor_pct %>%"></div>
+                    </div>
+                    <span class="text-sm whitespace-nowrap">Cần cải thiện (<40%)</span>
+                  </div>
+                </div>
+                <div class="mt-4 text-center">
+                  <span class="text-3xl font-bold"><%= @practice_average_score %>%</span>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">điểm trung bình</p>
+                </div>
+              </div>
+            </div>
+            <h4 class="font-semibold text-lg mb-3 text-gray-800 dark:text-gray-200">Lịch sử làm bài kiểm tra</h4>
+            <div class="overflow-x-auto max-h-96 scrollbar scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
+              <table class="table table-zebra bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 w-full">
+                <thead class="text-gray-700 dark:text-gray-300 sticky top-0 bg-gray-100 dark:bg-gray-700 z-10">
+                  <tr>
+                    <th>Bài kiểm tra</th>
+                    <th>Điểm số</th>
+                    <th>Thời gian làm</th>
+                    <th>Ngày làm</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if @practice_attempts && @practice_attempts.any? %>
+                    <% @practice_attempts.each do |attempt| %>
+                      <tr>
+                        <td><%= attempt.quiz.title %></td>
+                        <td>
+                          <div class="badge badge-<%= attempt.score >= 7 ? 'success' : (attempt.score >= 4 ? 'warning' : 'error') %>">
+                            <%= attempt.score %> điểm
+                          </div>
+                        </td>
+                        <td><%= Time.at(attempt.time_spent).utc.strftime("%H:%M:%S") %></td>
+                        <td><%= attempt.created_at.strftime("%d/%m/%Y %H:%M") %></td>
+                        <td>
+                          <%= link_to dashboard_course_quiz_quiz_attempt_path(@course, attempt.quiz, attempt), class: "btn btn-xs btn-primary" do %>
+                            Xem chi tiết
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  <% else %>
+                    <tr>
+                      <td colspan="5" class="text-center py-8">
+                        <div class="text-gray-500 dark:text-gray-400">Bạn chưa làm bài kiểm tra nào</div>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <input type="radio" name="quiz_stats_tabs" class="tab" aria-label="Bài thi" />
+        <div class="tab-content border-base-300 dark:border-gray-700 bg-base-100 dark:bg-gray-800 p-6">
+          <div class="rounded-lg">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div class="bg-gray-100 dark:bg-gray-700 p-5 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Điểm cao nhất</h4>
+                <div class="text-center">
+                  <span class="text-4xl font-bold text-yellow-600 dark:text-yellow-400"><%= @exam_best_score %>%</span>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Điểm số cao nhất đạt được</p>
+                </div>
+                <% if @exam_best_attempt %>
+                  <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                    <div class="flex justify-between py-1 border-b border-gray-300 dark:border-gray-600">
+                      <span>Bài thi</span>
+                      <span class="text-gray-800 dark:text-gray-200"><%= @exam_best_attempt.quiz.title %></span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-gray-300 dark:border-gray-600">
+                      <span>Ngày làm</span>
+                      <span class="text-gray-800 dark:text-gray-200"><%= @exam_best_attempt.created_at.strftime("%d/%m/%Y") %></span>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+              <div class="bg-gray-100 dark:bg-gray-700 p-5 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Thống kê làm bài</h4>
+                <div class="text-center">
+                  <span class="text-3xl font-bold"><%= @completed_exam_quizzes_count %>/<%= @exam_quizzes.count %></span>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">bài thi đã hoàn thành</p>
+                </div>
+                <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                  <div class="flex justify-between py-1 border-b border-gray-300 dark:border-gray-600">
+                    <span>Số lần làm bài</span>
+                    <span class="text-gray-800 dark:text-gray-200"><%= @exam_attempts ? @exam_attempts.count : 0 %></span>
+                  </div>
+                  <div class="flex justify-between py-1 border-b border-gray-300 dark:border-gray-600">
+                    <span>Thời gian làm bài</span>
+                    <span class="text-gray-800 dark:text-gray-200"><%= Time.at(@exam_total_time_spent || 0).utc.strftime("%H:%M:%S") %></span>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-gray-100 dark:bg-gray-700 p-5 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Thống kê điểm số</h4>
+                <div class="space-y-3 mt-2">
+                  <%
+                    if @exam_attempts && @exam_attempts.any?
+                      good_scores = @exam_attempts.count {|a| a.score >= 70}
+                      medium_scores = @exam_attempts.count {|a| a.score >= 40 && a.score < 70}
+                      poor_scores = @exam_attempts.count {|a| a.score < 40}
+                      total = @exam_attempts.count
+                      good_pct = total > 0 ? (good_scores.to_f / total * 100).round : 0
+                      medium_pct = total > 0 ? (medium_scores.to_f / total * 100).round : 0
+                      poor_pct = total > 0 ? (poor_scores.to_f / total * 100).round : 0
+                    else
+                      good_pct = medium_pct = poor_pct = 0
+                    end
+                  %>
+                  <div class="flex items-center">
+                    <div class="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-4 mr-3">
+                      <div class="bg-green-500 h-4 rounded-full" style="width: <%= good_pct %>%"></div>
+                    </div>
+                    <span class="text-sm whitespace-nowrap">Tốt (≥70%)</span>
+                  </div>
+                  <div class="flex items-center">
+                    <div class="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-4 mr-3">
+                      <div class="bg-yellow-500 h-4 rounded-full" style="width: <%= medium_pct %>%"></div>
+                    </div>
+                    <span class="text-sm whitespace-nowrap">Trung bình (40-69%)</span>
+                  </div>
+                  <div class="flex items-center">
+                    <div class="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-4 mr-3">
+                      <div class="bg-red-500 h-4 rounded-full" style="width: <%= poor_pct %>%"></div>
+                    </div>
+                    <span class="text-sm whitespace-nowrap">Cần cải thiện (<40%)</span>
+                  </div>
+                </div>
+                <div class="mt-4 text-center">
+                  <span class="text-3xl font-bold"><%= @exam_average_score %>%</span>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">điểm trung bình</p>
+                </div>
+              </div>
+            </div>
+            <h4 class="font-semibold text-lg mb-3 text-gray-800 dark:text-gray-200">Lịch sử làm bài thi</h4>
+            <div class="overflow-x-auto max-h-96 scrollbar scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
+              <table class="table table-zebra bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 w-full">
+                <thead class="text-gray-700 dark:text-gray-300 sticky top-0 bg-gray-100 dark:bg-gray-700 z-10">
+                  <tr>
+                    <th>Bài thi</th>
+                    <th>Điểm số</th>
+                    <th>Thời gian làm</th>
+                    <th>Ngày làm</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if @exam_attempts && @exam_attempts.any? %>
+                    <% @exam_attempts.each do |attempt| %>
+                      <tr>
+                        <td><%= attempt.quiz.title %></td>
+                        <td>
+                          <div class="badge badge-<%= attempt.score >= 7 ? 'success' : (attempt.score >= 4 ? 'warning' : 'error') %>">
+                            <%= attempt.score %> điểm
+                          </div>
+                        </td>
+                        <td><%= Time.at(attempt.time_spent).utc.strftime("%H:%M:%S") %></td>
+                        <td><%= attempt.created_at.strftime("%d/%m/%Y %H:%M") %></td>
+                        <td>
+                          <%= link_to dashboard_course_quiz_quiz_attempt_path(@course, attempt.quiz, attempt), class: "btn btn-xs btn-primary" do %>
+                            Xem chi tiết
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  <% else %>
+                    <tr>
+                      <td colspan="5" class="text-center py-8">
+                        <div class="text-gray-500 dark:text-gray-400">Bạn chưa làm bài thi nào</div>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-action">
+        <form method="dialog">
+          <button class="btn btn-md">Đóng</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
+</div>

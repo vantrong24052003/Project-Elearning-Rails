@@ -1,0 +1,61 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+  <!-- Background Pattern -->
+  <div class="fixed inset-0 dark:bg-[url('/dark:bg-pattern.svg')] opacity-5 z-0"></div>
+
+  <!-- Forgot Password Form -->
+  <div class="w-full max-w-md z-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg">
+    <div class="space-y-2 p-6">
+      <div class="flex items-center justify-center mb-4">
+        <svg class="h-12 w-12 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-center bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text">
+        Forgot Your Password?
+      </h2>
+      <p class="text-gray-600 dark:text-gray-400 text-center">
+        Enter your email and we'll send you a reset link
+      </p>
+    </div>
+
+    <%= form_with model: resource, url: password_path(resource_name), method: :post, class: "space-y-4 p-6 pt-0" do |f| %>
+    <% if resource.errors.any? %>
+    <div class="bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 p-3 rounded-md text-sm mb-4">
+      <ul class="list-disc pl-5">
+        <% resource.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+    <% end %>
+
+    <div class="space-y-2">
+      <%= f.label :email, "Email", class: "block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+          </svg>
+        </div>
+        <%= f.email_field :email, autofocus: true, placeholder: "Enter your email", class: "w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"%>
+      </div>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">We'll send a password reset link to this email</p>
+    </div>
+
+    <div class="flex flex-col space-y-4 pt-2">
+      <%= f.submit "Send Reset Link", class: "w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-2 px-4 rounded-md font-medium transition  ease-in-out transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500" %>
+
+      <div class="flex items-center justify-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+        <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+        </svg>
+        <%= link_to "Back to login", new_session_path(resource_name), class: "text-purple-500 hover:text-purple-400 font-medium" %>
+      </div>
+    </div>
+    <% end %>
+  </div>
+
+  <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-300 dark:bg-purple-800 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+  <div class="absolute top-0 -right-4 w-72 h-72 bg-pink-300 dark:bg-pink-800 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+  <div class="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-300 dark:bg-indigo-800 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+</div>

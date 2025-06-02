@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html class="h-full bg-gray-50 dark:bg-gray-900">
+  <head>
+  <title><%= content_for(:title) || "Elearning" %></title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <%= yield :head %>
+
+  <link rel="icon" href="/icon.png" type="image/png">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+
+  <%= stylesheet_link_tag :app %>
+  <%= vite_stylesheet_tag "application.css" %>
+  <%= vite_client_tag %>
+  <%= vite_javascript_tag 'application' %>
+</head>
+
+  <body class="h-full">
+    <main class="min-h-full">
+      <%= yield %>
+    </main>
+  </body>
+</html>

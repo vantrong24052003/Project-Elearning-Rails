@@ -1,0 +1,36 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: project_rails_learning_development
+  username: <%= Rails.application.credentials.dig(:db_development, :username) %>
+  password: <%= Rails.application.credentials.dig(:db_development, :password) %>
+  host: <%= Rails.application.credentials.dig(:db_development, :host) %>
+  port: <%= Rails.application.credentials.dig(:db_development, :port) || 5432 %>
+
+test:
+  <<: *default
+  database: project_rails_learning_test
+
+production:
+  primary: &primary
+    <<: *default
+    database: project_rails_learning_production
+    username: vantrong
+    password: Admin123@
+    host: project-rails-learning-db
+    port: 5432
+  primary_replica:
+    <<: *primary
+  queue:
+    <<: *primary
+  cache:
+    <<: *primary
+  cable:
+    <<: *primary
+
+
+
