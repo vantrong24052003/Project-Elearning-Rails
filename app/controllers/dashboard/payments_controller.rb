@@ -2,33 +2,28 @@
 
 class Dashboard::PaymentsController < Dashboard::DashboardController
   before_action :set_course
-
-  def create
-    authorize! :create_payment, @course
-    @enrollment = Enrollment.find_or_create_by(course: @course, user: current_user) do |enrollment|
-      enrollment.status = :pending
-      enrollment.amount = @course.price
-      enrollment.payment_code = SecureRandom.hex(4).upcase
-    end
-
-    @enrollment.update!(
-      status: :active,
-      payment_method: :credit_card,
-      paid_at: Time.current,
-      enrolled_at: Time.current
-    )
-
-    redirect_to dashboard_course_path(@course), notice: 'Thanh toán thành công!'
-  end
+  before_action :initialize_payment_service
 
   def index
     authorize! :view_payment, @course
-    @enrollment = Enrollment.find_or_create_by(course: @course, user: current_user) do |enrollment|
-      enrollment.status = :pending
-      enrollment.amount = @course.price
-      enrollment.payment_code = SecureRandom.hex(4).upcase
-    end
+    @enrollment = @payment_service.get_enrollment_info(@course)
   end
+
+  def show; end
+
+  def new; end
+
+  def create
+    authorize! :create_payment, @course
+    @enrollment = @payment_service.process_payment(@course)
+    redirect_to dashboard_course_path(@course), notice: 'Thanh toán thành công!'
+  end
+
+  def edit; end
+
+  def update; end
+
+  def destroy; end
 
   private
 
@@ -37,5 +32,9 @@ class Dashboard::PaymentsController < Dashboard::DashboardController
     return unless @course.nil?
 
     redirect_to dashboard_courses_path, alert: 'Course not found'
+  end
+
+  def initialize_payment_service
+    @payment_service = Dashboard::PaymentService.new(current_user)
   end
 end

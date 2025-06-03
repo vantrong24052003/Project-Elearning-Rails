@@ -15,8 +15,8 @@
           </div>
 
           <div class="flex flex-wrap items-center gap-3 mb-6">
-            <span class="<%= @course.status == 'published' ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 border-green-200 dark:border-green-500/30' : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400 border-yellow-200 dark:border-yellow-500/30' %> px-3 py-1.5 rounded-full text-xs font-medium inline-flex items-center border backdrop-blur-sm">
-              <% if @course.status == 'published' %>
+            <span class="<%= @course.status.to_sym == :published ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 border-green-200 dark:border-green-500/30' : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400 border-yellow-200 dark:border-yellow-500/30' %> px-3 py-1.5 rounded-full text-xs font-medium inline-flex items-center border backdrop-blur-sm">
+              <% if @course.status.to_sym == :published %>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 6 9 17l-5-5" />
               </svg>
@@ -62,7 +62,7 @@
 
             <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700/50">
               <span class="text-gray-500 dark:text-gray-400 font-medium">Status:</span>
-              <span class="<%= @course.status == 'published' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400' %> font-medium">
+              <span class="<%= @course.status.to_sym == :published ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400' %> font-medium">
                 <%= @course.status.capitalize %>
               </span>
             </div>
@@ -99,6 +99,11 @@
             Chỉnh sửa
             <% end %>
 
+            <% if @course.status.to_sym == :draft %>
+              <%= button_to "Xuất bản", manage_course_path(@course, action_type: :publish), method: :patch, class: "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mt-4 w-full", data: { turbo_confirm: "Bạn có chắc chắn muốn xuất bản khóa học này?" } %>
+            <% elsif @course.status.to_sym == :published %>
+              <%= button_to "Chuyển về nháp", manage_course_path(@course, action_type: :draft), method: :patch, class: "bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg mt-4 w-full", data: { turbo_confirm: "Bạn có chắc chắn muốn chuyển về bản nháp?" } %>
+            <% end %>
           </div>
         </div>
       </div>

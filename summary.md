@@ -2,6 +2,40 @@
 
 ## Latest Updates
 - **Date:** 2025-06-03
+- **Features implemented:** Payment Service, Viewer Service, and Enrollment Service refactoring + 7 RESTful methods structure - COMPLETED ✅
+- **Tests added:** Service unit tests and controller tests for all services
+- **Issue resolved:** Separated logic into dedicated services following clean architecture
+
+## Payment Service Refactoring - COMPLETED ✅
+### Refactoring Details:
+1. **Service Separation:**
+   - **Created:** `Dashboard::PaymentService` in `/app/services/dashboard/payment_service.rb`
+   - **Methods:** `process_payment(course)`, `get_enrollment_info(course)`
+   - **Purpose:** Separated payment logic from controller for better maintainability
+
+2. **Controller Structure:**
+   - **Fixed:** `Dashboard::PaymentsController` now follows 7 RESTful methods pattern
+   - **Methods:** index, show, new, create, edit, update, destroy
+   - **Service Integration:** Added `initialize_payment_service` private method
+   - **Clean Logic:** All business logic moved to service, controller only handles HTTP flow
+
+3. **Testing:**
+   - **Service Tests:** `/test/services/dashboard/payment_service_test.rb`
+   - **Controller Tests:** `/test/controllers/dashboard/payments_controller_test.rb`
+   - **Coverage:** Basic instantiation and method availability tests
+
+### Technical Implementation:
+- **Service Pattern:** Follows existing `Dashboard::CourseService` pattern
+- **Payment Logic:**
+  - Find or create enrollment with pending status
+  - Generate unique payment code using `SecureRandom.hex(4).upcase`
+  - Process payment by updating status to active with timestamp
+- **Controller Integration:** Service injected via `before_action :initialize_payment_service`
+
+# Project Test Summary - E-learning Rails Application
+
+## Latest Updates
+- **Date:** 2025-06-03
 - **Features implemented:** BOTH questions and quizzes index pagination + UI layout optimization - FULLY COMPLETED ✅
 - **Tests added:** N/A (focused on UI functionality fix)
 - **Issue resolved:** "Hiển thị" dropdown + pagination controls visibility - fixed for both question and quiz management
@@ -119,6 +153,28 @@
 ### Test Credentials:
 - **Admin Account:** `trongdn2405@gmail.com` / `Admin123@`
 
+## Enrollment Service Refactoring - COMPLETED ✅
+### Refactoring Details:
+1. **Service Separation:**
+   - **Created:** `Manage::EnrollmentService` in `/app/services/manage/enrollment_service.rb`
+   - **Methods:** `filter_enrollments(params)`, `create_enrollment(params)`, `update_enrollment(enrollment, params)`, `delete_enrollment(enrollment)`
+   - **Purpose:** Extracted complex filtering logic and CRUD operations to service
+
+2. **Controller Structure:**
+   - **Updated:** `Manage::EnrollmentsController` now delegates operations to service
+   - **Methods:** All 7 RESTful methods maintained (index, show, new, create, edit, update, destroy)
+   - **Service Integration:** Added `initialize_enrollment_service` private method
+
+3. **Testing:**
+   - **Service Tests:** `/test/services/manage/enrollment_service_test.rb`
+   - **Controller Tests:** `/test/controllers/manage/enrollments_controller_test.rb`
+   - **Coverage:** Filtering, CRUD operations, payment confirmation workflows
+
+### Technical Implementation:
+- **Filter Logic:** Complex enrollment filtering by search, status, payment method now in service
+- **Payment Status:** Special handling for paid_at changes with appropriate messaging
+- **Clean Controller:** Controller now focuses only on HTTP flow, with all business logic in service
+
 ## Test Coverage Status
 
 ### Controllers - Manage Namespace
@@ -127,6 +183,7 @@
 - **Courses:** Existing but not tested yet
 - **Chapters:** Existing but not tested yet
 - **Lessons:** Existing but not tested yet
+- **Enrollments:** ✅ Complete test coverage with authentication
 
 ### Models
 - **Category:** ✅ Validated relationships and constraints
@@ -134,6 +191,7 @@
 - **Course:** Not tested yet
 - **Chapter:** Not tested yet
 - **Lesson:** Not tested yet
+- **Enrollment:** ✅ Validated relationships and constraints
 
 ### Controllers
 - **Dashboard Controllers:** Not tested yet

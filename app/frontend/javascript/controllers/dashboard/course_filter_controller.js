@@ -25,7 +25,13 @@ export default class extends Controller {
 
   updateCategoryFilter(event) {
     if (this.hasCategoryInputTarget) {
-      this.categoryInputTarget.value = event.target.value
+      const selectedValue = event.target.value
+      
+      if (selectedValue === '') {
+        this.categoryInputTarget.value = 'all_categories'
+      } else {
+        this.categoryInputTarget.value = selectedValue
+      }
     }
     this.updateURL()
     this.submitForm()
@@ -33,15 +39,16 @@ export default class extends Controller {
 
   applySortFilter() {
     if (this.hasSortSelectTarget) {
+      const selectedValue = this.sortSelectTarget.value
       let sortByInput = this.searchFormTarget.querySelector('input[name="sort_by"]')
+
       if (!sortByInput) {
         sortByInput = document.createElement('input')
         sortByInput.type = 'hidden'
         sortByInput.name = 'sort_by'
         this.searchFormTarget.appendChild(sortByInput)
       }
-
-      sortByInput.value = this.sortSelectTarget.value
+      sortByInput.value = selectedValue
     }
 
     this.updateURL()
@@ -119,6 +126,11 @@ export default class extends Controller {
   }
 
   resetFilters() {
+    const searchInput = this.searchFormTarget.querySelector('input[name="search"]')
+    if (searchInput) {
+      searchInput.value = ''
+    }
+
     if (this.hasModalCategorySelectTarget) {
       this.modalCategorySelectTarget.value = ''
     }
@@ -143,6 +155,19 @@ export default class extends Controller {
       this.maxSliderTarget.value = 1000000
     }
 
+    if (this.hasSortSelectTarget) {
+      this.sortSelectTarget.value = 'newest'
+    }
+
+    const sortByInput = this.searchFormTarget.querySelector('input[name="sort_by"]')
+    if (sortByInput) {
+      sortByInput.remove() 
+    }
+
+    if (this.hasPerPageSelectTarget) {
+      this.perPageSelectTarget.value = '12'
+    }
+
     this.updateSliderValues()
 
     const modal = document.getElementById('filter_modal')
@@ -150,8 +175,7 @@ export default class extends Controller {
       modal.close()
     }
 
-    this.updateURL()
-    this.submitForm()
+    this.clearURLAndSubmit()
   }
 
   toggleFilterModal() {
@@ -193,7 +217,7 @@ export default class extends Controller {
 
       const sortByInput = this.searchFormTarget.querySelector('input[name="sort_by"]')
       if (sortByInput) {
-        sortByInput.value = 'newest'
+        sortByInput.remove()
       }
 
       this.updateURL()
@@ -206,19 +230,36 @@ export default class extends Controller {
     const url = new URL(window.location.href)
     const params = url.searchParams
 
+    // Clear all existing params except authenticity_token
     Array.from(params.keys()).forEach(key => {
       if (key !== 'authenticity_token') {
         params.delete(key)
       }
     })
 
+    // Add only non-empty form values
     for (const [key, value] of formData.entries()) {
-      if (key !== 'authenticity_token' && value) {
+      if (key !== 'authenticity_token' && value && value.trim() !== '') {
         params.set(key, value)
       }
     }
 
     window.history.pushState({}, '', url.toString())
+  }
+
+  clearURLAndSubmit() {
+    const url = new URL(window.location.href)
+    const params = url.searchParams
+    
+    // Clear all params except authenticity_token
+    Array.from(params.keys()).forEach(key => {
+      if (key !== 'authenticity_token') {
+        params.delete(key)
+      }
+    })
+
+    window.history.pushState({}, '', url.toString())
+    this.submitForm()
   }
 
   submitForm(event) {

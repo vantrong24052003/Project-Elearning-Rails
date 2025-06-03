@@ -19,13 +19,7 @@ Rails.application.routes.draw do
 
     root to: 'overviews#index'
 
-    resources :courses do
-      member do
-        post :publish
-        post :draft
-      end
-    end
-
+    resources :courses 
     resources :chapters
     resources :lessons
     resources :videos do
