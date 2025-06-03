@@ -29,7 +29,7 @@ class Manage::QuestionsController < Manage::BaseController
 
     @questions = @questions.order(created_at: :desc)
     @questions = filter_questions(@questions)
-    @questions = @questions.page(params[:page]).per(12)
+    @questions = @questions.page(params[:page]).per(params[:per_page] || 10)
   end
 
   def show

@@ -9,9 +9,9 @@ export default class extends Controller {
     "topicSelect",
     "learningGoalSelect",
     "statusSelect",
+    "perPageSelect",
     "createQuizBtn",
-    "selectedQuestionsInput",
-    "perPageSelect"
+    "selectedQuestionsInput"
   ]
 
   connect() {
@@ -52,7 +52,31 @@ export default class extends Controller {
   }
 
   changePerPage() {
+    console.log("changePerPage triggered")
+    this.updateURL()
     this.submitForm()
+  }
+
+  updateURL() {
+    if (!this.hasSearchFormTarget) return
+
+    const formData = new FormData(this.searchFormTarget)
+    const url = new URL(window.location.href)
+    const params = url.searchParams
+
+    Array.from(params.keys()).forEach(key => {
+      if (key !== 'authenticity_token') {
+        params.delete(key)
+      }
+    })
+
+    for (const [key, value] of formData.entries()) {
+      if (key !== 'authenticity_token' && value) {
+        params.set(key, value)
+      }
+    }
+
+    window.history.pushState({}, '', url.toString())
   }
 
   resetAllFilters() {
@@ -62,7 +86,6 @@ export default class extends Controller {
     this.topicSelectTarget.value = ''
     this.learningGoalSelectTarget.value = ''
     this.statusSelectTarget.value = ''
-    if (this.hasPerPageSelectTarget) this.perPageSelectTarget.value = '10'
     this.submitForm()
   }
 
