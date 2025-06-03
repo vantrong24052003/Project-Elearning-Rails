@@ -15,7 +15,7 @@
 # Read models to understand relationships
 curl -s "http://localhost:5000/model/[filename].rb" | jq -r '.content'
 
-# Read controllers to understand action patterns  
+# Read controllers to understand action patterns
 curl -s "http://localhost:5000/controller/[namespace]/[filename]_controller.rb" | jq -r '.content'
 
 # Read views to understand UI patterns
@@ -164,7 +164,7 @@ curl -s "http://localhost:5000/model/course.rb" | jq -r '.content' | grep -E "(h
 # Analyze existing controller patterns
 curl -s "http://localhost:5000/controller/manage/courses_controller.rb" | jq -r '.content' | grep -E "def "
 
-# Check existing view structure  
+# Check existing view structure
 curl -s "http://localhost:5000/view/manage/courses/index.html.erb" | jq -r '.content' | head -20
 
 # Compare similar controllers
@@ -187,3 +187,212 @@ curl -s "http://localhost:5000/controller/dashboard/courses_controller.rb" | jq 
 - **Use MCP proxy to verify patterns before implementation**
 - Ensure thorough self-testing before submitting
 - Check routes again before writing anything related to permissions
+
+## 17. Terminal and Application Startup
+- **Terminal Management**:
+  - Only allowed to open 1-2 additional terminals maximum
+  - Keep existing terminals that were previously opened
+  - Avoid opening too many unnecessary terminals
+  - Reuse existing terminals when possible
+
+- **Application Restart Rules**:
+  - **Do not restart the application** unless absolutely necessary
+  - Only restart in mandatory cases:
+    - Building assets
+    - Installing new gems
+    - Important configuration changes
+    - Database migrations
+  - Prioritize using hot reload when possible
+  - Notify before needing to restart the application
+
+## 18. Testing and Code Consistency Requirements
+- **Mandatory Testing**:
+  - Write tests for all new features in `/test` directory
+  - Follow existing test patterns and structures
+  - Tests must cover:
+    - Model validations and relationships
+    - Controller actions and responses
+    - Integration flows
+    - UI interactions where applicable
+
+- **Self-Testing Protocol**:
+  - **Before marking as complete**:
+    - Run all related tests
+    - Verify feature works as expected
+    - Check for edge cases
+    - Ensure error handling is in place
+
+- **Code Pattern Consistency**:
+  - **Use MCP proxy to analyze existing patterns**:
+    ```bash
+    # Check similar controller patterns
+    curl -s "http://localhost:5000/controller/[namespace]/[controller].rb" | jq -r '.content'
+
+    # Review similar test structures
+    curl -s "http://localhost:5000/test/[test_type]/[test_file].rb" | jq -r '.content'
+    ```
+  - Match coding style with existing files
+  - Follow established naming conventions
+  - Maintain consistent method organization
+
+- **UI Consistency**:
+  - **Before implementing UI**:
+    - Review similar pages/components
+    - Match existing UI patterns
+    - Use consistent styling and layouts
+    - Follow established component structure
+  - Ensure responsive design matches existing patterns
+  - Maintain consistent user interaction patterns
+  - Use existing UI components when available
+
+## 19. Code Duplication Prevention & Clean Code Maintenance
+- **Before adding new logic, ALWAYS check existing logic using MCP proxy:**
+```bash
+# Check existing similar functionality
+curl -s "http://localhost:5000/controller/[namespace]/[controller].rb" | jq -r '.content' | grep -A10 -B5 "[method_name]"
+
+# Compare across multiple controllers for duplicate patterns
+for controller in users courses chapters; do
+  echo "=== ${controller^^} CONTROLLER ==="
+  curl -s "http://localhost:5000/controller/manage/${controller}_controller.rb" | jq -r '.content' | grep -E "def "
+done
+```
+
+- **If duplicate logic is detected:**
+  - **Immediately remove old or new logic** (keep the most optimal one)
+  - **Refactor into shared methods** if logic is used in multiple places
+  - **Ensure code is clean, understandable, and maintainable**
+
+- **Mandatory workflow when implementing new features:**
+  1. **Analyze existing patterns** using MCP proxy first
+  2. **Identify potential duplicates** in current codebase
+  3. **Remove/refactor duplicates** if any exist
+  4. **Implement new logic** following established patterns
+  5. **Final check** to ensure no new duplicates are created
+
+- **Clean Code Priority:**
+  - **DRY (Don't Repeat Yourself)** - absolutely no duplicate logic
+  - **Single Responsibility** - each method does only one thing
+  - **Easy to understand** - code must be self-explanatory
+  - **Easy to maintain** - easy to modify and extend later
+
+## 20. Test Account Credentials
+- **Admin Test Account:**
+  - **Email:** `trongdn2405@gmail.com`
+  - **Password:** `Admin123@`
+  - **Usage:** Use this account for all testing activities requiring admin privileges
+  - **Important:** This is the designated test account for development and testing purposes
+
+## 21. Comprehensive Testing & Documentation Requirements
+- **Thorough Error Checking:**
+  - **Check for content missing errors** - validate all required fields and data
+  - **Test edge cases** - empty inputs, invalid data, boundary conditions
+  - **Verify error messages** - ensure proper error handling and user feedback
+  - **Check authentication/authorization** - verify access controls work correctly
+
+- **Reusable Test Patterns:**
+  - **Create shared test helpers** for common operations:
+    ```ruby
+    # Example: Create login helper for reuse across tests
+    def login_as_admin
+      post login_path, params: {
+        email: 'trongdn2405@gmail.com',
+        password: 'Admin123@'
+      }
+    end
+
+    def login_as_user(user = nil)
+      user ||= users(:default_user)
+      post login_path, params: {
+        email: user.email,
+        password: 'password'
+      }
+    end
+    ```
+  - **Use setup methods** for common test data preparation
+  - **Avoid code duplication** in test files - create reusable methods
+  - **Follow DRY principles** in test writing
+
+- **Test Scope Limitations:**
+  - **Only test assigned features/flows** - don't test beyond scope
+  - **Focus on specific requirements** given in the task
+  - **Test main happy path** and critical error scenarios only
+  - **Don't over-test** features not in current scope
+
+- **Mandatory Test Documentation:**
+  - **Before starting any testing work** - read `summary.md` file first
+  - **After completing all work** - update `summary.md` with:
+    - What features were implemented
+    - What tests were written
+    - Test coverage achieved
+    - Any known limitations or issues
+    - Instructions for running tests
+
+- **Summary Documentation Structure:**
+  ```markdown
+  # Project Test Summary
+
+  ## Latest Updates
+  - Date: [YYYY-MM-DD]
+  - Features implemented: [list]
+  - Tests added: [list]
+
+  ## Test Coverage
+  - Models: [list what's tested]
+  - Controllers: [list what's tested]
+  - Integration: [list what's tested]
+
+  ## Running Tests
+  - Command: [how to run tests]
+  - Prerequisites: [setup required]
+
+  ## Known Issues
+  - [any limitations or pending items]
+  ```
+
+- **Test Workflow:**
+  1. **Read summary.md** before starting any test work
+  2. **Write reusable test helpers** for common operations
+  3. **Test only assigned scope** - don't exceed requirements
+  4. **Check for content missing and edge cases**
+  5. **Update summary.md** after completion with detailed documentation
+
+## 22. Testing Philosophy & Clean Code Standards
+- **Test Logic Only:**
+  - **Test feature functionality and business logic** - not implementation details
+  - **Focus on behavior verification** - what the feature does, not how it does it
+  - **Test user-facing functionality** - what users actually experience
+  - **Avoid testing internal methods** unless they contain critical business logic
+
+- **No Comments & Clean Code:**
+  - **Absolutely no comments in production code** - code must be self-explanatory
+  - **No "voodoo code"** - avoid magic numbers, unclear variable names, complex one-liners
+  - **Write clear, readable code** that explains its purpose through naming and structure
+  - **Use descriptive method and variable names** that make the code self-documenting
+
+## 23. Controller-View Architecture Separation
+- **Controller Handles All Logic:**
+  - **All business logic must be in controllers** - views receive only processed results
+  - **Data processing in controllers** - filtering, sorting, calculations, validations
+  - **Error handling in controllers** - catch and process all errors before sending to view
+  - **Authentication/authorization in controllers** - verify permissions before view rendering
+
+- **Views Only Display Results:**
+  - **Views are presentation layer only** - no logic processing
+  - **Display data received from controller** - no calculations or data manipulation
+  - **Simple conditionals allowed** - only for display purposes (show/hide elements)
+  - **No database queries in views** - all data must come from controller
+
+## 24. Pagination Component Usage
+- **Prioritize Existing Pagination Component:**
+  - **Always use existing pagination component** at `app/views/shared/_pagination.html.erb`
+  - **Do not create new pagination logic** - reuse the established pattern
+  - **Controller preparation for pagination:**
+    ```ruby
+    # Controller should prepare paginated data
+    @items = Model.page(params[:page]).per(10)
+    # View renders using shared component
+    render 'shared/pagination', collection: @items
+    ```
+  - **Maintain consistent pagination UI** across all pages
+  - **Follow existing pagination styling** and behavior patterns

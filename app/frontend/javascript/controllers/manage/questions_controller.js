@@ -10,7 +10,8 @@ export default class extends Controller {
     "learningGoalSelect",
     "statusSelect",
     "createQuizBtn",
-    "selectedQuestionsInput"
+    "selectedQuestionsInput",
+    "perPageSelect"
   ]
 
   connect() {
@@ -50,6 +51,10 @@ export default class extends Controller {
     this.submitForm()
   }
 
+  changePerPage() {
+    this.submitForm()
+  }
+
   resetAllFilters() {
     this.searchInputTarget.value = ''
     this.courseSelectTarget.value = ''
@@ -57,6 +62,7 @@ export default class extends Controller {
     this.topicSelectTarget.value = ''
     this.learningGoalSelectTarget.value = ''
     this.statusSelectTarget.value = ''
+    if (this.hasPerPageSelectTarget) this.perPageSelectTarget.value = '10'
     this.submitForm()
   }
 

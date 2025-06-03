@@ -3,7 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = [
     "filterForm", "searchInput", "instructorSelect", "statusSelect",
-    "moderationStatusSelect", "courseSelect", "dateFromInput", "dateToInput"
+    "moderationStatusSelect", "courseSelect", "dateFromInput", "dateToInput", "perPageSelect"
   ]
 
   connect() {
@@ -46,6 +46,11 @@ export default class extends Controller {
     this.submitForm()
   }
 
+  changePerPage() {
+    this.updateURL()
+    this.submitForm()
+  }
+
   resetFilters() {
     if (this.hasSearchInputTarget) {
       this.searchInputTarget.value = ""
@@ -73,6 +78,10 @@ export default class extends Controller {
 
     if (this.hasDateToInputTarget) {
       this.dateToInputTarget.value = ""
+    }
+
+    if (this.hasPerPageSelectTarget) {
+      this.perPageSelectTarget.value = "10"
     }
 
     this.updateURL()

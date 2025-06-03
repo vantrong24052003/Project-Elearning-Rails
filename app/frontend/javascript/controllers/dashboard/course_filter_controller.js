@@ -4,7 +4,7 @@ export default class extends Controller {
   static targets = [
     "searchForm", "searchInput", "categoryInput", "minPriceInput", "maxPriceInput",
     "categorySelect", "sortSelect", "minSlider", "maxSlider", "range",
-    "modalCategorySelect", "modalPriceMin", "modalPriceMax"
+    "modalCategorySelect", "modalPriceMin", "modalPriceMax", "filterForm", "perPageSelect"
   ]
 
   connect() {
@@ -227,6 +227,11 @@ export default class extends Controller {
     }
 
     this.searchFormTarget.requestSubmit()
+  }
+
+  changePerPage() {
+    this.updateURL()
+    this.submitForm()
   }
 
   formatPrice(value) {

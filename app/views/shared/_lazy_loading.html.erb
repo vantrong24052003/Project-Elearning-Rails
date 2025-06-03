@@ -47,7 +47,7 @@
 
     <% icons.each_with_index do |icon, index| %>
       <div
-        class="absolute w-10 h-10 md:w-12 md:h-12 <%= icon[:class] %> transition-all  ease-in-out"
+        class="absolute w-10 h-10 md:w-12 md:h-12 <%= icon[:class] %>   ease-in-out"
         style="<%= icon[:style] %>; transform: translate(-50%, -50%); animation: iconFloat 3s ease-in-out <%= index * 0.5 %>s infinite alternate"
       >
         <% case icon[:name] %>

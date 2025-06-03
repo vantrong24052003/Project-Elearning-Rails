@@ -11,7 +11,8 @@ class Manage::QuizzesController < Manage::BaseController
                  Quiz.includes(:course, :questions)
                end
     @quizzes = @quizzes.where(is_exam: params[:is_exam]) if params[:is_exam].present?
-    @quizzes = @quizzes.order(created_at: :desc).page(params[:page]).per(10)
+    per_page = params[:per_page].to_i > 0 ? params[:per_page].to_i : 10
+    @quizzes = @quizzes.order(created_at: :desc).page(params[:page]).per(per_page)
     @course = Course.find_by(id: params[:course_id]) if params[:course_id].present?
   end
 
