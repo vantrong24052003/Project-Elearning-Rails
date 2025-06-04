@@ -69,7 +69,7 @@ class GeminiServices
       QUAN TRỌNG: Hãy trả về JSON thuần túy, KHÔNG sử dụng định dạng Markdown hay ```json, chỉ trả về mảng JSON không có định dạng bổ sung.
 
       Kết quả trả về phải là một mảng JSON gồm các object câu hỏi, không kèm bất kỳ nội dung mô tả, nhận xét hay chú thích nào khác ngoài chính mảng JSON đó.
-      Ưu tiên tạo câu hỏi dựa trên mô tả 
+      Ưu tiên tạo câu hỏi dựa trên mô tả#{' '}
       Tất cả câu hỏi phải liên quan chặt chẽ đến mô tả nội dung bài học.
       Trả về CHÍNH XÁC định dạng JSON mà không có văn bản giới thiệu hoặc kết luận.
       Đảm bảo câu hỏi được tạo ra là đúng với mức độ khó được yêu cầu.
@@ -185,25 +185,10 @@ class GeminiServices
   end
 
   def build_content(prompt)
-    case prompt
-    when String
-      {
-        role: 'user',
-        parts: [{ text: prompt }]
-      }
-    when Hash
-      prompt
-    when Array
-      {
-        role: 'user',
-        parts: prompt.map { |p| p.is_a?(Hash) ? p : { text: p.to_s } }
-      }
-    else
-      {
-        role: 'user',
-        parts: [{ text: prompt.to_s }]
-      }
-    end
+    {
+      role: 'user',
+      parts: [{ text: prompt.to_s }]
+    }
   end
 
   def parse_response(response)

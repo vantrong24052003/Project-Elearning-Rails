@@ -510,8 +510,6 @@ export default class extends Controller {
     const startDate = new Date(startTime)
     const endDate = new Date(endTime)
     const now = new Date()
-    const allowedPastTime = new Date(now)
-    allowedPastTime.setMinutes(allowedPastTime.getMinutes() - 5)
 
     if (startDate >= endDate) {
       alert('Thời gian kết thúc phải sau thời gian bắt đầu')

@@ -59,10 +59,6 @@ export default class extends Controller {
     const timeLimit = parseInt(this.timeLimitTarget.value)
     const startTime = new Date(this.startTimeTarget.value)
     const endTime = new Date(this.endTimeTarget.value)
-    const now = new Date()
-
-    const allowedPastTime = new Date(now)
-    allowedPastTime.setMinutes(allowedPastTime.getMinutes() - 5)
 
     let isValid = true
 

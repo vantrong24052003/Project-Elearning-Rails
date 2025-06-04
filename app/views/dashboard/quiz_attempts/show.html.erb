@@ -166,40 +166,42 @@
                     <h3 class="text-gray-900 dark:text-white text-lg mb-2"><%= question.content %></h3>
 
                     <div class="space-y-2 mb-4">
-                      <% question.options.each_with_index do |option, opt_index| %>
+                      <% question.options.each do |option_key, option_value| %>
                         <%
                           answers = @quiz_attempt.answers_hash
+                          is_correct_option = option_key.to_s == question.correct_option.to_s
+                          is_user_answer = user_answered && answers[question.id.to_s].to_s == option_key.to_s
 
-                          option_class = if opt_index == question.correct_option
+                          option_class = if is_correct_option
                             'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700'
-                          elsif user_answered && answers[question.id.to_s].to_i == opt_index && opt_index != question.correct_option
+                          elsif is_user_answer && !is_correct_option
                             'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700'
                           else
                             'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
                           end
 
-                          letter_class = if opt_index == question.correct_option
+                          letter_class = if is_correct_option
                             'bg-green-500 text-white'
-                          elsif user_answered && answers[question.id.to_s].to_i == opt_index && opt_index != question.correct_option
+                          elsif is_user_answer && !is_correct_option
                             'bg-red-500 text-white'
                           else
                             'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
                           end
+                          letter = ("A".ord + option_key.to_i).chr
                         %>
                         <div class="flex items-center justify-between p-3 rounded-lg border <%= option_class %>">
                           <div class="flex items-center">
                             <div class="flex items-center justify-center w-6 h-6 rounded-full mr-3 <%= letter_class %>">
-                              <%= ('A'.ord + opt_index).chr %>
+                              <%= letter %>
                             </div>
-                            <span class="text-gray-700 dark:text-gray-200"><%= option %></span>
+                            <span class="text-gray-700 dark:text-gray-200"><%= option_value %></span>
                           </div>
 
-                          <% answers = @quiz_attempt.answers_hash %>
-                          <% if opt_index == question.correct_option %>
+                          <% if is_correct_option %>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                          <% elsif user_answered && answers[question.id.to_s].to_i == opt_index %>
+                          <% elsif is_user_answer %>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>

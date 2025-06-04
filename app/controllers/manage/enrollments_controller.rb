@@ -2,20 +2,10 @@
 
 class Manage::EnrollmentsController < Manage::BaseController
   before_action :set_enrollment, only: %i[show edit update destroy]
+  before_action :initialize_enrollment_service
 
   def index
-    @enrollments = Enrollment.includes(:user, :course)
-    @enrollments = @enrollments.joins(:course).where(courses: { user_id: current_user.id })
-    if params[:search].present?
-      @enrollments = @enrollments.where('payment_code ILIKE ? OR users.name ILIKE ? OR courses.title ILIKE ?',
-                                        "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
-    end
-    @enrollments = @enrollments.where(status: params[:status]) if params[:status].present?
-    @enrollments = @enrollments.where(payment_method: params[:payment_method]) if params[:payment_method].present?
-    @enrollments = @enrollments.where('paid_at IS NOT NULL') if params[:paid_at] == 'paid'
-    @enrollments = @enrollments.where(paid_at: nil) if params[:paid_at] == 'unpaid'
-
-    @enrollments = @enrollments.page(params[:page]).per(params[:per_page] || 10)
+    @enrollments = @enrollment_service.filter_enrollments(params)
   end
 
   def show; end
@@ -25,9 +15,9 @@ class Manage::EnrollmentsController < Manage::BaseController
   end
 
   def create
-    @enrollment = Enrollment.new(enrollment_params)
+    @enrollment = @enrollment_service.create_enrollment(enrollment_params)
 
-    if @enrollment.save
+    if @enrollment.persisted?
       redirect_to manage_enrollment_path(@enrollment), notice: 'Enrollment was successfully created'
     else
       render :new, status: :unprocessable_entity
@@ -37,28 +27,28 @@ class Manage::EnrollmentsController < Manage::BaseController
   def edit; end
 
   def update
-    if @enrollment.update(enrollment_params)
-      if params[:enrollment][:paid_at].present?
-        redirect_to manage_enrollments_path, notice: 'Đã xác nhận thanh toán thành công'
-      elsif params[:enrollment][:paid_at].nil?
-        redirect_to manage_enrollments_path, notice: 'Đã hủy xác nhận thanh toán'
-      else
-        redirect_to manage_enrollments_path, notice: 'Enrollment was successfully updated'
-      end
+    result = @enrollment_service.update_enrollment(@enrollment, enrollment_params)
+
+    if result[:success]
+      redirect_to manage_enrollments_path, notice: result[:message]
     else
       render :edit, status: :unprocessable_entity
     end
   end
 
   def destroy
-    @enrollment.destroy
-    redirect_to manage_enrollments_path, notice: 'Enrollment was successfully deleted'
+    result = @enrollment_service.delete_enrollment(@enrollment)
+    redirect_to manage_enrollments_path, notice: result[:message]
   end
 
   private
 
   def set_enrollment
     @enrollment = Enrollment.find(params[:id])
+  end
+
+  def initialize_enrollment_service
+    @enrollment_service = Manage::EnrollmentService.new(current_user)
   end
 
   def enrollment_params

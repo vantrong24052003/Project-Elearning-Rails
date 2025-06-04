@@ -106,21 +106,11 @@
                         end
                       %>
 
-                      <% if quiz_available %>
-                        <%= link_to dashboard_course_quiz_path(@course, quiz, start: true),
+                      <%= link_to dashboard_course_quiz_path(@course, quiz, start: true),
                             class: "w-full text-center px-3 py-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm md:text-base rounded-lg transition block font-medium",
                             data: { quiz_id: quiz.id, quiz_type: quiz.is_exam? ? 'exam' : 'practice' } do %>
                           <%= quiz.is_exam? ? 'Làm bài thi' : 'Làm bài kiểm tra' %>
                         <% end %>
-                      <% elsif quiz_upcoming %>
-                        <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">
-                          Mở từ <%= quiz.start_time.strftime("%d/%m/%Y %H:%M") %>
-                        </span>
-                      <% elsif quiz_expired %>
-                        <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">
-                          Đã kết thúc
-                        </span>
-                      <% end %>
                     <% end %>
                   <% else %>
                     <span class="w-full text-center px-3 py-2 md:px-4 md:py-2 bg-gray-400 text-white text-sm md:text-base rounded-lg block font-medium cursor-not-allowed">

@@ -4,7 +4,6 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
   before_action :set_course
   before_action :set_quiz, only: [:show]
   before_action :check_enrollment, only: [:show]
-  before_action :check_quiz_availability, only: [:show]
   before_action :load_stats_data, only: [:index]
   before_action :authenticate_user!
   before_action :set_no_cache_headers, only: [:show]
@@ -13,10 +12,6 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
     @quizzes = @course.quizzes
     @practice_quizzes = @quizzes.where(is_exam: false)
     @exam_quizzes = @quizzes.where(is_exam: true)
-
-    @available_quizzes = @quizzes.select { |quiz| quiz_available?(quiz) }
-    @upcoming_quizzes = @quizzes.select { |quiz| quiz_upcoming?(quiz) }
-    @expired_quizzes = @quizzes.select { |quiz| quiz_expired?(quiz) }
   end
 
   def show
@@ -89,40 +84,6 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
 
     redirect_to dashboard_course_path(@course),
                 alert: 'You need to enroll in this course to take quizzes.'
-  end
-
-  def check_quiz_availability
-    unless quiz_available?(@quiz)
-      if quiz_upcoming?(@quiz)
-        redirect_to dashboard_course_quizzes_path(@course),
-                    alert: "This quiz is not available yet. It will open on #{@quiz.start_time.strftime('%d/%m/%Y %H:%M')}."
-      else
-        redirect_to dashboard_course_quizzes_path(@course),
-                    alert: "This quiz is no longer available. It closed on #{@quiz.end_time.strftime('%d/%m/%Y %H:%M')}."
-      end
-    end
-  end
-
-  def quiz_available?(quiz)
-    return true unless quiz.start_time || quiz.end_time
-
-    current_time = Time.current
-    start_available = quiz.start_time.nil? || current_time >= quiz.start_time
-    end_available = quiz.end_time.nil? || current_time <= quiz.end_time
-
-    start_available && end_available
-  end
-
-  def quiz_upcoming?(quiz)
-    return false unless quiz.start_time
-
-    Time.current < quiz.start_time
-  end
-
-  def quiz_expired?(quiz)
-    return false unless quiz.end_time
-
-    Time.current > quiz.end_time
   end
 
   def load_stats_data

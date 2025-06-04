@@ -1,4 +1,4 @@
-<div class="md:container mx-auto py-6 px-4 sm:px-6 lg:px-8" data-controller="manage--questions manage--questions-import">
+<div class="py-6 px-4 sm:px-6 lg:px-8" data-controller="manage--questions manage--questions-import">
   <div class="flex flex-col gap-5">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Ngân Hàng Câu Hỏi</h1>
@@ -13,17 +13,18 @@
         }) do |f| %>
           <div class="space-y-5">
             <div class="flex flex-col gap-4">
-              <div class="w-full">
-                <div class="relative group">
-                  <%= f.text_field :search, value: params[:search],
-                          class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 pl-10 pr-12 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 focus:border-blue-500 dark:focus:border-purple-500 transition-all shadow-sm",
-                          placeholder: "Tìm kiếm câu hỏi...",
-                          autocomplete: "off",
-                          data: {
-                            "manage--questions-target": "searchInput",
-                            action: "input->manage--questions#search"
-                          }
-                      %>
+              <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+                <div class="w-full lg:w-1/2">
+                  <div class="relative group">
+                    <%= f.text_field :search, value: params[:search],
+                            class: "w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 pl-10 pr-12 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 focus:border-blue-500 dark:focus:border-purple-500 shadow-sm",
+                            placeholder: "Tìm kiếm câu hỏi...",
+                            autocomplete: "off",
+                            data: {
+                              "manage--questions-target": "searchInput",
+                              action: "input->manage--questions#search"
+                            }
+                        %>
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-4 w-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -46,118 +47,118 @@
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-                <div class="w-full">
-                  <%= f.select :course_id,
-                          options_for_select([["Tất cả khóa học", ""]] + @courses.map { |c| [c.title, c.id] }, params[:course_id]),
-                          {},
+              <div class="flex flex-wrap gap-3 lg:ml-auto">
+                <button type="button"
+                        class="px-4 h-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 flex items-center justify-center"
+                        data-action="manage--questions#resetAllFilters">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <polyline points="23 20 23 14 17 14"></polyline>
+                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                  </svg>
+                  Xóa tất cả
+                </button>
+
+                <button type="button"
+                        class="px-4 h-12 rounded-lg border border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-600 hover:border-green-400 dark:hover:border-green-500 flex items-center justify-center"
+                        data-action="manage--questions-import#exportToExcel">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Xuất Excel
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              <div class="w-full">
+                <%= f.select :course_id,
+                        options_for_select([["Tất cả khóa học", ""]] + @courses.map { |c| [c.title, c.id] }, params[:course_id]),
+                        {},
+                        {
+                          class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
+                          data: {
+                            "manage--questions-target": "courseSelect",
+                            action: "change->manage--questions#filterByCourse"
+                          }
+                        }
+                    %>
+              </div>
+
+              <div class="w-full">
+                <%= f.select :difficulty,
+                          [["Tất cả độ khó", ""], ["Dễ", "easy"], ["Trung bình", "medium"], ["Khó", "hard"]],
+                          { selected: params[:difficulty] },
                           {
                             class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
                             data: {
-                              "manage--questions-target": "courseSelect",
-                              action: "change->manage--questions#filterByCourse"
+                              "manage--questions-target": "difficultySelect",
+                              action: "change->manage--questions#filterByDifficulty"
                             }
                           }
                       %>
-                </div>
+              </div>
 
-                <div class="w-full">
-                  <%= f.select :difficulty,
-                            [["Tất cả độ khó", ""], ["Dễ", "easy"], ["Trung bình", "medium"], ["Khó", "hard"]],
-                            { selected: params[:difficulty] },
-                            {
-                              class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
-                              data: {
-                                "manage--questions-target": "difficultySelect",
-                                action: "change->manage--questions#filterByDifficulty"
-                              }
-                            }
-                        %>
-                </div>
-
-                <div class="w-full">
-                  <%= f.select :topic,
-                           [["Tất cả chủ đề", ""],
-                            ["Toán học", "math"],
-                            ["Vật lý", "physics"],
-                            ["Hóa học", "chemistry"],
-                            ["Sinh học", "biology"],
-                            ["Lịch sử", "history"],
-                            ["Địa lý", "geography"],
-                            ["Văn học", "literature"],
-                            ["Lập trình", "programming"],
-                            ["Khác", "other"]],
-                          { selected: params[:topic] },
-                          {
-                            class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
-                            data: {
-                              "manage--questions-target": "topicSelect",
-                              action: "change->manage--questions#filterByTopic"
-                            }
+              <div class="w-full">
+                <%= f.select :topic,
+                         [["Tất cả chủ đề", ""],
+                          ["Toán học", "math"],
+                          ["Vật lý", "physics"],
+                          ["Hóa học", "chemistry"],
+                          ["Sinh học", "biology"],
+                          ["Lịch sử", "history"],
+                          ["Địa lý", "geography"],
+                          ["Văn học", "literature"],
+                          ["Lập trình", "programming"],
+                          ["Khác", "other"]],
+                        { selected: params[:topic] },
+                        {
+                          class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
+                          data: {
+                            "manage--questions-target": "topicSelect",
+                            action: "change->manage--questions#filterByTopic"
                           }
-                      %>
-                </div>
+                        }
+                    %>
+              </div>
 
-                <div class="w-full">
-                  <%= f.select :learning_goal,
-                           [["Tất cả mục tiêu học tập", ""],
-                            ["Ghi nhớ", "remember"],
-                            ["Hiểu", "understand"],
-                            ["Áp dụng", "apply"],
-                            ["Phân tích", "analyze"],
-                            ["Sáng tạo", "create"],
-                            ["Khác", "other"]],
-                          { selected: params[:learning_goal] },
-                          {
-                            class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
-                            data: {
-                              "manage--questions-target": "learningGoalSelect",
-                              action: "change->manage--questions#filterByLearningGoal"
-                            }
+              <div class="w-full">
+                <%= f.select :learning_goal,
+                         [["Tất cả mục tiêu học tập", ""],
+                          ["Ghi nhớ", "remember"],
+                          ["Hiểu", "understand"],
+                          ["Áp dụng", "apply"],
+                          ["Phân tích", "analyze"],
+                          ["Sáng tạo", "create"],
+                          ["Khác", "other"]],
+                        { selected: params[:learning_goal] },
+                        {
+                          class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
+                          data: {
+                            "manage--questions-target": "learningGoalSelect",
+                            action: "change->manage--questions#filterByLearningGoal"
                           }
-                      %>
-                </div>
+                        }
+                    %>
+              </div>
 
-                <div class="w-full">
-                  <%= f.select :status,
-                           [["Tất cả trạng thái", ""],
-                            ["Đang hoạt động", "active"],
-                            ["Không hoạt động", "inactive"],
-                            ["Đã loại bỏ", "deprecated"]],
-                          { selected: params[:status] },
-                          {
-                            class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
-                            data: {
-                              "manage--questions-target": "statusSelect",
-                              action: "change->manage--questions#filterByStatus"
-                            }
+              <div class="w-full">
+                <%= f.select :status,
+                         [["Tất cả trạng thái", ""],
+                          ["Đang hoạt động", "active"],
+                          ["Không hoạt động", "inactive"],
+                          ["Đã loại bỏ", "deprecated"]],
+                        { selected: params[:status] },
+                        {
+                          class: "select select-bordered w-full bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500 shadow-sm",
+                          data: {
+                            "manage--questions-target": "statusSelect",
+                            action: "change->manage--questions#filterByStatus"
                           }
-                      %>
-                </div>
-
-                <div class="w-full grid grid-cols-2 gap-3">
-                  <button type="button"
-                          class="w-full rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 bg-gray-50 dark:bg-gray-700 flex items-center justify-center h-10 px-3 border border-gray-300 dark:border-gray-600 transition-colors shadow-sm"
-                          data-action="manage--questions#resetAllFilters">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="1 4 1 10 7 10"></polyline>
-                      <polyline points="23 20 23 14 17 14"></polyline>
-                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
-                    </svg>
-                    <span class="text-sm">Xóa bộ lọc</span>
-                  </button>
-
-                  <%= f.button type: :button,
-                          class: "w-full rounded-md hover:bg-green-100 dark:hover:bg-green-900/40 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-800 flex items-center justify-center h-10 px-3 transition-colors shadow-sm",
-                          data: { action: "manage--questions-import#exportToExcel" } do %>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                      <polyline points="7 10 12 15 17 10"/>
-                      <line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
-                    <span class="text-sm">Xuất Excel</span>
-                  <% end %>
-                </div>
+                        }
+                    %>
               </div>
             </div>
           </div>
@@ -186,7 +187,7 @@
               Tạo bài kiểm tra với câu hỏi đã chọn
             </button>
 
-            <%= link_to new_manage_question_path, class: "btn btn-primary btn-sm bg-gradient-to-r from-blue-500 to-indigo-600 border-0 shadow-md hover:shadow-blue-500/30 transition-all", data: { turbo: false } do %>
+            <%= link_to new_manage_question_path, class: "btn btn-primary btn-sm bg-gradient-to-r from-blue-500 to-indigo-600 border-0 shadow-md hover:shadow-blue-500/30 ", data: { turbo: false } do %>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 5v14M5 12h14"/>
               </svg>
@@ -196,12 +197,13 @@
         </div>
       </div>
 
-      <div class="p-5 md:p-6">
-        <div>
+      <div class="flex flex-col h-[100vh] w-full">
+        <!-- Content area với scroll -->
+        <div class=" overflow-y-scroll flex-1 p-5 md:p-6 w-full overflow-x-hidden">
           <% if @questions.any? %>
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 min-w-0">
               <% @questions.each do |question| %>
-                <div class="card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group relative h-full">
+                <div class="card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md hover:shadow-lg group relative h-full">
                   <div class="absolute -right-16 -top-16 w-32 h-32 bg-blue-500/10 dark:bg-blue-500/5 rounded-full z-0"></div>
                   <div class="absolute -left-16 -bottom-16 w-32 h-32 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full z-0"></div>
 
@@ -228,7 +230,7 @@
                       </div>
                     </div>
 
-                    <h3 class="card-title text-base font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <h3 class="card-title text-base font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400">
                       <%= truncate(question.content, length: 100) %>
                     </h3>
 
@@ -272,7 +274,7 @@
                     </div>
 
                     <div class="card-actions justify-end mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                      <%= link_to manage_question_path(question), class: "btn btn-xs bg-white dark:bg-gray-700 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 transition-colors shadow-sm", data: { turbo: false } do %>
+                      <%= link_to manage_question_path(question), class: "btn btn-xs bg-white dark:bg-gray-700 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 shadow-sm", data: { turbo: false } do %>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                           <circle cx="12" cy="12" r="3"></circle>
@@ -280,7 +282,7 @@
                         Xem
                       <% end %>
 
-                      <%= link_to edit_manage_question_path(question), class: "btn btn-xs bg-white dark:bg-gray-700 hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 transition-colors shadow-sm", data: { turbo: false } do %>
+                      <%= link_to edit_manage_question_path(question), class: "btn btn-xs bg-white dark:bg-gray-700 hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 shadow-sm", data: { turbo: false } do %>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                         </svg>
@@ -291,15 +293,6 @@
                 </div>
               <% end %>
             </div>
-
-            <div class="mt-6">
-              <%= render partial: 'shared/pagination',
-                locals: {
-                  collection: @questions,
-                  pagination_label: 'question',
-                  turbo_frame_id: "questions_data"
-                } %>
-            </div>
           <% else %>
             <div class="text-center py-16 px-6">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-gray-400 dark:text-gray-600 mb-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -308,24 +301,64 @@
               <h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-white mb-3">Không tìm thấy câu hỏi</h3>
               <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-lg mx-auto">Không có câu hỏi nào phù hợp với điều kiện tìm kiếm hoặc bộ lọc của bạn.</p>
               <div class="flex flex-wrap justify-center gap-4">
-                <%= link_to new_manage_question_path, class: "btn btn-primary bg-gradient-to-r from-blue-500 to-indigo-600 border-0 shadow-lg hover:shadow-blue-500/30 transition-all", data: { turbo: false } do %>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <%= link_to new_manage_question_path, class: "btn btn-primary bg-gradient-to-r from-blue-500 to-indigo-600 border-0 shadow-lg hover:shadow-blue-500/30", data: { turbo: false } do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewkỹ aBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 5v14M5 12h14"/>
                   </svg>
                   Thêm câu hỏi mới
                 <% end %>
-                <button type="button" class="btn btn-outline bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all" data-action="manage--questions#resetAllFilters">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button type="button" class="w-full h-12 px-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 flex items-center justify-center" data-action="manage--questions#resetAllFilters">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="1 4 1 10 7 10"></polyline>
                     <polyline points="23 20 23 14 17 14"></polyline>
                     <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
                   </svg>
-                  Xóa bộ lọc
+                  Xóa tất cả
                 </button>
               </div>
             </div>
           <% end %>
         </div>
+
+        <!-- Pagination area cố định ở dưới -->
+        <% if @questions.any? %>
+        <div class="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-5 md:px-6 py-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="text-sm text-gray-800 dark:text-white flex items-center" data-controller="manage--questions">
+              <span class="mr-2">Hiển thị:</span>
+              <%= form_with url: manage_questions_path, method: :get, data: {
+                turbo_frame: "questions_data",
+                manage__questions_target: "searchForm"
+              } do |f| %>
+                <%= f.hidden_field :page, value: 1 %>
+                <% request.query_parameters.except(:page, :per_page, :authenticity_token).each do |key, value| %>
+                  <%= f.hidden_field key, value: value %>
+                <% end %>
+                <%= f.select :per_page,
+                        options_for_select([10, 25, 50, 100], params[:per_page].to_i > 0 ? params[:per_page].to_i : 10),
+                        {},
+                        {
+                          class: "select select-bordered select-sm",
+                          data: {
+                            manage__questions_target: "perPageSelect",
+                            action: "change->manage--questions#changePerPage"
+                          }
+                        }
+                    %>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <%= render partial: 'shared/pagination',
+              locals: {
+                collection: @questions,
+                pagination_label: 'câu hỏi',
+                turbo_frame_id: "questions_data"
+              } %>
+          </div>
+        </div>
+        <% end %>
       </div>
     </div>
     <% end %>

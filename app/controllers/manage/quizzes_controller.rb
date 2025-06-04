@@ -11,7 +11,8 @@ class Manage::QuizzesController < Manage::BaseController
                  Quiz.includes(:course, :questions)
                end
     @quizzes = @quizzes.where(is_exam: params[:is_exam]) if params[:is_exam].present?
-    @quizzes = @quizzes.order(created_at: :desc).page(params[:page]).per(10)
+    per_page = params[:per_page].to_i > 0 ? params[:per_page].to_i : 10
+    @quizzes = @quizzes.order(created_at: :desc).page(params[:page]).per(per_page)
     @course = Course.find_by(id: params[:course_id]) if params[:course_id].present?
   end
 
@@ -77,7 +78,7 @@ class Manage::QuizzesController < Manage::BaseController
     @quiz = Quiz.new(quiz_params)
 
     unless validate_quiz_time(@quiz)
-      flash.now[:alert] = @quiz.errors.full_messages.join(", ")
+      flash.now[:alert] = @quiz.errors.full_messages.join(', ')
       set_courses
       return render :new, status: :unprocessable_entity
     end
@@ -87,11 +88,7 @@ class Manage::QuizzesController < Manage::BaseController
 
       if @quiz.save
         selected_questions_data.each do |question_data|
-          question = if question_data['id'].present?
-                      Question.find_by(id: question_data['id'])
-                    else
-                      nil
-                    end
+          question = (Question.find_by(id: question_data['id']) if question_data['id'].present?)
 
           if question
             QuizQuestion.create(quiz: @quiz, question: question)
@@ -232,7 +229,7 @@ class Manage::QuizzesController < Manage::BaseController
     @quiz.assign_attributes(quiz_params)
 
     unless validate_quiz_time(@quiz)
-      flash.now[:alert] = @quiz.errors.full_messages.join(", ")
+      flash.now[:alert] = @quiz.errors.full_messages.join(', ')
       set_courses
       return render :edit, status: :unprocessable_entity
     end
@@ -286,7 +283,8 @@ class Manage::QuizzesController < Manage::BaseController
       )
 
       if questions.blank? || !questions.is_a?(Array) || questions.empty?
-        render json: { error: 'Unable to generate questions from this transcription content' }, status: :unprocessable_entity
+        render json: { error: 'Unable to generate questions from this transcription content' },
+               status: :unprocessable_entity
         return
       end
 
@@ -336,11 +334,6 @@ class Manage::QuizzesController < Manage::BaseController
 
   def set_quiz
     @quiz = Quiz.includes(questions: [:quiz_questions]).joins(:course).where(courses: { user_id: current_user.id }).find_by(id: params[:id])
-
-    unless @quiz
-      flash[:alert] = "Không tìm thấy bài kiểm tra"
-      redirect_to manage_quizzes_path
-    end
   end
 
   def set_courses
@@ -357,14 +350,14 @@ class Manage::QuizzesController < Manage::BaseController
 
     if start_time.present? && end_time.present?
       if start_time >= end_time
-        quiz.errors.add(:end_time, "must be after start time")
+        quiz.errors.add(:end_time, 'must be after start time')
         return false
       end
 
       if quiz.time_limit.present?
         time_diff_minutes = ((end_time - start_time) / 60).to_i
         if quiz.time_limit > time_diff_minutes
-          quiz.errors.add(:time_limit, "cannot be greater than the time period between start and end times")
+          quiz.errors.add(:time_limit, 'cannot be greater than the time period between start and end times')
           return false
         end
       end

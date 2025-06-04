@@ -23,7 +23,7 @@ gem 'tzinfo-data', platforms: %i[windows jruby]
 gem 'solid_cable'
 gem 'solid_cache'
 gem 'solid_queue'
-
+gem 'rack-cors'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', require: false
 
@@ -56,6 +56,7 @@ gem 'sidekiq'
 gem 'streamio-ffmpeg', '3.0'
 
 group :development, :test do
+  gem 'ruby-lsp'
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: %i[mri windows], require: 'debug/prelude'
 

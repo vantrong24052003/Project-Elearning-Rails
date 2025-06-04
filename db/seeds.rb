@@ -102,7 +102,7 @@ puts '✅ Created categories.'
 def fetch_transcription_text(json_url)
   uri = URI.parse(json_url)
   bucket = uri.host.split('.').first
-  key = uri.path.sub(/^\//, '')
+  key = uri.path.sub(%r{^/}, '')
 
   s3_conf = YAML.safe_load(ERB.new(File.read(Rails.root.join('config/storage.yml'))).result)['amazon']
 
@@ -116,14 +116,13 @@ def fetch_transcription_text(json_url)
   body = s3.get_object(bucket: bucket, key: key).body.read
   data = JSON.parse(body)
   data.dig('results', 'transcripts', 0, 'transcript') || 'Không có nội dung transcript'
-
-rescue => e
+rescue StandardError => e
   "Không thể đọc transcript: #{e.message}"
 end
 
 puts 'Creating uploads...'
 
-uploads = [         
+uploads = [
   Upload.create!(
     id: '0a9126af-f394-42c5-acff-e7bd0e1da25c',
     file_type: 'mp4',

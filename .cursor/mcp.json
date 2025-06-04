@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "rails-proxy": {
+      "command": "curl",
+      "args": ["-s", "http://localhost:5000"],
+      "env": {}
+    }
+  }
+}

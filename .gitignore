@@ -44,9 +44,7 @@ vendor/*
 
 /app/assets/builds/*
 !/app/assets/builds/.keep
-.github/copilot-instructions.md
 .windsurfrules
-.cursor/*
 .yarn/*
 .pnp.cjs
 .pnp.loader.mjs

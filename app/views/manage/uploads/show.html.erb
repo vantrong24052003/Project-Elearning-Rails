@@ -63,14 +63,6 @@
                 Trình duyệt của bạn không hỗ trợ video.
               </video>
 
-              <% if hls_url.present? %>
-                <div class="absolute top-2 right-2 bg-blue-500/80 text-white text-xs px-2 py-1 rounded-lg z-10 font-medium video-quality-badge">
-                  HLS
-                </div>
-
-                <div data-shared--video-player-target="qualityInfo" class="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-lg z-10 hidden">
-                </div>
-              <% end %>
             </div>
           <% elsif @upload.status == 'processing' %>
             <div class="flex items-center justify-center aspect-video bg-gray-900">
