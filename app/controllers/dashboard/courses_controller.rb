@@ -2,42 +2,33 @@
 
 class Dashboard::CoursesController < Dashboard::DashboardController
   before_action :set_course, only: %i[show edit update destroy]
+  before_action :initialize_course_service, only: %i[index show]
 
   def index
     @categories = Category.all
-
-    courses = base_courses
-    courses = apply_search_filter(courses, params[:search])
-    courses = apply_category_filter(courses, params[:category_id])
-    courses = apply_price_filters(courses, params[:min_price], params[:max_price])
-    courses = apply_sort(courses, params[:sort_by])
-
-    @courses = courses.page(params[:page]).per(12)
-
-    respond_to do |format|
-      format.html
-      format.turbo_stream
+    @courses = @course_service.filter_and_paginate_courses(params)
+    
+    if params[:category_id] == 'all_categories'
+      @selected_category_name = 'All Categories'
+    elsif params[:category_id].present?
+      @selected_category_name = @categories.find_by(id: params[:category_id])&.name || 'Category'
     end
   end
 
   def show
-    @course = Course.find(params[:id])
+    if @course.status.to_sym != :published
+      redirect_to dashboard_courses_path, alert: 'Course not available.'
+      return
+    end
     @chapters = @course.chapters
     @lessons = Lesson.where(chapter_id: @chapters.pluck(:id))
     @videos = Video.includes(:upload).where(lesson_id: @lessons.pluck(:id))
     @enrollments = @course.enrollments
 
-    @can_view_full_content = if current_user&.has_role?(:admin) || @course.user_id == current_user&.id
-                               true
-                             elsif current_user
-                               @enrollments.exists?(user_id: current_user.id, status: :active)
-                             else
-                               false
-                             end
+    statistics = @course_service.calculate_course_statistics(@course, @videos, @enrollments)
+    @total_duration = statistics[:total_duration]
 
-    set_course_statistics
-    set_user_progress if user_enrolled?
-    set_related_courses
+    @related_courses = @course_service.get_related_courses(@course)
   end
 
   def new
@@ -52,7 +43,7 @@ class Dashboard::CoursesController < Dashboard::DashboardController
       redirect_to dashboard_course_path(@course), notice: 'Course was successfully created.'
     else
       @categories = Category.all
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 
@@ -65,7 +56,7 @@ class Dashboard::CoursesController < Dashboard::DashboardController
       redirect_to dashboard_course_path(@course), notice: 'Course was successfully updated.'
     else
       @categories = Category.all
-      render :edit
+      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -76,103 +67,16 @@ class Dashboard::CoursesController < Dashboard::DashboardController
 
   private
 
-  def base_courses
-    if current_user&.has_role?(:instructor)
-      current_user.courses
-    else
-      Course.all
-    end
-  end
-
-  def apply_search_filter(courses, search_term)
-    return courses unless search_term.present?
-
-    courses.where('title ILIKE ?', "%#{search_term}%")
-  end
-
-  def apply_category_filter(courses, category_id)
-    return courses unless category_id.present?
-
-    courses.joins(:course_categories).where(course_categories: { category_id: category_id })
-  end
-
-  def apply_price_filters(courses, min_price, max_price)
-    result = courses
-
-    result = result.where('price >= ?', min_price.to_i) if min_price.present?
-
-    result = result.where('price <= ?', max_price.to_i) if max_price.present?
-
-    result
-  end
-
-  def apply_sort(courses, sort_by)
-    case sort_by
-    when 'newest'
-      courses.order(created_at: :desc)
-    when 'price_low'
-      courses.order(price: :asc)
-    when 'price_high'
-      courses.order(price: :desc)
-    else
-      courses.order(created_at: :desc)
-    end
-  end
-
   def set_course
     @course = Course.find(params[:id])
   end
 
-  def set_course_statistics
-    @total_duration = calculate_total_duration
-    @active_students_count = calculate_active_students
-  end
-
-  def calculate_total_duration
-    total_duration = 0
-
-    @videos.each do |video|
-      total_duration += video.upload.duration if video.upload&.duration
-    end
-
-    total_duration
-  end
-
-  def calculate_active_students
-    @enrollments.where(status: :active).count
-  end
-
-  def user_enrolled?
-    return true if current_user&.has_role?(:admin)
-    return true if @course.user_id == current_user&.id
-
-    current_user && @enrollments.exists?(user_id: current_user.id, status: :active)
-  end
-
-  def set_user_progress
-    completed_lessons = Progress.where(
-      user: current_user,
-      course: @course,
-      status: :done
-    ).count
-
-    @user_progress = {
-      completed_lessons: completed_lessons,
-      total_lessons: @course.lessons.count
-    }
-  end
-
-  def set_related_courses
-    @related_courses = Course.published
-                             .joins(:course_categories)
-                             .where(course_categories: { category_id: @course.category_ids })
-                             .where.not(id: @course.id)
-                             .distinct
-                             .limit(3)
+  def initialize_course_service
+    @course_service = Dashboard::CourseService.new(current_user)
   end
 
   def course_params
-    params.permit(
+    params.require(:course).permit(
       :title, :description, :price, :thumbnail_path, :language,
       :status, category_ids: []
     )

@@ -271,6 +271,32 @@
             <% end %>
           </div>
 
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-4 mb-2 border-t border-gray-200 dark:border-gray-700 pt-4">
+            <div class="text-sm text-gray-800 dark:text-white flex items-center" data-controller="dashboard--course-filter">
+              <span class="mr-2">Hiển thị:</span>
+              <%= form_with url: dashboard_courses_path, method: :get, data: {
+                turbo_frame: "course-results",
+                dashboard__course_filter_target: "filterForm"
+              } do |f| %>
+                <%= f.hidden_field :page, value: 1 %>
+                <% request.query_parameters.except(:page, :per_page, :authenticity_token).each do |key, value| %>
+                  <%= f.hidden_field key, value: value %>
+                <% end %>
+                <%= f.select :per_page,
+                        options_for_select([10, 25, 50, 100], params[:per_page].to_i > 0 ? params[:per_page].to_i : 10),
+                        {},
+                        {
+                          class: "select select-bordered select-sm",
+                          data: {
+                            dashboard__course_filter_target: "perPageSelect",
+                            action: "change->dashboard--course-filter#changePerPage"
+                          }
+                        }
+                    %>
+              <% end %>
+            </div>
+          </div>
+
           <%= render partial: 'shared/pagination',
                      locals: {
                        collection: @courses,

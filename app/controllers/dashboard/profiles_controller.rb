@@ -2,24 +2,19 @@
 
 class Dashboard::ProfilesController < Dashboard::DashboardController
   before_action :set_user, only: %i[show update]
+  before_action :initialize_profile_service, only: %i[show]
 
   def show
-    if @user.has_role?(:admin) || @user.has_role?(:instructor)
-      @courses = @user.courses.includes(:categories)
-    else
-      @enrollments = @user.enrollments.includes(course: :categories).where(status: 'active')
-    end
+    user_data = @profile_service.load_user_data
+    @courses = user_data[:courses]
+    @enrollments = user_data[:enrollments]
   end
 
   def update
-    respond_to do |format|
-      if @user.update(user_params)
-        format.html { redirect_to dashboard_profile_path(@user), notice: 'Profile was successfully updated.' }
-        format.json { render :show, status: :ok, location: @user }
-      else
-        format.html { render :show, status: :unprocessable_entity }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
-      end
+    if @user.update(user_params)
+      redirect_to dashboard_profile_path(@user), notice: 'Profile was successfully updated.'
+    else
+      render :show, status: :unprocessable_entity
     end
   end
 
@@ -27,6 +22,10 @@ class Dashboard::ProfilesController < Dashboard::DashboardController
 
   def set_user
     @user = params[:id] ? User.find(params[:id]) : current_user
+  end
+
+  def initialize_profile_service
+    @profile_service = Dashboard::ProfileService.new(@user)
   end
 
   def user_params

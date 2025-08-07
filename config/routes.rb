@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 require 'sidekiq/web'
-
 Rails.application.routes.draw do
+  get 'up' => 'rails/health#show', as: :rails_health_check
   devise_for :users, controllers: {
     registrations: 'users/registrations',
     sessions: 'users/sessions',
@@ -19,13 +19,7 @@ Rails.application.routes.draw do
 
     root to: 'overviews#index'
 
-    resources :courses do
-      member do
-        post :publish
-        post :draft
-      end
-    end
-
+    resources :courses 
     resources :chapters
     resources :lessons
     resources :videos do

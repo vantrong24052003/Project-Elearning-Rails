@@ -171,16 +171,16 @@
                 </h3>
 
                 <div class="space-y-3">
-                  <% question.options.each_with_index do |option, option_index| %>
+                  <% question.options.each do |option_key, option_value| %>
                     <div class="flex items-start">
                       <div class="flex items-center h-6 mt-1">
-                        <%= f.radio_button "answers[#{question.id}]", option_index,
-                                          id: "answer_#{question.id}_#{option_index}",
+                        <%= f.radio_button "answers[#{question.id}]", option_key,
+                                          id: "answer_#{question.id}_#{option_key}",
                                           class: "h-5 w-5 text-blue-600 dark:text-purple-600 focus:ring-blue-500 dark:focus:ring-purple-500 border-gray-300 dark:border-gray-600" %>
                       </div>
                       <div class="ml-3">
-                        <label for="answer_<%= question.id %>_<%= option_index %>" class="text-gray-700 dark:text-gray-300 cursor-pointer select-none">
-                          <%= option %>
+                        <label for="answer_<%= question.id %>_<%= option_key %>" class="text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+                          <%= option_value %>
                         </label>
                       </div>
                     </div>

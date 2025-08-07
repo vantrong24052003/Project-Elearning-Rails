@@ -162,7 +162,7 @@ class Manage::UploadsController < Manage::BaseController
 
     VideoProcessingJob.perform_later(@upload.id)
 
-      redirect_to manage_upload_path(@upload), notice: 'Video processing has been restarted.'
+    redirect_to manage_upload_path(@upload), notice: 'Video processing has been restarted.'
   end
 
   private

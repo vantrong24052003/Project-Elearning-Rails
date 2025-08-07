@@ -1,33 +1,36 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
-  default: &default
-    adapter: postgresql
-    encoding: unicode
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    username: <%= Rails.application.credentials.dig(:db_development, :username) %>
-    password: <%= Rails.application.credentials.dig(:db_development, :password) %>
-    host: <%= Rails.application.credentials.dig(:db_development, :host) || 'localhost' %>
-    port: <%= Rails.application.credentials.dig(:db_development, :port) || 5432 %>
+development:
+  <<: *default
+  database: project_rails_learning_development
+  username: <%= Rails.application.credentials.dig(:db_development, :username) %>
+  password: <%= Rails.application.credentials.dig(:db_development, :password) %>
+  host: <%= Rails.application.credentials.dig(:db_development, :host) %>
+  port: <%= Rails.application.credentials.dig(:db_development, :port) || 5432 %>
 
+test:
+  <<: *default
+  database: project_rails_learning_test
 
-  development:
+production:
+  primary: &primary
     <<: *default
-    database: elearning_development_new
+    database: project_rails_learning_production
+    username: vantrong
+    password: Admin123@
+    host: project-rails-learning-db
+    port: 5432
+  primary_replica:
+    <<: *primary
+  queue:
+    <<: *primary
+  cache:
+    <<: *primary
+  cable:
+    <<: *primary
 
-  production:
-    primary: &primary_production
-      <<: *default
-      database: elearning_production
-      username: <%= Rails.application.credentials.dig(:db_production, :username) %>
-      password: <%= Rails.application.credentials.dig(:db_production, :password) %>
-    cache:
-      <<: *primary_production
-      database: elearning_production_cache
-      migrations_paths: db/cache_migrate
-    queue:
-      <<: *primary_production
-      database: elearning_production_queue
-      migrations_paths: db/queue_migrate
-    cable:
-      <<: *primary_production
-      database: elearning_production_cable
-      migrations_paths: db/cable_migrate
+
+

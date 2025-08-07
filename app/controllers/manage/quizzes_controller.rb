@@ -3,6 +3,7 @@
 class Manage::QuizzesController < Manage::BaseController
   before_action :set_quiz, only: %i[show edit update destroy]
   before_action :set_courses, only: %i[new edit]
+
   def index
     @quizzes = if params[:course_id].present?
                  Quiz.includes(:course, :questions).where(course_id: params[:course_id])
@@ -10,7 +11,8 @@ class Manage::QuizzesController < Manage::BaseController
                  Quiz.includes(:course, :questions)
                end
     @quizzes = @quizzes.where(is_exam: params[:is_exam]) if params[:is_exam].present?
-    @quizzes = @quizzes.order(created_at: :desc).page(params[:page]).per(10)
+    per_page = params[:per_page].to_i > 0 ? params[:per_page].to_i : 10
+    @quizzes = @quizzes.order(created_at: :desc).page(params[:page]).per(per_page)
     @course = Course.find_by(id: params[:course_id]) if params[:course_id].present?
   end
 
@@ -25,7 +27,7 @@ class Manage::QuizzesController < Manage::BaseController
       ].sample(rand(1..3))
     }
     @quiz = Quiz.find(params[:id])
-    @courses = Course.all.order(:title)
+    @courses = Course.where(user_id: current_user.id).order(:title)
   end
 
   def new_with_preview
@@ -37,8 +39,8 @@ class Manage::QuizzesController < Manage::BaseController
     @quiz = Quiz.new
 
     if params[:course_id].present?
-      @quiz.course_id = params[:course_id]
-      @course = Course.find_by(id: params[:course_id])
+      @course = Course.find_by(id: params[:course_id], user_id: current_user.id)
+      @quiz.course_id = @course.id if @course
     end
 
     if session[:preview_questions_data].present?
@@ -76,7 +78,7 @@ class Manage::QuizzesController < Manage::BaseController
     @quiz = Quiz.new(quiz_params)
 
     unless validate_quiz_time(@quiz)
-      flash.now[:alert] = @quiz.errors.full_messages.join(", ")
+      flash.now[:alert] = @quiz.errors.full_messages.join(', ')
       set_courses
       return render :new, status: :unprocessable_entity
     end
@@ -86,16 +88,11 @@ class Manage::QuizzesController < Manage::BaseController
 
       if @quiz.save
         selected_questions_data.each do |question_data|
-          question = if question_data['id'].present?
-                      Question.find_by(id: question_data['id'])
-                    else
-                      nil
-                    end
+          question = (Question.find_by(id: question_data['id']) if question_data['id'].present?)
 
           if question
             QuizQuestion.create(quiz: @quiz, question: question)
           else
-            # Tạo câu hỏi mới nếu không tìm thấy
             new_question = Question.new(
               content: question_data['content'],
               options: question_data['options'],
@@ -232,7 +229,7 @@ class Manage::QuizzesController < Manage::BaseController
     @quiz.assign_attributes(quiz_params)
 
     unless validate_quiz_time(@quiz)
-      flash.now[:alert] = @quiz.errors.full_messages.join(", ")
+      flash.now[:alert] = @quiz.errors.full_messages.join(', ')
       set_courses
       return render :edit, status: :unprocessable_entity
     end
@@ -286,7 +283,8 @@ class Manage::QuizzesController < Manage::BaseController
       )
 
       if questions.blank? || !questions.is_a?(Array) || questions.empty?
-        render json: { error: 'Unable to generate questions from this transcription content' }, status: :unprocessable_entity
+        render json: { error: 'Unable to generate questions from this transcription content' },
+               status: :unprocessable_entity
         return
       end
 
@@ -335,11 +333,11 @@ class Manage::QuizzesController < Manage::BaseController
   end
 
   def set_quiz
-    @quiz = Quiz.includes(questions: [:quiz_questions]).find(params[:id])
+    @quiz = Quiz.includes(questions: [:quiz_questions]).joins(:course).where(courses: { user_id: current_user.id }).find_by(id: params[:id])
   end
 
   def set_courses
-    @courses = Course.all.order(:title)
+    @courses = Course.where(user_id: current_user.id).order(:title)
   end
 
   def quiz_params
@@ -347,26 +345,19 @@ class Manage::QuizzesController < Manage::BaseController
   end
 
   def validate_quiz_time(quiz)
-    now = Time.current
-    allowed_past_time = now - 5.minutes
     start_time = quiz.start_time
     end_time = quiz.end_time
 
     if start_time.present? && end_time.present?
-      if start_time < allowed_past_time
-        quiz.errors.add(:start_time, "cannot be in the past (allowed to be up to 5 minutes before current time)")
-        return false
-      end
-
       if start_time >= end_time
-        quiz.errors.add(:end_time, "must be after start time")
+        quiz.errors.add(:end_time, 'must be after start time')
         return false
       end
 
       if quiz.time_limit.present?
         time_diff_minutes = ((end_time - start_time) / 60).to_i
         if quiz.time_limit > time_diff_minutes
-          quiz.errors.add(:time_limit, "cannot be greater than the time period between start and end times")
+          quiz.errors.add(:time_limit, 'cannot be greater than the time period between start and end times')
           return false
         end
       end

@@ -63,7 +63,6 @@ export default class extends Controller {
           return;
         }
 
-        // Show preview
         this.renderQuestions();
         this.showPreview();
         Toast.success(`Đã tìm thấy ${this.questions.length} câu hỏi từ file Excel`);

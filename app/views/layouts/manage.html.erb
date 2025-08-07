@@ -165,7 +165,7 @@
                 <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
               </svg>
-              <span class="text-sm">Dashboard</span>
+              <span class="text-sm">Tổng quan</span>
             <% end %>
           </ul>
 
@@ -212,7 +212,6 @@
           </div>
 
           <ul class="menu menu-md p-2 space-y-1 text-gray-700 dark:text-gray-300 w-full">
-             <% if current_user.has_role?(:admin) %>
               <%= link_to manage_videos_path, class: "flex items-center px-4 py-3 rounded-md #{current_page?(manage_videos_path) ? 'bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-purple-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}" do %>
                 <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <polygon points="23 7 16 12 23 17 23 7"></polygon>
@@ -220,7 +219,6 @@
                 </svg>
                 <span class="text-sm">Videos</span>
               <% end %>
-            <% end %>
 
                 <%= link_to manage_uploads_path, class: "flex items-center px-4 py-3 rounded-md #{current_page?(manage_uploads_path) ? 'bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-purple-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}" do %>
               <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -258,35 +256,35 @@
             <% end %>
           </ul>
 
-          <div class="px-4 py-2 mt-2">
+          <!--<div class="px-4 py-2 mt-2">
             <p class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 tracking-wider">Khác</p>
           </div>
 
           <ul class="menu menu-md p-2 space-y-1 text-gray-700 dark:text-gray-300 w-full">
-              <%= link_to manage_reviews_path, class: "flex items-center px-4 py-3 rounded-md #{current_page?(manage_reviews_path) ? 'bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-purple-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}" do %>
-                <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <%#= link_to manage_reviews_path, class: "flex items-center px-4 py-3 rounded-md #{current_page?(manage_reviews_path) ? 'bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-purple-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}" do %>-->
+<!--                <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
                 <span class="text-sm">Đánh giá</span>
-              <% end %>
-
-              <%= link_to manage_payments_path, class: "flex items-center px-4 py-3 rounded-md #{current_page?(manage_payments_path) ? 'bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-purple-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}" do %>
-                <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <%# end %>-->
+<!---->
+              <%#= link_to manage_payments_path, class: "flex items-center px-4 py-3 rounded-md #{current_page?(manage_payments_path) ? 'bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-purple-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}" do %>
+<!--                <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
                   <line x1="1" y1="10" x2="23" y2="10"></line>
                 </svg>
                 <span class="text-sm">Thanh toán</span>
-              <% end %>
-
-              <%= link_to manage_faqs_path, class: "flex items-center px-4 py-3 rounded-md #{current_page?(manage_faqs_path) ? 'bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-purple-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}" do %>
-                <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <%# end %>-->
+<!---->
+              <%#= link_to manage_faqs_path, class: "flex items-center px-4 py-3 rounded-md #{current_page?(manage_faqs_path) ? 'bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-purple-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}" do %>
+<!--                <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10"></circle>
                   <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                   <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
                 <span class="text-sm">FAQs</span>
-              <% end %>
-          </ul>
+              <%# end %>-->
+<!--          </ul>-->
         </div>
 
         <div class="border-t border-gray-200 dark:border-gray-700 p-4 mt-auto">
