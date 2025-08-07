@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { QuizApi } from "../../services/quiz_api"
-import { Toast } from "../../services/toast_service"
+import { MessageService } from "../../services/message_service"
 
 export default class extends Controller {
   static values = {
@@ -400,7 +400,7 @@ export default class extends Controller {
       duration = 5000;
     }
 
-    Toast.show(`<span class="font-medium">${action}:</span> ${message}`, type, duration);
+    MessageService.show(`<span class="font-medium">${action}:</span> ${message}`, type, duration);
   }
 
   async logAction(actionType) {
@@ -464,7 +464,7 @@ export default class extends Controller {
   }
 
   notifyAutoSubmit() {
-    Toast.error("Hệ thống đã phát hiện các hành vi vi phạm quy định thi, bài thi đang được nộp tự động", 30000);
+    MessageService.error("Hệ thống đã phát hiện các hành vi vi phạm quy định thi, bài thi đang được nộp tự động", 30000);
   }
 
   syncBehaviorCounts() {

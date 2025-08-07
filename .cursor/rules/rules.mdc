@@ -1,3 +1,8 @@
+---
+description:
+globs:
+alwaysApply: true
+---
 # Rails Development Guidelines
 
 ## 1. Communication Principles

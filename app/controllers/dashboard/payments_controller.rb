@@ -1,29 +1,17 @@
 # frozen_string_literal: true
 
 class Dashboard::PaymentsController < Dashboard::DashboardController
-  before_action :set_course
+  before_action :set_course, only: %i[index create]
   before_action :initialize_payment_service
 
   def index
-    authorize! :view_payment, @course
     @enrollment = @payment_service.get_enrollment_info(@course)
   end
 
-  def show; end
-
-  def new; end
-
   def create
-    authorize! :create_payment, @course
     @enrollment = @payment_service.process_payment(@course)
-    redirect_to dashboard_course_path(@course), notice: 'Thanh toán thành công!'
+    redirect_to dashboard_course_path(@course), notice: 'Payment successful!'
   end
-
-  def edit; end
-
-  def update; end
-
-  def destroy; end
 
   private
 

@@ -109,7 +109,6 @@
     display: none;
   }
 
-  /* Tùy chỉnh sidebar trong course viewer */
   .collapse-group .collapse-arrow .collapse-title:after {
     color: theme('colors.purple.400');
     transition: all 0.2s cubic-bezier(.4,0,.2,1);

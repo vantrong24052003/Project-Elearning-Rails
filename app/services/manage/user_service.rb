@@ -7,7 +7,10 @@ class Manage::UserService
 
   def filter_users(params)
     users = User.includes(:roles).where.not(id: User.with_role(:admin).pluck(:id))
-    users = users.where('name ILIKE ? OR email ILIKE ?', "%#{params[:search]}%", "%#{params[:search]}%") if params[:search].present?
+    if params[:search].present?
+      users = users.where('name ILIKE ? OR email ILIKE ?', "%#{params[:search]}%",
+                          "%#{params[:search]}%")
+    end
     users = users.joins(:roles).where(roles: { name: params[:role] }) if params[:role].present?
     users = users.where(instructor_request_status: params[:instructor_status]) if params[:instructor_status].present?
     case params[:lock_status]
@@ -56,6 +59,7 @@ class Manage::UserService
 
   def handle_instructor_status_update(user)
     return unless user.instructor_request_status_changed?
+
     case user.instructor_request_status.to_sym
     when :approved
       user.add_role(:instructor)
@@ -66,4 +70,4 @@ class Manage::UserService
       UserMailer.instructor_status_notification(user).deliver_later
     end
   end
-end 
+end

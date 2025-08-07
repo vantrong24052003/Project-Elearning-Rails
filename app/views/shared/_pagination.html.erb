@@ -1,7 +1,5 @@
-<%# Shared pagination component for all pages %>
-<div class="pagination-wrapper border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+<div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    <%# Info about current page - always visible %>
     <div class="text-sm text-gray-600 dark:text-gray-400">
       <% if collection.respond_to?(:total_count) && collection.total_count > 0 %>
         Hiển thị <%= collection.offset_value + 1 %>-<%= [collection.offset_value + collection.limit_value, collection.total_count].min %> trong số <%= collection.total_count %> <%= pagination_label %>
@@ -10,11 +8,9 @@
       <% end %>
     </div>
 
-    <%# Pagination controls - always show if collection supports pagination %>
     <% if collection.respond_to?(:total_pages) && collection.respond_to?(:current_page) %>
       <div class="flex items-center justify-center">
         <div class="flex items-center gap-1">
-          <%# First page button %>
           <% if collection.current_page > 2 %>
             <%= link_to url_for(request.params.merge(page: 1)),
                 class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
@@ -33,7 +29,6 @@
             </span>
           <% end %>
 
-          <%# Previous page button %>
           <% if collection.respond_to?(:prev_page) && collection.prev_page %>
             <%= link_to url_for(request.params.merge(page: collection.prev_page)),
                 class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
@@ -50,7 +45,6 @@
             </span>
           <% end %>
 
-          <%# Page numbers %>
           <% start_page = [1, collection.current_page - 2].max %>
           <% end_page = [collection.total_pages, collection.current_page + 2].min %>
 
@@ -66,7 +60,6 @@
             <% end %>
           <% end %>
 
-          <%# Next page button %>
           <% if collection.respond_to?(:next_page) && collection.next_page %>
             <%= link_to url_for(request.params.merge(page: collection.next_page)),
                 class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
@@ -83,7 +76,6 @@
             </span>
           <% end %>
 
-          <%# Last page button %>
           <% if collection.respond_to?(:total_pages) && collection.respond_to?(:current_page) && collection.current_page < collection.total_pages - 1 %>
             <%= link_to url_for(request.params.merge(page: collection.total_pages)),
                 class: "flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",

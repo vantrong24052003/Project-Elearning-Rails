@@ -11,15 +11,15 @@ Rails.application.routes.draw do
   }
 
   namespace :manage do
+    root to: 'overviews#index'
+
     devise_scope :user do
       get 'login', to: 'sessions#new'
       post 'login', to: 'sessions#create'
       delete 'logout', to: 'sessions#destroy'
     end
 
-    root to: 'overviews#index'
-
-    resources :courses 
+    resources :courses
     resources :chapters
     resources :lessons
     resources :videos do
@@ -50,7 +50,7 @@ Rails.application.routes.draw do
   namespace :dashboard do
     root to: 'courses#index'
 
-    resources :courses, only: %i[index show new edit create update destroy] do
+    resources :courses, only: %i[index show] do
       resources :quizzes do
         resources :attempts
         resources :quiz_attempts, only: %i[index show new create edit update destroy]
@@ -60,7 +60,7 @@ Rails.application.routes.draw do
           end
         end
       end
-      resources :payments
+      resources :payments, only: %i[index create]
       resources :viewers
     end
 
