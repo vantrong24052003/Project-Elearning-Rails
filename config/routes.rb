@@ -11,15 +11,15 @@ Rails.application.routes.draw do
   }
 
   namespace :manage do
+    root to: 'overviews#index'
+
     devise_scope :user do
       get 'login', to: 'sessions#new'
       post 'login', to: 'sessions#create'
       delete 'logout', to: 'sessions#destroy'
     end
 
-    root to: 'overviews#index'
-
-    resources :courses 
+    resources :courses
     resources :chapters
     resources :lessons
     resources :videos do

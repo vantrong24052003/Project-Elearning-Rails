@@ -26,7 +26,7 @@ class Manage::UsersController < Manage::BaseController
 
   def edit; end
 
-  def update  
+  def update
     if params[:action_type].present?
       @user_service.handle_instructor_action(@user, params[:action_type].to_sym)
       redirect_to manage_users_path, notice: "User was successfully #{params[:action_type]}"
