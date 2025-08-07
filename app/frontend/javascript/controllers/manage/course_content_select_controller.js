@@ -1,7 +1,7 @@
 import { Controller } from '@hotwired/stimulus'
 import { CourseContentApi } from '../../services/course_content_api'
 import { QuizApi } from '../../services/quiz_api'
-import { Toast } from "../../services/toast_service"
+import { MessageService } from "../../services/message_service"
 
 export default class extends Controller {
   static targets = [
@@ -102,7 +102,7 @@ export default class extends Controller {
           this.videoDetailLinkTarget.addEventListener('click', (e) => {
             if (!videoId) {
               e.preventDefault()
-              Toast.error('Không thể xem chi tiết video này')
+              MessageService.error('Không thể xem chi tiết video này')
             }
           })
         }
@@ -149,7 +149,7 @@ export default class extends Controller {
 
     const videoId = this.videoSelectTarget.value
     if (!videoId) {
-      Toast.error('Vui lòng chọn video trước')
+              MessageService.error('Vui lòng chọn video trước')
       return
     }
 
@@ -159,7 +159,7 @@ export default class extends Controller {
         if (userDescriptionField) {
           const formattedContent = this.formatVideoContent(video)
           userDescriptionField.value = formattedContent
-          Toast.success('Nội dung video đã được thêm vào mô tả')
+          MessageService.success('Nội dung video đã được thêm vào mô tả')
         }
       })
   }
@@ -188,7 +188,7 @@ export default class extends Controller {
             : ''
 
           if (!description) {
-            Toast.error('Không có nội dung mô tả. Vui lòng nhập mô tả.')
+            MessageService.error('Không có nội dung mô tả. Vui lòng nhập mô tả.')
             this.isGenerating = false
             this.loadingTarget.classList.add("hidden")
             reject(new Error('Không có nội dung mô tả'))
@@ -198,7 +198,7 @@ export default class extends Controller {
           QuizApi.generateQuestions(title, description, numQuestions, difficulty, topic, learningGoal)
             .then(questions => {
               if (questions && questions.error) {
-                Toast.error(`Lỗi: ${questions.error}`)
+                MessageService.error(`Lỗi: ${questions.error}`)
                 this.isGenerating = false
                 this.loadingTarget.classList.add("hidden")
                 reject(new Error(questions.error))
@@ -206,24 +206,24 @@ export default class extends Controller {
               }
 
               if (!questions || !Array.isArray(questions) || questions.length === 0) {
-              Toast.error('Không thể tạo câu hỏi từ nội dung này. Vui lòng thử lại.')
+              MessageService.error('Không thể tạo câu hỏi từ nội dung này. Vui lòng thử lại.')
                 this.isGenerating = false
                 this.loadingTarget.classList.add("hidden")
                 reject(new Error('Không nhận được câu hỏi hợp lệ từ AI'))
                 return
               }
-             Toast.success('Đã tạo câu hỏi thành công!')
+             MessageService.success('Đã tạo câu hỏi thành công!')
               resolve(questions)
             })
             .catch(error => {
-              Toast.error(`Lỗi khi tạo câu hỏi: ${error.message}`)
+              MessageService.error(`Lỗi khi tạo câu hỏi: ${error.message}`)
               this.isGenerating = false
               this.loadingTarget.classList.add("hidden")
               reject(error)
             })
         })
         .catch(error => {
-          Toast.error(`Lỗi khi lấy thông tin video: ${error.message}`)
+          MessageService.error(`Lỗi khi lấy thông tin video: ${error.message}`)
           this.isGenerating = false
           this.loadingTarget.classList.add("hidden")
           reject(error)
@@ -280,7 +280,7 @@ export default class extends Controller {
           this.controlsTarget.classList.remove("hidden")
         })
         .catch(error => {
-          Toast.error(`Lỗi khi tạo câu hỏi: ${error.message}`)
+          MessageService.error(`Lỗi khi tạo câu hỏi: ${error.message}`)
           this.isGenerating = false
           this.loadingTarget.classList.add("hidden")
           this.questionsContainerTarget.classList.remove("hidden")
@@ -293,7 +293,7 @@ export default class extends Controller {
         : ''
 
       if (!description) {
-        Toast.error('Không có nội dung mô tả. Vui lòng nhập mô tả.')
+        MessageService.error('Không có nội dung mô tả. Vui lòng nhập mô tả.')
         this.isGenerating = false
         this.loadingTarget.classList.add("hidden")
         return
@@ -301,7 +301,7 @@ export default class extends Controller {
 
       const quizTitle = formData.get('quiz[title]')
       if (!quizTitle) {
-        Toast.error('Vui lòng nhập tiêu đề bài kiểm tra')
+        MessageService.error('Vui lòng nhập tiêu đề bài kiểm tra')
         this.isGenerating = false
         this.loadingTarget.classList.add("hidden")
         return
@@ -310,20 +310,20 @@ export default class extends Controller {
       QuizApi.generateQuestions(quizTitle, description, numQuestions, difficulty, topic, learningGoal)
         .then(questions => {
           if (questions && questions.error) {
-            Toast.error(`Lỗi: ${questions.error}`)
+            MessageService.error(`Lỗi: ${questions.error}`)
             this.isGenerating = false
             this.loadingTarget.classList.add("hidden")
             return
           }
 
           if (!questions || !Array.isArray(questions) || questions.length === 0) {
-            Toast.error('Không thể tạo câu hỏi từ nội dung này. Vui lòng thử lại.')
+            MessageService.error('Không thể tạo câu hỏi từ nội dung này. Vui lòng thử lại.')
             this.isGenerating = false
             this.loadingTarget.classList.add("hidden")
             return
           }
 
-          Toast.success('Đã tạo câu hỏi thành công!')
+          MessageService.success('Đã tạo câu hỏi thành công!')
           this.questions = questions
           this.renderQuestions()
           this.isGenerating = false
@@ -332,7 +332,7 @@ export default class extends Controller {
           this.controlsTarget.classList.remove("hidden")
         })
         .catch(error => {
-          Toast.error(`Lỗi khi tạo câu hỏi: ${error.message}`)
+          MessageService.error(`Lỗi khi tạo câu hỏi: ${error.message}`)
           this.isGenerating = false
           this.loadingTarget.classList.add("hidden")
         })
@@ -423,7 +423,7 @@ export default class extends Controller {
         if (questions && questions.length > 0) {
           this.questions[index] = questions[0]
           this.updateQuestionItem(index, questions[0])
-          Toast.success(`Đã tạo lại câu hỏi #${index + 1} thành công!`)
+          MessageService.success(`Đã tạo lại câu hỏi #${index + 1} thành công!`)
         }
       }).catch(error => {
         console.error('Lỗi khi tạo lại câu hỏi từ video:', error)

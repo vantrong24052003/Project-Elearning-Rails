@@ -20,4 +20,23 @@ class Course < ApplicationRecord
 
   scope :published, -> { where(status: :published) }
   scope :draft, -> { where(status: :draft) }
+
+  scope :search_title, ->(term) { term.present? ? where('title ILIKE ?', "%#{term}%") : all }
+  scope :in_category, lambda { |category_id|
+    category_id.present? && category_id != 'all_categories' ? joins(:course_categories).where(course_categories: { category_id: category_id }) : all
+  }
+  scope :price_min, ->(min) { min.present? ? where('price >= ?', min.to_i) : all }
+  scope :price_max, ->(max) { max.present? ? where('price <= ?', max.to_i) : all }
+  scope :sorted_by, lambda { |sort_by|
+    case sort_by
+    when 'price_low'
+      order(price: :asc, id: :asc)
+    when 'price_high'
+      order(price: :desc, id: :desc)
+    when 'newest'
+      order(created_at: :desc, id: :desc)
+    else
+      order(created_at: :desc, id: :desc)
+    end
+  }
 end

@@ -29,9 +29,9 @@ class Manage::OverviewService
     {
       instructor_courses: courses,
       instructor_students: User.joins(:enrollments)
-                              .where(enrollments: { course_id: course_ids })
-                              .distinct
-                              .count,
+                               .where(enrollments: { course_id: course_ids })
+                               .distinct
+                               .count,
       instructor_revenue: active_enrollments.sum(:amount),
       instructor_rating: courses.average(:rating),
       instructor_total_enrollments: enrollments.count,
@@ -39,8 +39,8 @@ class Manage::OverviewService
       instructor_active_courses: courses.where(status: :published).count,
       instructor_recent_courses: courses.includes(:categories).order(created_at: :desc).limit(5),
       instructor_recent_enrollments: enrollments.includes(:user, :course)
-                                              .order(created_at: :desc)
-                                              .limit(5),
+                                                .order(created_at: :desc)
+                                                .limit(5),
       instructor_monthly_revenue: monthly_revenue(course_ids),
       instructor_monthly_enrollments: monthly_enrollments(course_ids)
     }
@@ -72,4 +72,4 @@ class Manage::OverviewService
               .count
               .transform_keys { |k| k.strftime('%Y-%m') }
   end
-end 
+end

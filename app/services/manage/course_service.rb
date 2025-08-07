@@ -60,4 +60,4 @@ class Manage::CourseService
 
     courses
   end
-end 
+end
