@@ -15,7 +15,7 @@ class Dashboard::CourseService
     courses.page(params[:page]).per(12)
   end
 
-  def calculate_course_statistics(course, videos, enrollments)
+  def calculate_course_statistics(_course, videos, enrollments)
     {
       total_duration: calculate_total_duration(videos),
       active_students_count: calculate_active_students(enrollments)
@@ -89,4 +89,4 @@ class Dashboard::CourseService
   def calculate_active_students(enrollments)
     enrollments.where(status: :active).count
   end
-end 
+end

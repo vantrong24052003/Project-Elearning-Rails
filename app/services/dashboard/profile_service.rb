@@ -18,4 +18,4 @@ class Dashboard::ProfileService
       }
     end
   end
-end 
+end

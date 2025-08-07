@@ -6,7 +6,7 @@ class Dashboard::ViewersController < Dashboard::DashboardController
   before_action :initialize_viewer_service
 
   def show
-    if !@viewer_service.authorize_course_access(@course)
+    unless @viewer_service.authorize_course_access(@course)
       redirect_to dashboard_course_path(@course), alert: 'You are not authorized to view this course'
       return
     end
