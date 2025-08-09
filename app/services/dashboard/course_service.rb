@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
 class Dashboard::CourseService
-  def initialize(current_user)
-    @current_user = current_user
-  end
-
   def filter_and_paginate_courses(params)
     Course.published
           .search_title(params[:search])

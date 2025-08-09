@@ -15,7 +15,7 @@
             <%= f.hidden_field :category_id, data: { dashboard__course_filter_target: "categoryInput" } %>
             <%= f.hidden_field :min_price, data: { dashboard__course_filter_target: "minPriceInput" } %>
             <%= f.hidden_field :max_price, data: { dashboard__course_filter_target: "maxPriceInput" } %>
-            <%= f.hidden_field :sort_by, value: params[:sort_by] %>
+            <%= f.hidden_field :sort_by, value: params[:sort_by], data: { dashboard__course_filter_target: "sortByInput" } %>
             <%= f.search_field :search, value: params[:search],
                   placeholder: "Search for courses, topics, or skills...",
                   class: "w-full pl-12 pr-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 focus:border-purple-500 focus:ring focus:ring-purple-200 text-gray-800 dark:text-white",
@@ -51,10 +51,9 @@
             <select id="sort" class="appearance-none w-full md:w-44 pl-4 pr-10 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-white cursor-pointer"
                     data-dashboard--course-filter-target="sortSelect"
                     data-action="change->dashboard--course-filter#applySortFilter">
-              <option value="newest" <%= params[:sort_by] == 'newest' ? 'selected' : '' %>>Newest First</option>
-              <option value="rating" <%= params[:sort_by] == 'rating' ? 'selected' : '' %>>Highest Rated</option>
-              <option value="price_low" <%= params[:sort_by] == 'price_low' ? 'selected' : '' %>>Price: Low to High</option>
-              <option value="price_high" <%= params[:sort_by] == 'price_high' ? 'selected' : '' %>>Price: High to Low</option>
+              <option value="newest">Newest First</option>
+              <option value="price_low">Price: Low to High</option>
+              <option value="price_high">Price: High to Low</option>
             </select>
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-400">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -299,20 +298,6 @@
           <h3 class="font-bold text-xl text-gray-900 dark:text-white mb-4">Bộ lọc nâng cao</h3>
 
           <div class="space-y-6">
-            <div class="form-control w-full">
-              <label class="label">
-                <span class="label-text text-gray-700 dark:text-gray-300">Danh mục</span>
-              </label>
-              <select id="modal-category" class="select select-bordered w-full bg-white dark:bg-gray-700 text-gray-800 dark:text-white" data-dashboard--course-filter-target="modalCategorySelect">
-                <option value="">Tất cả danh mục</option>
-                <% @categories.each do |category| %>
-                <option value="<%= category.id %>" <%= params[:category_id].to_i == category.id ? 'selected' : '' %>>
-                  <%= category.name %>
-                </option>
-                <% end %>
-              </select>
-            </div>
-
             <div class="form-control w-full">
               <label class="label">
                 <span class="label-text text-gray-700 dark:text-gray-300">Khoảng giá</span>
