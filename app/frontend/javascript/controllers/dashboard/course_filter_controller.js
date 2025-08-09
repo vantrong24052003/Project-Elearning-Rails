@@ -26,7 +26,6 @@ export default class extends Controller {
   updateCategoryFilter(event) {
     if (this.hasCategoryInputTarget) {
       const selectedValue = event.target.value
-      
       if (selectedValue === '') {
         this.categoryInputTarget.value = 'all_categories'
       } else {
@@ -55,14 +54,15 @@ export default class extends Controller {
     this.submitForm()
   }
 
-  updateSliderValues() {
+  updateSliderValues(event) {
     if (!this.hasMinSliderTarget || !this.hasMaxSliderTarget) return
 
     let minValue = parseInt(this.minSliderTarget.value)
     let maxValue = parseInt(this.maxSliderTarget.value)
 
     if (minValue >= maxValue) {
-      if (this.isDraggingMin) {
+      const movedMin = event && event.target === this.minSliderTarget
+      if (movedMin) {
         minValue = maxValue - 50000
         this.minSliderTarget.value = minValue
       } else {
@@ -95,15 +95,7 @@ export default class extends Controller {
     this.rangeTarget.style.right = `${rightPercent}%`
   }
 
-  trackDraggingMin() {
-    this.isDraggingMin = true
-    this.isDraggingMax = false
-  }
 
-  trackDraggingMax() {
-    this.isDraggingMin = false
-    this.isDraggingMax = true
-  }
 
   applyModalFilters() {
     if (this.hasModalCategorySelectTarget && this.hasCategoryInputTarget) {
@@ -161,7 +153,7 @@ export default class extends Controller {
 
     const sortByInput = this.searchFormTarget.querySelector('input[name="sort_by"]')
     if (sortByInput) {
-      sortByInput.remove() 
+      sortByInput.remove()
     }
 
     if (this.hasPerPageSelectTarget) {
@@ -230,14 +222,12 @@ export default class extends Controller {
     const url = new URL(window.location.href)
     const params = url.searchParams
 
-    // Clear all existing params except authenticity_token
     Array.from(params.keys()).forEach(key => {
       if (key !== 'authenticity_token') {
         params.delete(key)
       }
     })
 
-    // Add only non-empty form values
     for (const [key, value] of formData.entries()) {
       if (key !== 'authenticity_token' && value && value.trim() !== '') {
         params.set(key, value)
@@ -250,8 +240,7 @@ export default class extends Controller {
   clearURLAndSubmit() {
     const url = new URL(window.location.href)
     const params = url.searchParams
-    
-    // Clear all params except authenticity_token
+
     Array.from(params.keys()).forEach(key => {
       if (key !== 'authenticity_token') {
         params.delete(key)
