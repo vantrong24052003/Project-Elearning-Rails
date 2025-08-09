@@ -5,7 +5,7 @@ class Dashboard::CoursesController < Dashboard::DashboardController
 
   def index
     @categories = Category.all
-    @courses = @course_service.filter_and_paginate_courses(params).page(params[:page]).per(24)
+    @courses = @course_service.filter_courses(params).page(params[:page]).per(24)
     @selected_category_name = @categories.find_by(id: params[:category_id])&.name if params[:category_id].present?
   end
 
