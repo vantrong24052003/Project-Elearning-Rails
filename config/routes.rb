@@ -60,7 +60,7 @@ Rails.application.routes.draw do
           end
         end
       end
-      resources :payments
+      resources :payments, only: %i[index create]
       resources :viewers
     end
 
