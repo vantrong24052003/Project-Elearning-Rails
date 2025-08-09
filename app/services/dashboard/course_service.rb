@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Dashboard::CourseService
-  def filter_and_paginate_courses(params)
+  def filter_courses(params)
     Course.published
           .search_title(params[:search])
           .in_category(params[:category_id])
@@ -23,7 +23,8 @@ class Dashboard::CourseService
           .joins(:course_categories)
           .where(course_categories: { category_id: course.category_ids })
           .where.not(id: course.id)
-          .distinct
+          .group('courses.id')
+          .order(Arel.sql('RANDOM()'))
           .limit(3)
   end
 end
