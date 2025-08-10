@@ -131,9 +131,7 @@ class Manage::UploadsController < Manage::BaseController
 
       render json: response
     else
-      render json: {
-        error: 'Upload not found'
-      }, status: :not_found
+      render json: { error: 'Upload not found' }, status: :not_found
     end
   end
 

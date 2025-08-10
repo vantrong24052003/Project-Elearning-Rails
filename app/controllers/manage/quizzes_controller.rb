@@ -106,11 +106,7 @@ class Manage::QuizzesController < Manage::BaseController
               status: 'active'
             )
 
-            if new_question.save
-              QuizQuestion.create(quiz: @quiz, question: new_question)
-            else
-              Rails.logger.error("Không thể lưu câu hỏi: #{new_question.errors.full_messages.join(', ')}")
-            end
+            QuizQuestion.create(quiz: @quiz, question: new_question) if new_question.save
           end
         end
 
@@ -137,11 +133,7 @@ class Manage::QuizzesController < Manage::BaseController
             status: 'active'
           )
 
-          if question.save
-            QuizQuestion.create(quiz: @quiz, question: question)
-          else
-            Rails.logger.error("Không thể lưu câu hỏi: #{question.errors.full_messages.join(', ')}")
-          end
+          QuizQuestion.create(quiz: @quiz, question: question) if question.save
         end
 
         redirect_to manage_quiz_path(@quiz), notice: 'Bài kiểm tra đã được tạo thành công với câu hỏi từ preview'
@@ -219,7 +211,6 @@ class Manage::QuizzesController < Manage::BaseController
         redirect_to manage_quiz_path(@quiz)
         return
       rescue StandardError => e
-        Rails.logger.error("Error updating questions: #{e.message}")
         flash[:alert] = "Error updating questions: #{e.message}"
         redirect_to manage_quiz_path(@quiz)
         return
@@ -290,7 +281,6 @@ class Manage::QuizzesController < Manage::BaseController
 
       render json: questions, status: :ok
     rescue StandardError => e
-      Rails.logger.error("Error generating questions from transcription: #{e.message}")
       render json: { error: "Unable to generate questions: #{e.message}" }, status: :unprocessable_entity
     end
   end
