@@ -15,7 +15,7 @@ class Manage::EnrollmentsController < Manage::BaseController
   end
 
   def create
-    @enrollment = @enrollment_service.create_enrollment(enrollment_params)
+    @enrollment = @enrollment_service.create_enrollment(permit_params)
 
     if @enrollment.persisted?
       redirect_to manage_enrollment_path(@enrollment), notice: 'Enrollment was successfully created'
@@ -27,7 +27,7 @@ class Manage::EnrollmentsController < Manage::BaseController
   def edit; end
 
   def update
-    result = @enrollment_service.update_enrollment(@enrollment, enrollment_params)
+    result = @enrollment_service.update_enrollment(@enrollment, permit_params)
 
     if result[:success]
       redirect_to manage_enrollments_path, notice: result[:message]
@@ -51,18 +51,10 @@ class Manage::EnrollmentsController < Manage::BaseController
     @enrollment_service = Manage::EnrollmentService.new(current_user)
   end
 
-  def enrollment_params
+  def permit_params
     params.require(:enrollment).permit(
-      :user_id,
-      :course_id,
-      :status,
-      :payment_code,
-      :payment_method,
-      :amount,
-      :paid_at,
-      :enrolled_at,
-      :completed_at,
-      :note
+      :user_id, :course_id, :status, :payment_code, :payment_method,
+      :amount, :paid_at, :enrolled_at, :completed_at, :note
     )
   end
 end

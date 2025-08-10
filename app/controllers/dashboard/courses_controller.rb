@@ -11,10 +11,8 @@ class Dashboard::CoursesController < Dashboard::DashboardController
 
   def show
     @course = Course.find(params[:id])
-    if @course.status != :published
-      redirect_to dashboard_courses_path, alert: 'Course not available.'
-      return
-    end
+    return redirect_to dashboard_courses_path, alert: 'Course not available.' unless @course.published?
+
     @chapters = @course.chapters
     @lessons = Lesson.where(chapter_id: @chapters.pluck(:id))
     @videos = Video.includes(:upload).where(lesson_id: @lessons.pluck(:id))

@@ -2,10 +2,12 @@
 
 class Dashboard::ViewersController < Dashboard::DashboardController
   before_action :authenticate_user!
-  before_action :set_course, only: %i[show]
   before_action :initialize_viewer_service
 
   def show
+    @course = Course.published.find_by(id: params[:id])
+    return redirect_to dashboard_courses_path, alert: 'Course not found' unless @course
+
     unless @viewer_service.authorize_course_access(@course)
       redirect_to dashboard_course_path(@course), alert: 'You are not authorized to view this course'
       return
@@ -28,13 +30,6 @@ class Dashboard::ViewersController < Dashboard::DashboardController
   end
 
   private
-
-  def set_course
-    @course = Course.find_by(id: params[:id])
-    return unless @course.nil?
-
-    redirect_to dashboard_courses_path, alert: 'Course not found'
-  end
 
   def initialize_viewer_service
     @viewer_service = Dashboard::ViewerService.new(current_user)
