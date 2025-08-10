@@ -13,8 +13,6 @@ module ExceptionHandler
   private
 
   def handle_exception(e)
-    Rails.logger.error(e.message)
-    Rails.logger.error(e.backtrace.join("\n"))
     Sentry.capture_exception(e) if Rails.env.production?
 
     respond_to do |format|
@@ -26,7 +24,7 @@ module ExceptionHandler
   def handle_not_found(_e)
     respond_to do |format|
       format.html { render file: Rails.public_path.join('404.html'), layout: false, status: :not_found }
-      format.json { render json: { error: 'Resource not foun  d' }, status: :not_found }
+      format.json { render json: { error: 'Resource not found' }, status: :not_found }
     end
   end
 
@@ -64,8 +62,7 @@ module ExceptionHandler
         redirect_back fallback_location: root_path
       end
       format.json do
-        render json: { error: 'This item cannot be deleted because it is in use elsewhere.' },
-               status: :conflict
+        render json: { error: 'This item cannot be deleted because it is in use elsewhere.' }, status: :conflict
       end
     end
   end

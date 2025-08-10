@@ -6,8 +6,6 @@ export default class extends Controller {
   static targets = ["audio", "toggleButton", "mutedIcon", "playingIcon"]
 
   connect() {
-    console.log("Audio player controller connected")
-
     if (!globalAudio) {
       globalAudio = new Audio(this.audioTarget.src);
       globalAudio.loop = true;
@@ -104,9 +102,6 @@ export default class extends Controller {
     if (playPromise !== undefined) {
       playPromise.catch(error => {
         console.error("Audio play failed:", error);
-        if (error.name === "NotAllowedError") {
-          console.log("Audio autoplay prevented. User interaction required.");
-        }
       });
     }
   }
