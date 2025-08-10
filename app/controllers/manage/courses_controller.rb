@@ -21,7 +21,7 @@ class Manage::CoursesController < Manage::BaseController
   end
 
   def create
-    @course = current_user.courses.build(course_params)
+    @course = current_user.courses.build(permit_params)
 
     if @course.save
       @course_service.handle_categories(@course, params[:course][:category_ids])
@@ -34,24 +34,11 @@ class Manage::CoursesController < Manage::BaseController
   def update
     case params[:action_type]&.to_sym
     when :publish
-      if @course_service.publish_course(@course)
-        redirect_to manage_course_path(@course), notice: 'Course has been published.'
-      else
-        redirect_to manage_course_path(@course), alert: 'Failed to publish course.'
-      end
+      handle_publish_action
     when :draft
-      if @course_service.draft_course(@course)
-        redirect_to manage_course_path(@course), notice: 'Course has been changed to draft.'
-      else
-        redirect_to manage_course_path(@course), alert: 'Failed to change course to draft.'
-      end
+      handle_draft_action
     else
-      if @course.update(course_params)
-        @course_service.handle_categories(@course, params[:course][:category_ids])
-        redirect_to manage_course_path(@course), notice: 'Course has been successfully updated.'
-      else
-        render :edit, status: :unprocessable_entity
-      end
+      update_course
     end
   end
 
@@ -74,10 +61,35 @@ class Manage::CoursesController < Manage::BaseController
     @course_service = Manage::CourseService.new(current_user)
   end
 
-  def course_params
+  def permit_params
     params.require(:course).permit(
       :title, :description, :price, :thumbnail_path,
       :language, :status, :thumbnail, category_ids: []
     )
+  end
+
+  def handle_publish_action
+    if @course_service.publish_course(@course)
+      redirect_to manage_course_path(@course), notice: 'Course has been published.'
+    else
+      redirect_to manage_course_path(@course), alert: 'Failed to publish course.'
+    end
+  end
+
+  def handle_draft_action
+    if @course_service.draft_course(@course)
+      redirect_to manage_course_path(@course), notice: 'Course has been changed to draft.'
+    else
+      redirect_to manage_course_path(@course), alert: 'Failed to change course to draft.'
+    end
+  end
+
+  def update_course
+    if @course.update(permit_params)
+      @course_service.handle_categories(@course, params[:course][:category_ids])
+      redirect_to manage_course_path(@course), notice: 'Course has been successfully updated.'
+    else
+      render :edit, status: :unprocessable_entity
+    end
   end
 end
