@@ -28,26 +28,4 @@ class Dashboard::ViewerService
 
     [current_lesson, current_video]
   end
-
-  def get_course_structure(course)
-    {
-      lessons: course.lessons.includes(:videos).order(:position),
-      total_lessons: course.lessons.count,
-      total_videos: course.lessons.joins(:videos).count
-    }
-  end
-
-  def get_user_progress(course)
-    return {} unless @current_user
-
-    video_ids = course.lessons.joins(:videos).pluck('videos.id')
-
-    watched_videos = VideoProgress.where(user: @current_user, video_id: video_ids, watched: true).count
-
-    {
-      completed_videos: watched_videos,
-      total_videos: video_ids.size,
-      enrollment: course.enrollments.find_by(user: @current_user)
-    }
-  end
 end

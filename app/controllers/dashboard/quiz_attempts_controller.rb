@@ -27,17 +27,9 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
       score = (correct_answers.to_f / total_questions * 10).round(1)
       time_spent = params[:time_spent].to_i
 
-      if @quiz_attempt.update(
-        score: score,
-        time_spent: time_spent,
-        answers: formatted_answers.to_json,
-        completed_at: Time.current
-      )
+      if @quiz_attempt.update(score: score, time_spent: time_spent, answers: formatted_answers.to_json, completed_at: Time.current)
         client_ip = params[:client_ip].presence || request.remote_ip
-        @quiz_attempt.log_action({
-                                   client_ip: client_ip,
-                                   device_info: request.user_agent
-                                 })
+        @quiz_attempt.log_action({ client_ip: client_ip, device_info: request.user_agent })
 
         redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                     notice: 'The assignment has been updated successfully.'
@@ -46,29 +38,18 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
                     alert: 'An error occurred while updating the assignment.'
       end
     elsif params[:time_spent].present?
-      if @quiz_attempt.update(
-        time_spent: params[:time_spent].to_i,
-        completed_at: Time.current
-      )
+      if @quiz_attempt.update(time_spent: params[:time_spent].to_i, completed_at: Time.current)
         client_ip = params[:client_ip].presence || request.remote_ip
-        @quiz_attempt.log_action({
-                                   client_ip: client_ip,
-                                   device_info: request.user_agent
-                                 })
+        @quiz_attempt.log_action({ client_ip: client_ip, device_info: request.user_agent })
 
         redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                     notice: 'The assignment has been updated.'
       end
     elsif params[:quiz_attempt].present?
-      quiz_attempt_params_with_completed = quiz_attempt_params.merge(
-        completed_at: Time.current
-      )
+      quiz_attempt_params_with_completed = quiz_attempt_params.merge(completed_at: Time.current)
       if @quiz_attempt.update(quiz_attempt_params_with_completed)
         client_ip = params[:client_ip].presence || request.remote_ip
-        @quiz_attempt.log_action({
-                                   client_ip: client_ip,
-                                   device_info: request.user_agent
-                                 })
+        @quiz_attempt.log_action({ client_ip: client_ip, device_info: request.user_agent })
 
         redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                     notice: 'The assignment has been updated.'
