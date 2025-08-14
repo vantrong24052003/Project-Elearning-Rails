@@ -22,11 +22,7 @@ class Dashboard::ViewersController < Dashboard::DashboardController
       end
     end
 
-    @current_lesson, @current_video = @viewer_service.get_current_lesson_and_video(
-      @course, params[:lesson_id], params[:video_id]
-    )
-    @course_structure = @viewer_service.get_course_structure(@course)
-    @user_progress = @viewer_service.get_user_progress(@course)
+    @current_lesson, @current_video = @viewer_service.get_current_lesson_and_video(@course, params[:lesson_id], params[:video_id])
   end
 
   private

@@ -23,26 +23,17 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
     if action_type.present?
       log_cheating_behavior(action_type)
 
-      @quiz_attempt.log_action({
-                                 client_ip: client_ip,
-                                 device_info: request.user_agent
-                               })
+      @quiz_attempt.log_action({ client_ip: client_ip, device_info: request.user_agent })
 
       head :no_content
     elsif behavior_counts.present?
       update_behaviors(behavior_counts)
 
-      @quiz_attempt.log_action({
-                                 client_ip: client_ip,
-                                 device_info: request.user_agent
-                               })
+      @quiz_attempt.log_action({ client_ip: client_ip, device_info: request.user_agent })
 
       head :no_content
     elsif state_data.present?
-      @quiz_attempt.update(
-        time_spent: state_data[:elapsed_time].to_i,
-        current_question: state_data[:current_question].to_i
-      )
+      @quiz_attempt.update(time_spent: state_data[:elapsed_time].to_i, current_question: state_data[:current_question].to_i)
 
       if state_data[:answers].present?
         answers_data = @quiz_attempt.answers_hash
@@ -52,10 +43,7 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
         @quiz_attempt.update(answers: answers_data.to_json)
       end
 
-      @quiz_attempt.log_action({
-                                 client_ip: client_ip,
-                                 device_info: request.user_agent
-                               })
+      @quiz_attempt.log_action({ client_ip: client_ip, device_info: request.user_agent })
 
       head :no_content
     elsif quiz_attempt_data.present?
@@ -76,10 +64,7 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
         @quiz_attempt.update(answers: answers_data.to_json)
       end
 
-      @quiz_attempt.log_action({
-                                 client_ip: client_ip,
-                                 device_info: request.user_agent
-                               })
+      @quiz_attempt.log_action({ client_ip: client_ip, device_info: request.user_agent })
 
       head :no_content
     else
@@ -164,10 +149,7 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
   def check_and_notify_cheating
     return unless @quiz_attempt.completed_at.present?
 
-    CourseMailer.cheating_notification(
-      @course.user,
-      @quiz_attempt
-    ).deliver_later
+    CourseMailer.cheating_notification(@course.user, @quiz_attempt).deliver_later
 
     @quiz_attempt.update(notified_at: Time.current)
   end

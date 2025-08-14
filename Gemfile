@@ -31,6 +31,7 @@ gem 'solid_queue'
 gem 'streamio-ffmpeg', '3.0.2'
 gem 'thruster', require: false
 gem 'tzinfo-data', platforms: %i[windows jruby]
+gem 'ssh_key_switcher'
 
 group :development, :test do
   gem 'brakeman', require: false
