@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { Modal } from "tw-elements";
 import { QuestionsApi } from "../../services/questions_api";
-import { Toast } from "../../services/toast_service";
+import { MessageService } from "../../services/message_service";
 export default class extends Controller {
   static targets = [
     "courseSelect", "fileInput", "previewContainer", "normalForm",
@@ -20,7 +20,7 @@ export default class extends Controller {
     event.preventDefault();
 
     if (!this.fileInputTarget.files || this.fileInputTarget.files.length === 0) {
-      Toast.error("Vui lòng chọn file để import");
+      MessageService.error("Vui lòng chọn file để import");
       return;
     }
 
@@ -34,7 +34,7 @@ export default class extends Controller {
     const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
 
     if (!validExtensions.includes(fileExtension)) {
-      Toast.error("Định dạng file không hỗ trợ. Vui lòng sử dụng Excel (.xlsx, .xls) hoặc CSV (.csv)");
+              MessageService.error("Định dạng file không hỗ trợ. Vui lòng sử dụng Excel (.xlsx, .xls) hoặc CSV (.csv)");
       return;
     }
 
@@ -43,7 +43,7 @@ export default class extends Controller {
     QuestionsApi.previewImport(file, this.selectedCourseId)
       .then(data => {
         if (data.error) {
-         Toast.error(data.error);
+         MessageService.error(data.error);
           return;
         }
 
@@ -52,24 +52,24 @@ export default class extends Controller {
         if (data.validation_errors && data.validation_errors.length > 0) {
           const errorMessage = `Có ${data.validation_errors.length} lỗi trong file:
             ${data.validation_errors.map(e => e.message).join('; ')}`;
-          Toast.warning(errorMessage);
+          MessageService.warning(errorMessage);
           this.showError(errorMessage);
         } else {
           this.hideError();
         }
 
         if (this.questions.length === 0) {
-          Toast.warning("Không tìm thấy câu hỏi nào trong file Excel");
+          MessageService.warning("Không tìm thấy câu hỏi nào trong file Excel");
           return;
         }
 
         this.renderQuestions();
         this.showPreview();
-        Toast.success(`Đã tìm thấy ${this.questions.length} câu hỏi từ file Excel`);
+        MessageService.success(`Đã tìm thấy ${this.questions.length} câu hỏi từ file Excel`);
       })
       .catch(error => {
         console.error('Error importing questions:', error);
-        Toast.error("Đã xảy ra lỗi khi đọc file. Vui lòng thử lại.");
+        MessageService.error("Đã xảy ra lỗi khi đọc file. Vui lòng thử lại.");
       });
   }
 
@@ -177,7 +177,7 @@ export default class extends Controller {
     document.getElementById('edit-question-modal').remove();
     this.editingQuestionIndex = null;
 
-    Toast.success("Câu hỏi đã được cập nhật");
+            MessageService.success("Câu hỏi đã được cập nhật");
   }
 
   deleteQuestion(index) {
@@ -187,7 +187,7 @@ export default class extends Controller {
 
     this.questions.splice(index, 1);
     this.renderQuestions();
-    Toast.success("Đã xóa câu hỏi");
+            MessageService.success("Đã xóa câu hỏi");
   }
 
   addNewQuestion() {
@@ -216,7 +216,7 @@ export default class extends Controller {
 
   saveAllQuestions() {
     if (this.questions.length === 0) {
-      Toast.error('Không có câu hỏi nào để lưu');
+      MessageService.error('Không có câu hỏi nào để lưu');
       return;
     }
 
@@ -230,7 +230,7 @@ export default class extends Controller {
       })
       .catch(error => {
         console.error('Error saving questions:', error);
-        Toast.error('Đã xảy ra lỗi khi lưu câu hỏi. Vui lòng thử lại.');
+        MessageService.error('Đã xảy ra lỗi khi lưu câu hỏi. Vui lòng thử lại.');
       });
   }
 
@@ -314,7 +314,7 @@ export default class extends Controller {
     event.preventDefault();
 
     if (this.questions.length === 0) {
-      Toast.error("Không có câu hỏi nào để tạo bài kiểm tra");
+      MessageService.error("Không có câu hỏi nào để tạo bài kiểm tra");
       return;
     }
 

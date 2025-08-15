@@ -24,7 +24,7 @@ import UploadTranscodingController from "./manage/upload_transcoding_controller"
 import ManageUploadFormController from "./manage/upload_form_controller"
 import VideoPlayerController from "./shared/video_player_controller"
 import OverviewController from "./manage/overview_controller"
-import toaster_controller from "./shared/toaster_controller"
+import message_controller from "./shared/message_controller"
 import QuizFlagController from "./dashboard/quiz_flag_controller"
 import QuizRedirectController from "./dashboard/quiz_redirect_controller"
 import QuizTimerController from "./dashboard/quiz_timer_controller"
@@ -54,7 +54,7 @@ application.register("shared--countdown", countdown_controller)
 application.register("shared--drawer", drawer_controller)
 application.register("shared--pagination", PaginationController)
 application.register("shared--video-player", VideoPlayerController)
-application.register("shared--toaster", toaster_controller)
+application.register("shared--message", message_controller)
 
 // dashboard
 application.register("dashboard--course-filter", course_filter_controller)
@@ -85,7 +85,7 @@ application.register("manage--quizzes-preview", QuizzesPreviewController)
 application.register("manage--video-analysis", VideoAnalysisController)
 application.register("manage--users", UsersController)
 application.register("manage--enrollments", EnrollmentsController)
-application.register("manage--quiz-attempts", QuizAttemptsController) 
+application.register("manage--quiz-attempts", QuizAttemptsController)
 application.register("manage--quizzes", ManageQuizzesController)
 application.register("manage--uploads", UploadsController)
 application.register("manage--quiz-time-validation", QuizTimeValidationController)
