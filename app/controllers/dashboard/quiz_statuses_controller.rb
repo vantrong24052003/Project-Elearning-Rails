@@ -86,7 +86,7 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
   end
 
   def log_cheating_behavior(action_type = nil)
-    return unless @quiz_attempt.quiz.is_exam?
+    return unless @quiz_attempt.quiz.exam?
 
     case action_type
     when 'tab_switch', 'window_blur', 'alt_tab'
@@ -105,7 +105,7 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
   end
 
   def update_behaviors(behavior_counts)
-    return unless @quiz_attempt.quiz.is_exam?
+    return unless @quiz_attempt.quiz.exam?
 
     if behavior_counts[:tab_switch_count].present? && behavior_counts[:tab_switch_count].to_i > @quiz_attempt.tab_switch_count.to_i
       @quiz_attempt.update(tab_switch_count: behavior_counts[:tab_switch_count])

@@ -122,7 +122,7 @@
                   data-action="click->dashboard--quiz-timer#submitForm">
             Nộp bài
           </button>
-          <% unless @quiz.is_exam? %>
+          <% unless @quiz.exam? %>
             <%= link_to dashboard_course_quizzes_path(@course),
                       class: "w-full py-2 border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-center block text-sm",
                       data: { dashboard__quiz_timer_target: "cancelBtn", action: "click->dashboard--quiz-timer#cancel" } do %>

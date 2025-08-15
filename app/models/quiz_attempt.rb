@@ -8,6 +8,15 @@ class QuizAttempt < ApplicationRecord
 
   serialize :answers, coder: JSON
 
+  scope :for_user, ->(user_id) { where(user_id: user_id) }
+  scope :for_course, ->(course_id) { joins(:quiz).where(quizzes: { course_id: course_id }) }
+  scope :practice, -> { joins(:quiz).where(quizzes: { is_exam: false }) }
+  scope :exam, -> { joins(:quiz).where(quizzes: { is_exam: true }) }
+  scope :completed, -> { where.not(completed_at: nil) }
+  scope :in_progress, -> { where(completed_at: nil) }
+  scope :recent, -> { order(created_at: :desc) }
+  scope :best_scores, -> { select('user_id, MAX(score) as best_score, COUNT(*) as attempts_count, MAX(created_at) as last_attempt_at').group(:user_id) }
+
   def correct_answers
     correct_count = 0
     return correct_count if answers.blank?

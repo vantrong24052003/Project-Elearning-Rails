@@ -12,6 +12,12 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
     @questions = @quiz.questions
   end
 
+  def create
+    @quiz_attempt = Dashboard::QuizzesService.new.start_attempt_if_needed!(@quiz, current_user, (params[:client_ip].presence || request.remote_ip), request.user_agent)
+
+    redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt), notice: 'Quiz attempt started successfully.'
+  end
+
   def update
     if params[:answers].present?
       correct_answers = 0
