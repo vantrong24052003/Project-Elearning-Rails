@@ -5,7 +5,7 @@ export default class extends Controller {
   static targets = [
     "searchForm", "searchInput", "categoryInput", "minPriceInput", "maxPriceInput",
     "categorySelect", "sortSelect", "minSlider", "maxSlider", "range",
-    "modalCategorySelect", "modalPriceMin", "modalPriceMax", "sortByInput"
+    "modalCategorySelect", "modalPriceMin", "modalPriceMax", "sortByInput", "perPageSelect"
   ]
 
   connect() {
@@ -43,15 +43,12 @@ export default class extends Controller {
   }
 
   updateSliderValues(event) {
-  updateSliderValues(event) {
     if (!this.hasMinSliderTarget || !this.hasMaxSliderTarget) return
 
     let minValue = parseInt(this.minSliderTarget.value)
     let maxValue = parseInt(this.maxSliderTarget.value)
 
     if (minValue >= maxValue) {
-      const movedMin = event && event.target === this.minSliderTarget
-      if (movedMin) {
       const movedMin = event && event.target === this.minSliderTarget
       if (movedMin) {
         minValue = maxValue - 50000
@@ -102,48 +99,6 @@ export default class extends Controller {
   }
 
   resetFilters() {
-    const searchInput = this.searchFormTarget.querySelector('input[name="search"]')
-    if (searchInput) {
-      searchInput.value = ''
-    }
-
-    if (this.hasModalCategorySelectTarget) {
-      this.modalCategorySelectTarget.value = ''
-    }
-
-    if (this.hasCategoryInputTarget) {
-      this.categoryInputTarget.value = ''
-    }
-
-    if (this.hasMinPriceInputTarget) {
-      this.minPriceInputTarget.value = ''
-    }
-
-    if (this.hasMaxPriceInputTarget) {
-      this.maxPriceInputTarget.value = ''
-    }
-
-    if (this.hasMinSliderTarget) {
-      this.minSliderTarget.value = 0
-    }
-
-    if (this.hasMaxSliderTarget) {
-      this.maxSliderTarget.value = 1000000
-    }
-
-    if (this.hasSortSelectTarget) {
-      this.sortSelectTarget.value = 'newest'
-    }
-
-    const sortByInput = this.searchFormTarget.querySelector('input[name="sort_by"]')
-    if (sortByInput) {
-      sortByInput.remove()
-    }
-
-    if (this.hasPerPageSelectTarget) {
-      this.perPageSelectTarget.value = '12'
-    }
-
     if (this.hasSearchInputTarget) this.searchInputTarget.value = ''
     if (this.hasModalCategorySelectTarget) this.modalCategorySelectTarget.value = ''
     if (this.hasCategoryInputTarget) this.categoryInputTarget.value = ''
@@ -153,6 +108,7 @@ export default class extends Controller {
     if (this.hasMaxSliderTarget) this.maxSliderTarget.value = 1000000
     if (this.hasSortSelectTarget) this.sortSelectTarget.value = 'newest'
     if (this.hasSortByInputTarget) this.sortByInputTarget.value = ''
+    if (this.hasPerPageSelectTarget) this.perPageSelectTarget.value = '12'
 
     closeModal('filter_modal')
     this.updateSliderValues()
