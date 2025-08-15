@@ -21,13 +21,15 @@ class Dashboard::QuizzesController < Dashboard::DashboardController
     service = Dashboard::QuizzesService.new
     completed = service.latest_completed_attempt(@quiz, current_user)
     if @quiz.exam? && completed.present?
-      redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, completed), notice: 'You have completed this test. Here are your results.'
+      redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, completed),
+                  notice: 'You have completed this test. Here are your results.'
       return
     end
 
     @quiz_attempt = service.in_progress_attempt(@quiz, current_user)
     if params[:start] == 'true' && @quiz_attempt.nil?
-      @quiz_attempt = service.start_attempt_if_needed!(@quiz, current_user, (params[:client_ip].presence || request.remote_ip), request.user_agent)
+      @quiz_attempt = service.start_attempt_if_needed!(@quiz, current_user,
+                                                       (params[:client_ip].presence || request.remote_ip), request.user_agent)
     end
   end
 

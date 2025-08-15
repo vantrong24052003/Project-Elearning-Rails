@@ -33,7 +33,8 @@ class Dashboard::QuizStatusesController < Dashboard::DashboardController
 
       head :no_content
     elsif state_data.present?
-      @quiz_attempt.update(time_spent: state_data[:elapsed_time].to_i, current_question: state_data[:current_question].to_i)
+      @quiz_attempt.update(time_spent: state_data[:elapsed_time].to_i,
+                           current_question: state_data[:current_question].to_i)
 
       if state_data[:answers].present?
         answers_data = @quiz_attempt.answers_hash

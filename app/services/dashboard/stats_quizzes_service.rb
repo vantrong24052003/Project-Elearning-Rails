@@ -47,9 +47,9 @@ class Dashboard::StatsQuizzesService
 
   def highest_score_data
     @highest_score_data ||= QuizAttempt.for_course(@course.id).joins(:user)
-                                     .select('quiz_attempts.score, users.id as user_id, users.name as user_name')
-                                     .order(score: :desc)
-                                     .first
+                                       .select('quiz_attempts.score, users.id as user_id, users.name as user_name')
+                                       .order(score: :desc)
+                                       .first
   end
 
   def highest_score_user_data
@@ -59,11 +59,9 @@ class Dashboard::StatsQuizzesService
 
   def top_users_data
     @top_users_data ||= QuizAttempt.for_course(@course.id).joins(:user)
-                                 .select('quiz_attempts.user_id, MAX(quiz_attempts.score) as best_score, COUNT(quiz_attempts.id) as attempts_count, MAX(quiz_attempts.created_at) as last_attempt_at, users.name as user_name')
-                                 .group(:user_id, 'users.name')
-                                 .order('best_score DESC')
-                                 .limit(50)
-                                 .map do |data|
+                                   .select('quiz_attempts.user_id, MAX(quiz_attempts.score) as best_score, COUNT(quiz_attempts.id) as attempts_count, MAX(quiz_attempts.created_at) as last_attempt_at, users.name as user_name')
+                                   .group(:user_id, 'users.name').order('best_score DESC').limit(50)
+                                   .map do |data|
       {
         user: User.new(id: data.user_id, name: data.user_name),
         best_score: data.best_score,

@@ -13,9 +13,11 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
   end
 
   def create
-    @quiz_attempt = Dashboard::QuizzesService.new.start_attempt_if_needed!(@quiz, current_user, (params[:client_ip].presence || request.remote_ip), request.user_agent)
+    @quiz_attempt = Dashboard::QuizzesService.new.start_attempt_if_needed!(@quiz, current_user,
+                                                                           (params[:client_ip].presence || request.remote_ip), request.user_agent)
 
-    redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt), notice: 'Quiz attempt started successfully.'
+    redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
+                notice: 'Quiz attempt started successfully.'
   end
 
   def update
@@ -33,7 +35,8 @@ class Dashboard::QuizAttemptsController < Dashboard::DashboardController
       score = (correct_answers.to_f / total_questions * 10).round(1)
       time_spent = params[:time_spent].to_i
 
-      if @quiz_attempt.update(score: score, time_spent: time_spent, answers: formatted_answers.to_json, completed_at: Time.current)
+      if @quiz_attempt.update(score: score, time_spent: time_spent, answers: formatted_answers.to_json,
+                              completed_at: Time.current)
         client_ip = params[:client_ip].presence || request.remote_ip
         @quiz_attempt.log_action({ client_ip: client_ip, device_info: request.user_agent })
 

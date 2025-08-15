@@ -15,7 +15,9 @@ class QuizAttempt < ApplicationRecord
   scope :completed, -> { where.not(completed_at: nil) }
   scope :in_progress, -> { where(completed_at: nil) }
   scope :recent, -> { order(created_at: :desc) }
-  scope :best_scores, -> { select('user_id, MAX(score) as best_score, COUNT(*) as attempts_count, MAX(created_at) as last_attempt_at').group(:user_id) }
+  scope :best_scores, lambda {
+    select('user_id, MAX(score) as best_score, COUNT(*) as attempts_count, MAX(created_at) as last_attempt_at').group(:user_id)
+  }
 
   def correct_answers
     correct_count = 0

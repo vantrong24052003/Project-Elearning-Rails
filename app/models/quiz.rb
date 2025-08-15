@@ -8,7 +8,9 @@ class Quiz < ApplicationRecord
 
   validates :title, :time_limit, presence: true
 
-  scope :available, -> { where('start_time <= ?', Time.current).where('end_time IS NULL OR end_time >= ?', Time.current) }
+  scope :available, lambda {
+    where('start_time <= ?', Time.current).where('end_time IS NULL OR end_time >= ?', Time.current)
+  }
   scope :upcoming, -> { where('start_time > ?', Time.current) }
   scope :expired, -> { where('end_time < ?', Time.current) }
   scope :practice, -> { where(is_exam: false) }
@@ -39,7 +41,7 @@ class Quiz < ApplicationRecord
   end
 
   def time_limit_display
-    time_limit.present? ? "Giới hạn: #{time_limit} phút" : "Không giới hạn"
+    time_limit.present? ? "Giới hạn: #{time_limit} phút" : 'Không giới hạn'
   end
 
   def type_label
