@@ -54,6 +54,7 @@ class Dashboard::StatsQuizzesService
 
   def highest_score_user_data
     return nil unless highest_score_data
+
     User.new(id: highest_score_data.user_id, name: highest_score_data.user_name)
   end
 
