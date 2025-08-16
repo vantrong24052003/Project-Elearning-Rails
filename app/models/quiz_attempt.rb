@@ -18,6 +18,8 @@ class QuizAttempt < ApplicationRecord
   scope :best_scores, lambda {
     select('user_id, MAX(score) as best_score, COUNT(*) as attempts_count, MAX(created_at) as last_attempt_at').group(:user_id)
   }
+  scope :suspicious, -> { where(suspicious: true) }
+  scope :auto_submitted, -> { where(auto_submitted: true) }
 
   def correct_answers
     correct_count = 0
@@ -63,5 +65,58 @@ class QuizAttempt < ApplicationRecord
     return JSON.parse(answers) if answers.is_a?(String)
 
     answers
+  end
+
+  def exceeds_cheating_threshold?
+    tab_switch_count >= QuizThresholds::DEFAULT_TAB_SWITCH_THRESHOLD ||
+    copy_paste_count >= QuizThresholds::DEFAULT_COPY_PASTE_THRESHOLD ||
+    screenshot_count >= QuizThresholds::DEFAULT_SCREENSHOT_THRESHOLD ||
+    devtools_open_count >= QuizThresholds::DEFAULT_DEVTOOLS_THRESHOLD ||
+    device_count >= QuizThresholds::DEFAULT_DEVICE_THRESHOLD
+  end
+
+  def should_auto_submit?
+    quiz.exam? && exceeds_cheating_threshold?
+  end
+
+  def mark_suspicious!(reason = nil)
+    log_entry = { action: 'marked_suspicious', reason: reason, timestamp: Time.current }
+    log_action(log_entry)
+    update!(suspicious: true)
+  end
+
+  def auto_submit_for_cheating!
+    return false if completed_at.present?
+
+    score_result = calculate_current_score
+    
+    update!(
+      score: score_result[:score],
+      completed_at: Time.current,
+      auto_submitted: true,
+      suspicious: true
+    )
+
+    log_action({ action: 'auto_submitted', reason: 'cheating_detected', final_score: score_result[:score] })
+    true
+  end
+
+  private
+
+  def calculate_current_score
+    return { score: 0, correct_count: 0 } if answers.blank?
+
+    questions_map = quiz.questions.includes(:quiz_questions).index_by { |q| q.id.to_s }
+    parsed_answers = answers_hash
+    
+    correct_count = parsed_answers.count do |question_id, user_answer|
+      question = questions_map[question_id]
+      question && question.correct_option == user_answer.to_i
+    end
+
+    total_questions = quiz.questions.count
+    score = total_questions > 0 ? (correct_count.to_f / total_questions * 10).round(1) : 0
+
+    { score: score, correct_count: correct_count, total_questions: total_questions }
   end
 end

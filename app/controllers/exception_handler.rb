@@ -8,6 +8,7 @@ module ExceptionHandler
     rescue_from ActiveRecord::RecordNotUnique, with: :handle_not_unique
     rescue_from CanCan::AccessDenied, with: :handle_unauthorized
     rescue_from ActiveRecord::InvalidForeignKey, with: :handle_foreign_key_violation
+    rescue_from ActionController::BadRequest, with: :handle_bad_request
   end
 
   private
@@ -63,6 +64,18 @@ module ExceptionHandler
       end
       format.json do
         render json: { error: 'This item cannot be deleted because it is in use elsewhere.' }, status: :conflict
+      end
+    end
+  end
+
+  def handle_bad_request(error)
+    respond_to do |format|
+      format.html do
+        flash[:alert] = error.message
+        redirect_back fallback_location: root_path
+      end
+      format.json do
+        render json: { error: error.message }, status: :bad_request
       end
     end
   end

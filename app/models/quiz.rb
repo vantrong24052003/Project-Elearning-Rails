@@ -21,6 +21,10 @@ class Quiz < ApplicationRecord
     is_exam
   end
 
+  def practice?
+    !is_exam
+  end
+
   def status
     current_time = Time.current
     if start_time.present? && current_time < start_time

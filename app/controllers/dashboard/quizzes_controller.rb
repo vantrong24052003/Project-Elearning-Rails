@@ -2,11 +2,12 @@
 
 class Dashboard::QuizzesController < ApplicationController
   include AccountSecurity
+  include NoCacheHeaders
   before_action :check_locked_account
   before_action :authenticate_user!
   before_action :set_course, only: %i[index show]
   before_action :check_enrollment, only: [:show]
-  before_action :authenticate_user!
+  before_action :set_no_cache_headers, only: [:show]
 
   def index
     @available_quizzes = @course.quizzes.available.order(created_at: :desc).page(params[:page]).per(10)
@@ -16,22 +17,26 @@ class Dashboard::QuizzesController < ApplicationController
   end
 
   def show
-    @quiz = @course.quizzes.find(params[:id])
+    @quiz = Quiz.includes(:questions, :course).find(params[:id])
     @questions = @quiz.questions
     @mode = @quiz.exam? ? 'exam' : 'practice'
 
-    service = Dashboard::QuizzesService.new
-    completed = service.latest_completed_attempt(@quiz, current_user)
-    if @quiz.exam? && completed.present?
+    service = Dashboard::QuizService.new
+
+    if @quiz.exam? && service.already_completed?(@quiz, current_user)
+      completed = service.latest_completed_attempt(@quiz, current_user)
       redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, completed),
-                  notice: 'You have completed this test. Here are your results.'
+                  notice: 'You have completed this exam.'
       return
     end
 
-    @quiz_attempt = service.in_progress_attempt(@quiz, current_user)
+    @quiz_attempt = service.current_attempt(@quiz, current_user)
     if params[:start] == 'true' && @quiz_attempt.nil?
-      @quiz_attempt = service.start_attempt_if_needed!(@quiz, current_user,
-                                                       (params[:client_ip].presence || request.remote_ip), request.user_agent)
+      client_info = {
+        client_ip: params[:client_ip].presence || request.remote_ip,
+        device_info: request.user_agent
+      }
+      @quiz_attempt = service.start_attempt(@quiz, current_user, client_info)
     end
   end
 

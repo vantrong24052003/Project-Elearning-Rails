@@ -2,86 +2,46 @@
 
 class Dashboard::QuizAttemptsController < ApplicationController
   include AccountSecurity
+  include NoCacheHeaders
   before_action :check_locked_account
   before_action :authenticate_user!
-  before_action :set_course
-  before_action :set_quiz
+  before_action :set_course, only: %i[show create update destroy]
+  before_action :set_quiz, only: %i[show create update destroy]
+  before_action :set_quiz_service, only: %i[show create update]
   before_action :set_quiz_attempt, only: %i[show update destroy]
   before_action :check_ownership, only: %i[show update destroy]
   before_action :set_no_cache_headers, only: [:show]
 
   def show
-    @questions = @quiz.questions
+    @questions = @quiz.questions.includes(:quiz_questions)
+    @results = @quiz_service.get_results(@quiz_attempt)
   end
 
   def create
-    @quiz_attempt = Dashboard::QuizzesService.new.start_attempt_if_needed!(@quiz, current_user,
-                                                                           (params[:client_ip].presence || request.remote_ip), request.user_agent)
+    client_info = {
+      client_ip: params[:client_ip].presence || request.remote_ip,
+      device_info: request.user_agent
+    }
+    @quiz_attempt = @quiz_service.start_attempt(@quiz, current_user, client_info)
 
     redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                 notice: 'Quiz attempt started successfully.'
   end
 
   def update
-    if params[:answers].present?
-      correct_answers = 0
-      total_questions = @quiz.questions.count
-      formatted_answers = {}
+    return handle_quiz_submission if params[:answers].present?
+    return handle_time_update if params[:time_spent].present?
+    return handle_attempt_update if params[:quiz_attempt].present?
 
-      params[:answers]&.each do |question_id, selected_option|
-        formatted_answers[question_id.to_s] = selected_option.to_i
-        question = @quiz.questions.find_by(id: question_id)
-        correct_answers += 1 if question && question.correct_option.to_i == selected_option.to_i
-      end
-
-      score = (correct_answers.to_f / total_questions * 10).round(1)
-      time_spent = params[:time_spent].to_i
-
-      if @quiz_attempt.update(score: score, time_spent: time_spent, answers: formatted_answers.to_json,
-                              completed_at: Time.current)
-        client_ip = params[:client_ip].presence || request.remote_ip
-        @quiz_attempt.log_action({ client_ip: client_ip, device_info: request.user_agent })
-
-        redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
-                    notice: 'The assignment has been updated successfully.'
-      else
-        redirect_to dashboard_course_quiz_path(@course, @quiz),
-                    alert: 'An error occurred while updating the assignment.'
-      end
-    elsif params[:time_spent].present?
-      if @quiz_attempt.update(time_spent: params[:time_spent].to_i, completed_at: Time.current)
-        client_ip = params[:client_ip].presence || request.remote_ip
-        @quiz_attempt.log_action({ client_ip: client_ip, device_info: request.user_agent })
-
-        redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
-                    notice: 'The assignment has been updated.'
-      end
-    elsif params[:quiz_attempt].present?
-      quiz_attempt_params_with_completed = quiz_attempt_params.merge(completed_at: Time.current)
-      if @quiz_attempt.update(quiz_attempt_params_with_completed)
-        client_ip = params[:client_ip].presence || request.remote_ip
-        @quiz_attempt.log_action({ client_ip: client_ip, device_info: request.user_agent })
-
-        redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
-                    notice: 'The assignment has been updated.'
-      end
-    else
-      redirect_to dashboard_course_quiz_path(@course, @quiz), alert: 'There is no data to update.'
-    end
+    redirect_to dashboard_course_quiz_path(@course, @quiz), alert: 'There is no data to update.'
   end
 
   def destroy
     @quiz_attempt.destroy
-    redirect_to dashboard_course_quiz_path(@course), notice: 'Bài làm đã được xóa.'
+    redirect_to dashboard_course_quiz_path(@course), notice: 'Quiz attempt deleted successfully.'
   end
 
   private
-
-  def set_no_cache_headers
-    response.headers['Cache-Control'] = 'no-cache, no-store, max-age=0, must-revalidate'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = 'Fri, 01 Jan 1990 00:00:00 GMT'
-  end
 
   def set_course
     @course = Course.find(params[:course_id])
@@ -89,6 +49,10 @@ class Dashboard::QuizAttemptsController < ApplicationController
 
   def set_quiz
     @quiz = @course.quizzes.find(params[:quiz_id])
+  end
+
+  def set_quiz_service
+    @quiz_service = Dashboard::QuizService.new
   end
 
   def set_quiz_attempt
@@ -104,5 +68,43 @@ class Dashboard::QuizAttemptsController < ApplicationController
 
   def quiz_attempt_params
     params.require(:quiz_attempt).permit(:answers, :time_spent)
+  end
+
+  def format_answers(answers_params)
+    formatted_answers = {}
+    answers_params.each do |question_id, selected_option|
+      formatted_answers[question_id.to_s] = selected_option.to_i
+    end
+    formatted_answers
+  end
+
+  def handle_quiz_submission
+    formatted_answers = format_answers(params[:answers])
+    result = @quiz_service.submit_attempt(@quiz_attempt, formatted_answers, params[:time_spent].to_i)
+    log_client_action
+    redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, result[:attempt]),
+                notice: 'Quiz submitted successfully.'
+  rescue ActionController::BadRequest => e
+    redirect_to dashboard_course_quiz_path(@course, @quiz), alert: e.message
+  end
+
+  def handle_time_update
+    return unless @quiz_attempt.update(time_spent: params[:time_spent].to_i, completed_at: Time.current)
+    log_client_action
+    redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
+                notice: 'The assignment has been updated.'
+  end
+
+  def handle_attempt_update
+    quiz_attempt_params_with_completed = quiz_attempt_params.merge(completed_at: Time.current)
+    return unless @quiz_attempt.update(quiz_attempt_params_with_completed)
+    log_client_action
+    redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
+                notice: 'The assignment has been updated.'
+  end
+
+  def log_client_action
+    client_ip = params[:client_ip].presence || request.remote_ip
+    @quiz_attempt.log_action({ client_ip: client_ip, device_info: request.user_agent })
   end
 end

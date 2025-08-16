@@ -5,7 +5,15 @@
       <div class="lg:col-span-3">
         <div class="bg-white dark:bg-gray-800 rounded-lg p-6 mb-6 border border-gray-200 dark:border-gray-700 shadow-md dark:shadow-none">
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Chi tiết bài thi</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+              Chi tiết bài thi
+              <% if @results[:auto_submitted] %>
+                <span class="ml-2 px-2 py-1 bg-red-600 text-white text-xs rounded-full">Tự động nộp</span>
+              <% end %>
+              <% if @results[:suspicious] %>
+                <span class="ml-2 px-2 py-1 bg-yellow-600 text-white text-xs rounded-full">Nghi ngờ</span>
+              <% end %>
+            </h2>
             <div class="flex items-center gap-4">
               <span class="px-3 py-1 bg-blue-600 dark:bg-purple-600 text-white text-sm rounded-full">
                 <%= @quiz_attempt.score %>%
@@ -104,10 +112,15 @@
       <div class="lg:col-span-2">
         <div class="bg-white dark:bg-gray-800 rounded-lg p-6 mb-6 border border-gray-200 dark:border-gray-700 shadow-md dark:shadow-none">
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Chi tiết bài làm</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+              Chi tiết bài luyện tập
+              <% if @results[:can_retake] %>
+                <span class="ml-2 px-2 py-1 bg-green-600 text-white text-xs rounded-full">Có thể làm lại</span>
+              <% end %>
+            </h2>
             <div class="flex items-center gap-4">
               <span class="px-3 py-1 bg-blue-600 dark:bg-purple-600 text-white text-sm rounded-full">
-                <%= @quiz_attempt.score %>%
+                <%= @results[:score] %>%
               </span>
             </div>
           </div>
@@ -123,14 +136,7 @@
             <div class="text-center">
               <p class="text-gray-500 dark:text-gray-400 text-sm">Số câu trả lời đúng</p>
               <p class="text-gray-800 dark:text-white text-lg">
-                <% correct_count = 0 %>
-                <% answers = @quiz_attempt.answers_hash %>
-                <% answers.each do |question_id, answer| %>
-                  <% question = @questions.find { |q| q.id.to_s == question_id } %>
-                  <% if question && answer.to_i == question.correct_option %>
-                    <% correct_count += 1 %>
-                  <% end %>
-                <% end %>
+                <% correct_count = @results[:detailed_results]&.count { |r| r[:is_correct] } || 0 %>
                 <%= correct_count %> / <%= @questions.count %>
               </p>
             </div>
@@ -142,6 +148,7 @@
               </p>
             </div>
           </div>
+
 
           <div class="space-y-6">
             <% @questions.each_with_index do |question, index| %>
@@ -210,22 +217,24 @@
                       <% end %>
                     </div>
 
-                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                      <h4 class="text-blue-600 dark:text-purple-400 text-sm font-semibold mb-1">Giải thích:</h4>
-                      <p class="text-gray-700 dark:text-gray-300">
-                        <% if !user_answered %>
-                          <span class="text-yellow-600 dark:text-yellow-400">Bạn chưa trả lời câu hỏi này.</span>
-                          <% if question.explanation.present? %>
-                            <br>
-                            <span class="text-gray-600 dark:text-gray-400">Đáp án đúng là <%= ('A'.ord + question.correct_option).chr %>: <%= question.options[question.correct_option] %></span>
-                            <br><br>
+                      <% if @results[:explanations_shown] %>
+                      <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <h4 class="text-blue-600 dark:text-purple-400 text-sm font-semibold mb-1">Giải thích:</h4>
+                        <p class="text-gray-700 dark:text-gray-300">
+                          <% if !user_answered %>
+                            <span class="text-yellow-600 dark:text-yellow-400">Bạn chưa trả lời câu hỏi này.</span>
+                            <% if question.explanation.present? %>
+                              <br>
+                              <span class="text-gray-600 dark:text-gray-400">Đáp án đúng là <%= ('A'.ord + question.correct_option).chr %>: <%= question.options[question.correct_option] %></span>
+                              <br><br>
+                              <%= question.explanation %>
+                            <% end %>
+                          <% else %>
                             <%= question.explanation %>
                           <% end %>
-                        <% else %>
-                          <%= question.explanation %>
-                        <% end %>
-                      </p>
-                    </div>
+                        </p>
+                      </div>
+                    <% end %>
                   </div>
                 </div>
               </div>
@@ -255,22 +264,15 @@
           </div>
 
           <%
-            answered_count = 0
-            correct_count = 0
-
-            begin
-              answers = JSON.parse(@quiz_attempt.answers)
-              answered_count = answers.keys.size
-
-              answers.each do |question_id, answer|
+            if @results[:detailed_results].present?
+              answered_count = @results[:detailed_results].size
+              correct_count = @results[:detailed_results].count { |r| r[:is_correct] }
+            else
+              answered_count = @quiz_attempt.answers_hash.keys.size
+              correct_count = @quiz_attempt.answers_hash.count do |question_id, answer|
                 question = @questions.find { |q| q.id.to_s == question_id }
-                if question && answer.to_i == question.correct_option
-                  correct_count += 1
-                end
+                question && answer.to_i == question.correct_option
               end
-            rescue => e
-              answered_count = 0
-              correct_count = 0
             end
           %>
 
@@ -305,12 +307,14 @@
               Quay lại khóa học
             <% end %>
 
-            <%= link_to dashboard_course_quiz_path(@course, @quiz, force: true),
-                        class: "w-full bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white py-3 px-4 rounded-lg flex items-center justify-center  mt-3" do %>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Làm lại bài kiểm tra
+            <% if @results[:can_retake] %>
+              <%= link_to dashboard_course_quiz_path(@course, @quiz, force: true),
+                          class: "w-full bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white py-3 px-4 rounded-lg flex items-center justify-center  mt-3" do %>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Làm lại bài luyện tập
+              <% end %>
             <% end %>
           </div>
         </div>
