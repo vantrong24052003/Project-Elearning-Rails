@@ -41,15 +41,6 @@
                 </h3>
 
                 <div class="flex flex-wrap items-center gap-2">
-                  <% if quiz.notify_cheating? && quiz.status == :available %>
-                    <div class="flex items-center text-orange-600 dark:text-orange-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                      </svg>
-                      <span class="text-xs sm:text-sm font-medium">Cảnh báo gian lận</span>
-                    </div>
-                  <% end %>
-
                   <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 whitespace-nowrap flex-shrink-0">
                     <%= quiz.status_label %>
                   </span>

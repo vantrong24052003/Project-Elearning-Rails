@@ -24,6 +24,7 @@ export default class extends Controller {
     this.lastDevToolsDetection = 0;
     this.lastVisibilityChangeTime = 0;
     this.lastScreenshotTime = 0;
+    this.smartBatchingThreshold = 3;
 
     const hasAttemptId = this.attemptIdValue && this.attemptIdValue.trim() !== '';
     if (!hasAttemptId) {
@@ -111,6 +112,7 @@ export default class extends Controller {
         this.screenshotCount++;
         this.logAction("screenshot");
         this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi")
+        this.checkSmartBatching();
       });
 
       this.devtoolsCheckInterval = setInterval(() => {
@@ -120,6 +122,8 @@ export default class extends Controller {
       this.syncInterval = setInterval(() => {
         this.syncBehaviorCounts();
       }, 30000);
+
+      this.setupEmergencySync();
     }
 
   }
@@ -196,6 +200,7 @@ export default class extends Controller {
       console.log("DevTools mở lần thứ:", this.devtoolsOpenCount);
       this.logAction("devtools_open");
       this.showCheatingAlert("Công cụ nhà phát triển (DevTools)", "không được phép sử dụng khi làm bài thi!");
+      this.checkSmartBatching();
     }
   }
 
@@ -230,17 +235,19 @@ export default class extends Controller {
 
   handleRightClick(e)  {
     console.log("Right click detected");
-    this.rightClickCount++;
-    this.logAction("right_click");
-    this.showCheatingAlert("Click chuột phải", "không được phép khi làm bài!");
-    e.preventDefault();
-    return false;
+          this.rightClickCount++;
+      this.logAction("right_click");
+      this.showCheatingAlert("Click chuột phải", "không được phép khi làm bài!");
+      this.checkSmartBatching();
+      e.preventDefault();
+      return false;
   }
 
   handleCopy(e) {
     this.copyPasteCount++
     this.logAction("copy")
     this.showCheatingAlert("Sao chép (copy)", "không được phép khi làm bài thi")
+    this.checkSmartBatching()
     e.preventDefault()
     return false
   }
@@ -249,6 +256,7 @@ export default class extends Controller {
     this.copyPasteCount++
     this.logAction("paste")
     this.showCheatingAlert("Dán (paste)", "không được phép khi làm bài thi")
+    this.checkSmartBatching()
     e.preventDefault()
     return false
   }
@@ -257,6 +265,7 @@ export default class extends Controller {
     this.copyPasteCount++
     this.logAction("cut")
     this.showCheatingAlert("Cắt (cut)", "không được phép khi làm bài thi")
+    this.checkSmartBatching()
     e.preventDefault()
     return false
   }
@@ -269,6 +278,7 @@ export default class extends Controller {
       this.logAction("tab_switch")
       this.tabSwitchTime = new Date()
       this.lastVisibilityChangeTime = now
+      this.checkSmartBatching()
     } else if (this.tabSwitchTime) {
       const timeAway = new Date() - this.tabSwitchTime
 
@@ -283,6 +293,7 @@ export default class extends Controller {
         this.screenshotCount++
         this.logAction("screenshot")
         this.showCheatingAlert("Chụp màn hình", "không được phép khi làm bài thi")
+        this.checkSmartBatching()
       } else if (timeAway > 2000) {
         this.showCheatingAlert("Chuyển tab", `trong ${Math.round(timeAway/1000)} giây`)
       }
@@ -295,6 +306,7 @@ export default class extends Controller {
     this.tabSwitchCount++
     this.logAction("window_blur")
     this.windowBlurTime = new Date()
+    this.checkSmartBatching()
   }
 
   handleWindowFocus() {
@@ -488,6 +500,52 @@ export default class extends Controller {
       console.log("Đã đồng bộ số liệu hành vi");
     }).catch(error => {
       console.error("Lỗi khi đồng bộ số liệu hành vi:", error);
+    });
+  }
+
+  getTotalPendingCount() {
+    return this.tabSwitchCount + this.copyPasteCount +
+           this.screenshotCount + this.devtoolsOpenCount +
+           this.rightClickCount + this.otherUnusualCount;
+  }
+
+  checkSmartBatching() {
+    if (this.getTotalPendingCount() >= this.smartBatchingThreshold) {
+      console.log(`Smart batching triggered: ${this.getTotalPendingCount()} actions`);
+      this.syncBehaviorCounts();
+      this.resetSyncTimer();
+    }
+  }
+
+  resetSyncTimer() {
+    if (this.syncInterval) {
+      clearInterval(this.syncInterval);
+    }
+    this.syncInterval = setInterval(() => {
+      this.syncBehaviorCounts();
+    }, 30000);
+  }
+
+  setupEmergencySync() {
+    window.addEventListener('beforeunload', () => {
+      if (this.getTotalPendingCount() > 0) {
+        console.log('Emergency sync on beforeunload');
+        this.syncBehaviorCounts();
+      }
+    });
+
+    window.addEventListener('pagehide', () => {
+      if (this.getTotalPendingCount() > 0) {
+        console.log('Emergency sync on pagehide');
+        this.syncBehaviorCounts();
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && this.getTotalPendingCount() > 0) {
+        console.log('Emergency sync on visibilitychange');
+        this.syncBehaviorCounts();
+      }
     });
   }
 }

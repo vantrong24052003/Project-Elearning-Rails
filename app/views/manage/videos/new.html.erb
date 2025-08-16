@@ -1,0 +1,118 @@
+<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg">
+    <div class="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h1 class="text-lg md:text-xl text-blue-600 dark:text-purple-400 font-medium">Tạo video mới</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Điền thông tin để tạo video mới cho khóa học</p>
+        </div>
+        
+        <div class="flex gap-2">
+          <%= link_to manage_videos_path, class: "btn btn-outline btn-sm" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Quay lại
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 md:p-6">
+      <%= form_with(model: [:manage, @video], class: "space-y-6") do |form| %>
+        <% if @video.errors.any? %>
+          <div class="alert alert-error mb-6">
+            <div>
+              <h2 class="text-lg font-medium mb-2">
+                <%= pluralize(@video.errors.count, "lỗi") %> đã xảy ra:
+              </h2>
+              <ul class="list-disc pl-5 text-sm">
+                <% @video.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+        <% end %>
+
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 mb-6">
+          <h3 class="text-lg text-blue-600 dark:text-purple-400 font-semibold mb-4">Thông tin cơ bản</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="form-control md:col-span-2">
+              <%= form.label :title, "Tiêu đề video", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+              <%= form.text_field :title, class: "input input-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", placeholder: "Nhập tiêu đề video", required: true %>
+            </div>
+
+            <div class="form-control">
+              <%= form.label :lesson_id, "Bài học", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+              <%= form.select :lesson_id, 
+                  Lesson.includes(chapter: :course).all.map { |l| ["#{l.chapter.course.title} > #{l.chapter.title} > #{l.title}", l.id] },
+                  { include_blank: "Chọn bài học" }, 
+                  { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true } %>
+            </div>
+
+            <div class="form-control">
+              <%= form.label :upload_id, "Upload video", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+              <%= form.select :upload_id,
+                  Upload.where(status: 'success', file_type: 'mp4').includes(:user).map { |u| ["#{u.processing_log.presence || u.id} (#{u.user.name})", u.id] },
+                  { include_blank: "Chọn video đã upload" },
+                  { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", required: true } %>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Chỉ hiển thị các video đã upload thành công</p>
+            </div>
+
+            <div class="form-control">
+              <%= form.label :position, "Vị trí", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+              <%= form.number_field :position, class: "input input-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", placeholder: "1", min: 1 %>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Thứ tự hiển thị trong bài học</p>
+            </div>
+
+            <div class="form-control">
+              <%= form.label :moderation_status, "Trạng thái kiểm duyệt", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+              <%= form.select :moderation_status, [
+                ["Chờ duyệt", "pending"],
+                ["Đã duyệt", "approved"],
+                ["Bị từ chối", "rejected"],
+                ["Đã khóa", "locked"]
+              ], { selected: "pending" }, { class: "select select-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500" } %>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 mb-6">
+          <h3 class="text-lg text-blue-600 dark:text-purple-400 font-semibold mb-4">Cài đặt nâng cao</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="form-control">
+              <%= form.label :thumbnail, "Thumbnail URL", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+              <%= form.text_field :thumbnail, class: "input input-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500", placeholder: "https://..." %>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">URL ảnh thumbnail (để trống để sử dụng thumbnail tự động)</p>
+            </div>
+
+            <div class="form-control">
+              <%= form.label :is_locked, "Thời gian khóa", class: "label font-medium pb-1 text-gray-700 dark:text-gray-300" %>
+              <%= form.datetime_local_field :is_locked, class: "input input-bordered w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500" %>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Video sẽ bị khóa đến thời điểm này (để trống nếu không khóa)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-lg p-4 mb-6">
+          <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">Lưu ý:</h3>
+          <ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-400 space-y-1">
+            <li>Tiêu đề video là <span class="font-semibold">bắt buộc</span></li>
+            <li>Phải chọn bài học và video đã upload</li>
+            <li>Vị trí sẽ tự động được gán nếu để trống</li>
+            <li>Thumbnail sẽ được lấy từ upload nếu không cung cấp</li>
+            <li>Video mặc định ở trạng thái "Chờ duyệt"</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-end space-x-3 pt-4">
+          <%= link_to "Hủy", manage_videos_path, class: "btn btn-outline" %>
+          <%= form.submit "Tạo video", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div> 

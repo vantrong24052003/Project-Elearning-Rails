@@ -104,30 +104,20 @@ def fetch_transcription_text(json_url)
   bucket = uri.host.split('.').first
   key = uri.path.sub(%r{^/}, '')
 
-  s3_client = create_s3_client
-  body = fetch_s3_object(s3_client, bucket, key)
-  parse_transcript_data(body)
-rescue StandardError => e
-  "Không thể đọc transcript: #{e.message}"
-end
-
-def create_s3_client
   s3_conf = YAML.safe_load(ERB.new(File.read(Rails.root.join('config/storage.yml'))).result)['amazon']
-  Aws::S3::Client.new(
+
+  s3 = Aws::S3::Client.new(
     region: s3_conf['region'],
     access_key_id: Rails.application.credentials.dig(:aws, :access_key_id),
     secret_access_key: Rails.application.credentials.dig(:aws, :secret_access_key)
   )
-end
 
-def fetch_s3_object(s3_client, bucket, key)
-  s3_client.head_object(bucket: bucket, key: key)
-  s3_client.get_object(bucket: bucket, key: key).body.read
-end
-
-def parse_transcript_data(body)
+  s3.head_object(bucket: bucket, key: key)
+  body = s3.get_object(bucket: bucket, key: key).body.read
   data = JSON.parse(body)
   data.dig('results', 'transcripts', 0, 'transcript') || 'Không có nội dung transcript'
+rescue StandardError => e
+  "Không thể đọc transcript: #{e.message}"
 end
 
 puts 'Creating uploads...'
@@ -247,25 +237,9 @@ languages = %w[English Vietnamese Japanese]
 prices = [299_000, 499_000, 999_000, 1_499_000, 1_999_000]
 
 100.times do |i|
-  create_course_with_content(i, course_titles, course_descriptions, prices, languages, categories, course_thumbnails,
-                             demo_videos, uploads)
-end
-
-def create_course_with_content(index, course_titles, course_descriptions, prices, languages, categories,
-                               course_thumbnails, demo_videos, uploads)
   title_index = rand(0..course_titles.length - 1)
-  course = create_course(index, title_index, course_titles, course_descriptions, prices, languages, categories,
-                         course_thumbnails, demo_videos)
-
-  create_course_category(course)
-  create_course_chapters(course, title_index, course_titles, course_descriptions, uploads)
-  create_course_enrollments(course)
-end
-
-def create_course(index, title_index, course_titles, course_descriptions, prices, languages, categories,
-                  course_thumbnails, demo_videos)
-  Course.create!(
-    title: "#{course_titles[title_index]} #{index + 1}",
+  course = Course.create!(
+    title: "#{course_titles[title_index]} #{i + 1}",
     description: course_descriptions[title_index],
     price: prices.sample,
     language: languages.sample,
@@ -276,95 +250,71 @@ def create_course(index, title_index, course_titles, course_descriptions, prices
     demo_video_path: demo_videos.sample,
     is_free: rand < 0.1
   )
-end
 
-def create_course_category(course)
   CourseCategory.create!(
     course: course,
     category: Category.find(course.category_id)
   )
-end
 
-def create_course_chapters(course, title_index, course_titles, course_descriptions, uploads)
   (2..4).to_a.sample.times do |j|
-    chapter = create_chapter(course, j, title_index, course_titles)
-    create_chapter_lessons(chapter, j, title_index, course_descriptions, uploads)
-  end
-end
-
-def create_chapter(course, index, title_index, course_titles)
-  Chapter.create!(
-    title: "Chapter #{index + 1}: #{course_titles[title_index]}",
-    position: index + 1,
-    course: course
-  )
-end
-
-def create_chapter_lessons(chapter, _chapter_index, title_index, course_descriptions, uploads)
-  (3..5).to_a.sample.times do |k|
-    lesson = create_lesson(chapter, k, title_index, course_descriptions)
-    create_lesson_videos(lesson, k, uploads)
-  end
-end
-
-def create_lesson(chapter, index, title_index, course_descriptions)
-  Lesson.create!(
-    title: "Lesson #{index + 1}: #{course_descriptions[title_index]}",
-    description: "Detailed lesson about #{course_descriptions[title_index]}",
-    position: index + 1,
-    chapter: chapter
-  )
-end
-
-def create_lesson_videos(lesson, _lesson_index, uploads)
-  (2..3).to_a.sample.times do |l|
-    success_uploads = uploads.select { |upload| upload.status == 'success' }
-    available_upload = success_uploads.any? ? success_uploads.sample : uploads.sample
-
-    Video.create!(
-      title: "Video #{l + 1}: #{lesson.title}",
-      lesson: lesson,
-      upload: available_upload,
-      thumbnail: available_upload.thumbnail_path,
-      position: l + 1,
-      is_locked: rand < 0.4 ? Faker::Time.between(from: 6.months.ago, to: Time.current) : nil,
-      moderation_status: %i[pending approved rejected locked].sample
+    chapter = Chapter.create!(
+      title: "Chapter #{j + 1}: #{course_titles[title_index]}",
+      position: j + 1,
+      course: course
     )
-  end
-end
 
-def create_course_enrollments(course)
-  return unless rand < 0.7
+    (3..5).to_a.sample.times do |k|
+      lesson = Lesson.create!(
+        title: "Lesson #{k + 1}: #{course_descriptions[title_index]}",
+        description: "Detailed lesson about #{course_titles[title_index]}",
+        position: k + 1,
+        chapter: chapter
+      )
+
+      (2..3).to_a.sample.times do |l|
+        success_uploads = uploads.select { |upload| upload.status == 'success' }
+        available_upload = success_uploads.any? ? success_uploads.sample : uploads.sample
+
+        Video.create!(
+          title: "Video #{l + 1}: #{lesson.title}",
+          lesson: lesson,
+          upload: available_upload,
+          thumbnail: available_upload.thumbnail_path,
+          position: l + 1,
+          is_locked: rand < 0.4 ? Faker::Time.between(from: 6.months.ago, to: Time.current) : nil,
+          moderation_status: %i[pending approved rejected locked].sample
+        )
+      end
+    end
+  end
+
+  next unless rand < 0.7
 
   rand(1..5).times do
-    create_enrollment_for_course(course)
+    student = User.joins(:roles).where(roles: { name: 'student' }).sample
+    next if student.nil?
+    next if student.enrollments.exists?(course_id: course.id)
+
+    Enrollment.create!(
+      user: student,
+      course: course,
+      status: %i[active pending].sample,
+      payment_code: SecureRandom.hex(4).upcase,
+      payment_method: Enrollment.payment_method.values.sample,
+      amount: course.price,
+      paid_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+      enrolled_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
+      completed_at: [nil, Faker::Time.between(from: 6.months.ago, to: Time.current)].sample,
+      note: ['Completed payment successfully', 'Payment pending', nil].sample
+    )
   end
-end
-
-def create_enrollment_for_course(course)
-  student = User.joins(:roles).where(roles: { name: 'student' }).sample
-  return if student.nil?
-  return if student.enrollments.exists?(course_id: course.id)
-
-  Enrollment.create!(
-    user: student,
-    course: course,
-    status: %i[active pending].sample,
-    payment_code: SecureRandom.hex(4).upcase,
-    payment_method: Enrollment.payment_method.values.sample,
-    amount: course.price,
-    paid_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
-    enrolled_at: Faker::Time.between(from: 6.months.ago, to: Time.current),
-    completed_at: [nil, Faker::Time.between(from: 6.months.ago, to: Time.current)].sample,
-    note: ['Completed payment successfully', 'Payment pending', nil].sample
-  )
 end
 
 puts '✅ Created 100 courses with chapters, lessons, videos and enrollments.'
 
 puts '✅ Created course ratings!'
 
-def create_quiz_for_course(course, is_exam: false)
+def create_quiz_for_course(course, is_exam = false)
   category = course.categories.first
   category_name = category ? category.name : 'Programming'
 
@@ -376,178 +326,115 @@ def create_quiz_for_course(course, is_exam: false)
 end
 
 def create_practice_quiz_for_course(course, category_name)
-  quiz_data = prepare_practice_quiz_data(course, category_name)
-  quiz = create_practice_quiz(course, quiz_data)
-  create_practice_questions(quiz, course, quiz_data)
-  create_quiz_attempts(quiz, course)
-  quiz
-end
-
-def prepare_practice_quiz_data(course, category_name)
   topics = QUIZ_TOPICS[category_name]
   question_templates = QUESTION_TEMPLATES[category_name]
   answers = ANSWER_OPTIONS[category_name]
   topic = topics.sample
   title = "#{topic} - #{course.title.split.first(2).join(' ')}"
+
   start_time = Time.current + 5.minutes
   end_time = start_time + 1.hour
 
-  {
-    topic: topic,
+  quiz = Quiz.create!(
     title: title,
-    start_time: start_time,
-    end_time: end_time,
-    question_templates: question_templates,
-    answers: answers
-  }
-end
-
-def create_practice_quiz(course, quiz_data)
-  Quiz.create!(
-    title: quiz_data[:title],
     is_exam: false,
     time_limit: [10, 15, 20, 25, 30].sample,
     course: course,
-    start_time: quiz_data[:start_time],
-    end_time: quiz_data[:end_time]
+    start_time: start_time,
+    end_time: end_time
   )
-end
 
-def create_practice_questions(quiz, course, quiz_data)
   rand(5..10).times do |j|
-    template = quiz_data[:question_templates].sample
-    content = template.gsub('TOPIC', quiz_data[:topic].downcase) + " (##{j + 1})"
+    template = question_templates.sample
+    content = template.gsub('TOPIC', topic.downcase) + " (##{j + 1})"
 
-    question = create_practice_question(course, quiz_data, content)
+    question = Question.create!(
+      content: content,
+      options: answers.shuffle.each_with_index.map { |v, i| [i.to_s, v] }.to_h,
+      correct_option: rand(0..3),
+      explanation: "Giải thích chi tiết: #{answers.sample} là phương pháp hiệu quả nhất cho #{topic.downcase}.",
+      difficulty: %w[easy medium hard].sample,
+      course: course,
+      user: course.user,
+      topic: %w[math physics chemistry biology history geography literature programming].sample,
+      learning_goal: %w[remember understand apply analyze create].sample
+    )
+
     QuizQuestion.create!(quiz: quiz, question: question)
   end
-end
 
-def create_practice_question(course, quiz_data, content)
-  explanation = "Giải thích chi tiết: #{quiz_data[:answers].sample} là phương pháp hiệu quả nhất cho #{quiz_data[:topic].downcase}."
+  create_quiz_attempts(quiz, course)
 
-  Question.create!(
-    content: content,
-    options: quiz_data[:answers].shuffle.each_with_index.map { |v, i| [i.to_s, v] }.to_h,
-    correct_option: rand(0..3),
-    explanation: explanation,
-    difficulty: %w[easy medium hard].sample,
-    course: course,
-    user: course.user,
-    topic: %w[math physics chemistry biology history geography literature programming].sample,
-    learning_goal: %w[remember understand apply analyze create].sample
-  )
+  quiz
 end
 
 def create_exam_for_course(course, category_name)
-  exam_data = prepare_exam_data(course, category_name)
-  exam = create_exam_quiz(course, exam_data)
-  create_exam_questions(exam, course, exam_data)
-  exam
-end
-
-def prepare_exam_data(_course, category_name)
   start_time = Time.current + 5.minutes
   end_time = start_time + 2.hours
-  exam_templates = EXAM_QUESTIONS[category_name] || EXAM_QUESTIONS['Programming']
 
-  {
-    start_time: start_time,
-    end_time: end_time,
-    exam_templates: exam_templates
-  }
-end
-
-def create_exam_quiz(course, exam_data)
-  Quiz.create!(
+  exam = Quiz.create!(
     title: "Bài thi cuối khóa - #{course.title.truncate(30)}",
     is_exam: true,
     time_limit: [30, 45, 60].sample,
     course: course,
-    start_time: exam_data[:start_time],
-    end_time: exam_data[:end_time]
+    start_time: start_time,
+    end_time: end_time
   )
-end
 
-def create_exam_questions(exam, course, exam_data)
+  exam_templates = EXAM_QUESTIONS[category_name] || EXAM_QUESTIONS['Programming']
+
   rand(15..20).times do |_j|
-    template = exam_data[:exam_templates].sample
-    content = build_exam_question_content(template)
+    template = exam_templates.sample
 
-    question = create_exam_question(course, template, content)
+    subject = template[:content_subjects].sample
+    task = template[:content_tasks].sample
+    content = "#{template[:content_prefix]}#{subject}#{template[:content_suffix]}#{task}?"
+
+    question = Question.create!(
+      content: content,
+      options: template[:options].shuffle.each_with_index.map { |v, i| [i.to_s, v] }.to_h,
+      correct_option: rand(0..3),
+      explanation: "Lý giải chi tiết: #{template[:options].sample} là phương pháp tối ưu cho nhiều trường hợp.",
+      difficulty: %w[medium hard].sample,
+      course: course,
+      user: course.user,
+      topic: %w[math physics chemistry biology history geography literature programming].sample,
+      learning_goal: %w[remember understand apply analyze create].sample
+    )
+
     QuizQuestion.create!(quiz: exam, question: question)
   end
-end
 
-def build_exam_question_content(template)
-  subject = template[:content_subjects].sample
-  task = template[:content_tasks].sample
-  "#{template[:content_prefix]}#{subject}#{template[:content_suffix]}#{task}?"
-end
-
-def create_exam_question(course, template, content)
-  explanation = "Lý giải chi tiết: #{template[:options].sample} là phương pháp tối ưu cho nhiều trường hợp."
-
-  Question.create!(
-    content: content,
-    options: template[:options].shuffle.each_with_index.map { |v, i| [i.to_s, v] }.to_h,
-    correct_option: rand(0..3),
-    explanation: explanation,
-    difficulty: %w[medium hard].sample,
-    course: course,
-    user: course.user,
-    topic: %w[math physics chemistry biology history geography literature programming].sample,
-    learning_goal: %w[remember understand apply analyze create].sample
-  )
+  exam
 end
 
 def create_quiz_attempts(quiz, course)
-  return unless should_create_attempts?(course)
+  return unless course.enrolled_users.any? && rand < 0.8
 
   students = course.enrolled_users.sample(rand(1..5))
-  students.each { |student| create_student_attempt(quiz, student) }
-end
 
-def should_create_attempts?(course)
-  course.enrolled_users.any? && rand < 0.8
-end
+  students.each do |student|
+    answers = {}
+    correct_count = 0
 
-def create_student_attempt(quiz, student)
-  attempt_data = generate_attempt_data(quiz)
-  QuizAttempt.create!(
-    quiz: quiz,
-    user: student,
-    score: attempt_data[:score],
-    time_spent: attempt_data[:time_spent],
-    answers: attempt_data[:answers]
-  )
-end
+    quiz.questions.each do |q|
+      user_answer = rand(0..3)
+      answers[q.id.to_s] = user_answer
+      correct_count += 1 if user_answer == q.correct_option
+    end
 
-def generate_attempt_data(quiz)
-  answers = generate_quiz_answers(quiz)
-  score = calculate_quiz_score(quiz, answers)
-  time_spent = rand((quiz.time_limit * 30)..(quiz.time_limit * 60))
+    score = quiz.questions.any? ? (correct_count.to_f / quiz.questions.count * 10).round : 0
 
-  {
-    score: score,
-    time_spent: time_spent,
-    answers: answers
-  }
-end
+    time_spent = rand((quiz.time_limit * 30)..(quiz.time_limit * 60))
 
-def generate_quiz_answers(quiz)
-  answers = {}
-  quiz.questions.each do |q|
-    answers[q.id.to_s] = rand(0..3)
+    QuizAttempt.create!(
+      quiz: quiz,
+      user: student,
+      score: score,
+      time_spent: time_spent,
+      answers: answers
+    )
   end
-  answers
-end
-
-def calculate_quiz_score(quiz, answers)
-  return 0 unless quiz.questions.any?
-
-  correct_count = quiz.questions.count { |q| answers[q.id.to_s] == q.correct_option }
-  (correct_count.to_f / quiz.questions.count * 10).round
 end
 
 QUIZ_TOPICS = {
@@ -728,12 +615,9 @@ quizzes = Quiz.all
 device_infos = [
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) ' \
-  'Chrome/136.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) ' \
-  'Version/16.0 Mobile/15E148 Safari/604.1',
-  'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) ' \
-  'Version/16.0 Mobile/15E148 Safari/604.1',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+  'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
   'Mozilla/5.0 (Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36'
 ]
 
@@ -746,65 +630,61 @@ client_ips = [
   '127.0.0.1'
 ]
 
-users.each do |_current_user|
+users.each do |user|
   quizzes.each do |quiz|
-    create_quiz_attempt_for_user_and_quiz(user, quiz, device_infos, client_ips)
-  end
-end
+    start_time = Time.current - rand(1..24).hours
+    completed_at = start_time + rand(10..30).minutes
+    time_spent = (completed_at - start_time).to_i
 
-def create_quiz_attempt_for_user_and_quiz(user, quiz, device_infos, client_ips)
-  start_time = Time.current - rand(1..24).hours
-  completed_at = start_time + rand(10..30).minutes
-  time_spent = (completed_at - start_time).to_i
+    log_actions = []
+    current_time = start_time
 
-  log_actions = generate_log_actions(start_time, completed_at, device_infos, client_ips)
-  used_devices = log_actions.map { |action| action[:device_info] }.to_set
-  log_actions.map { |action| action[:client_ip] }.to_set
+    used_devices = Set.new
+    used_ips = Set.new
 
-  QuizAttempt.create!(
-    user: user,
-    quiz: quiz,
-    score: rand(5..10),
-    time_spent: time_spent,
-    start_time: start_time,
-    completed_at: completed_at,
-    tab_switch_count: rand(0..3),
-    copy_paste_count: rand(0..2),
-    screenshot_count: rand(0..1),
-    right_click_count: rand(0..2),
-    devtools_open_count: rand(0..1),
-    other_unusual_actions: rand(0..2),
-    device_count: used_devices.size,
-    log_actions: log_actions
-  )
-end
+    while current_time < completed_at
+      device_info = device_infos.sample
+      client_ip = client_ips.sample
 
-def generate_log_actions(start_time, completed_at, device_infos, client_ips)
-  log_actions = []
-  current_time = start_time
+      used_devices.add(device_info)
+      used_ips.add(client_ip)
 
-  while current_time < completed_at
-    device_info = device_infos.sample
-    client_ip = client_ips.sample
+      log_actions << {
+        client_ip: client_ip,
+        timestamp: current_time.iso8601(3),
+        device_info: device_info
+      }
+      current_time += rand(30..180).seconds
+    end
+
+    final_device = device_infos.sample
+    final_ip = client_ips.sample
+    used_devices.add(final_device)
+    used_ips.add(final_ip)
 
     log_actions << {
-      client_ip: client_ip,
-      timestamp: current_time.iso8601(3),
-      device_info: device_info
+      client_ip: final_ip,
+      timestamp: completed_at.iso8601(3),
+      device_info: final_device
     }
-    current_time += rand(30..180).seconds
+
+    QuizAttempt.create!(
+      user: user,
+      quiz: quiz,
+      score: rand(5..10),
+      time_spent: time_spent,
+      start_time: start_time,
+      completed_at: completed_at,
+      tab_switch_count: rand(0..3),
+      copy_paste_count: rand(0..2),
+      screenshot_count: rand(0..1),
+      right_click_count: rand(0..2),
+      devtools_open_count: rand(0..1),
+      other_unusual_actions: rand(0..2),
+      device_count: used_devices.size,
+      log_actions: log_actions
+    )
   end
-
-  final_device = device_infos.sample
-  final_ip = client_ips.sample
-
-  log_actions << {
-    client_ip: final_ip,
-    timestamp: completed_at.iso8601(3),
-    device_info: final_device
-  }
-
-  log_actions
 end
 
 puts '✅ Created quiz attempts!'
