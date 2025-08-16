@@ -5,7 +5,7 @@ class SendCheatingAlertJob < ApplicationJob
 
   def perform(quiz_attempt_id)
     quiz_attempt = QuizAttempt.find(quiz_attempt_id)
-    quiz = quiz_attempt.quiz  
+    quiz = quiz_attempt.quiz
     course = quiz.course
     student = quiz_attempt.user
     instructor = course.user

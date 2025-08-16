@@ -7,6 +7,7 @@ class Dashboard::QuizAttemptsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_course, only: %i[show create update destroy]
   before_action :set_quiz, only: %i[show create update destroy]
+  before_action :validate_quiz_time_access, only: %i[create update]
   before_action :set_quiz_service, only: %i[show create update]
   before_action :set_quiz_attempt, only: %i[show update destroy]
   before_action :check_ownership, only: %i[show update destroy]
@@ -90,6 +91,7 @@ class Dashboard::QuizAttemptsController < ApplicationController
 
   def handle_time_update
     return unless @quiz_attempt.update(time_spent: params[:time_spent].to_i, completed_at: Time.current)
+
     log_client_action
     redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                 notice: 'The assignment has been updated.'
@@ -98,6 +100,7 @@ class Dashboard::QuizAttemptsController < ApplicationController
   def handle_attempt_update
     quiz_attempt_params_with_completed = quiz_attempt_params.merge(completed_at: Time.current)
     return unless @quiz_attempt.update(quiz_attempt_params_with_completed)
+
     log_client_action
     redirect_to dashboard_course_quiz_quiz_attempt_path(@course, @quiz, @quiz_attempt),
                 notice: 'The assignment has been updated.'
@@ -106,5 +109,14 @@ class Dashboard::QuizAttemptsController < ApplicationController
   def log_client_action
     client_ip = params[:client_ip].presence || request.remote_ip
     @quiz_attempt.log_action({ client_ip: client_ip, device_info: request.user_agent })
+  end
+
+  def validate_quiz_time_access
+    case @quiz.status
+    when :upcoming
+      render json: { error: 'Quiz chưa mở' }, status: :forbidden
+    when :expired
+      render json: { error: 'Quiz đã đóng' }, status: :forbidden
+    end
   end
 end

@@ -14,7 +14,7 @@ class Dashboard::QuizStatusesController < ApplicationController
     render json: @quiz_attempts
   end
 
-    def update
+  def update
     return handle_cheating_action(should_log: true) if params[:action_type].present?
     return handle_behavior_counts(should_log: true) if params[:behavior_counts].present?
     return handle_state_update(should_log: true) if params[:state_data].present?

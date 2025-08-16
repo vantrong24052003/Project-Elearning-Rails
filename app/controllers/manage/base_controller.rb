@@ -12,6 +12,4 @@ class Manage::BaseController < ApplicationController
   def authorize_manage_access
     authorize! :access, :manage_dashboard
   end
-
-
 end

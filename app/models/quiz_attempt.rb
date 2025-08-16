@@ -48,11 +48,8 @@ class QuizAttempt < ApplicationRecord
 
   def log_action(details = {})
     current_logs = log_actions || []
-    log_entry = {
-      timestamp: Time.current,
-      client_ip: details[:client_ip] || '',
-      device_info: details[:device_info] || ''
-    }
+    log_entry = { timestamp: Time.current, client_ip: details[:client_ip] || '',
+                  device_info: details[:device_info] || '' }
 
     log_entry.merge!(details) if details.present?
 
@@ -69,10 +66,10 @@ class QuizAttempt < ApplicationRecord
 
   def exceeds_cheating_threshold?
     tab_switch_count >= QuizThresholds::DEFAULT_TAB_SWITCH_THRESHOLD ||
-    copy_paste_count >= QuizThresholds::DEFAULT_COPY_PASTE_THRESHOLD ||
-    screenshot_count >= QuizThresholds::DEFAULT_SCREENSHOT_THRESHOLD ||
-    devtools_open_count >= QuizThresholds::DEFAULT_DEVTOOLS_THRESHOLD ||
-    device_count >= QuizThresholds::DEFAULT_DEVICE_THRESHOLD
+      copy_paste_count >= QuizThresholds::DEFAULT_COPY_PASTE_THRESHOLD ||
+      screenshot_count >= QuizThresholds::DEFAULT_SCREENSHOT_THRESHOLD ||
+      devtools_open_count >= QuizThresholds::DEFAULT_DEVTOOLS_THRESHOLD ||
+      device_count >= QuizThresholds::DEFAULT_DEVICE_THRESHOLD
   end
 
   def should_auto_submit?
@@ -89,7 +86,7 @@ class QuizAttempt < ApplicationRecord
     return false if completed_at.present?
 
     score_result = calculate_current_score
-    
+
     update!(
       score: score_result[:score],
       completed_at: Time.current,
@@ -108,14 +105,14 @@ class QuizAttempt < ApplicationRecord
 
     questions_map = quiz.questions.includes(:quiz_questions).index_by { |q| q.id.to_s }
     parsed_answers = answers_hash
-    
+
     correct_count = parsed_answers.count do |question_id, user_answer|
       question = questions_map[question_id]
       question && question.correct_option == user_answer.to_i
     end
 
     total_questions = quiz.questions.count
-    score = total_questions > 0 ? (correct_count.to_f / total_questions * 10).round(1) : 0
+    score = total_questions.positive? ? (correct_count.to_f / total_questions * 10).round(1) : 0
 
     { score: score, correct_count: correct_count, total_questions: total_questions }
   end

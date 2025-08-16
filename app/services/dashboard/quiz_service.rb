@@ -1,16 +1,15 @@
 # frozen_string_literal: true
 
 class Dashboard::QuizService
-  def find_quiz_with_questions(quiz_id, user)
+  def find_quiz_with_questions(quiz_id, _user)
     Quiz.includes(:questions, :course).find(quiz_id)
   end
 
   def can_access_quiz?(quiz, user)
-    return true if user.has_role?(:admin)
-    return true if user == quiz.course.user
-    return true if user && Enrollment.exists?(user: user, course: quiz.course, status: :active)
+    return false unless basic_access_check(quiz, user)
+    return false unless quiz_time_available?(quiz)
 
-    false
+    true
   end
 
   def current_attempt(quiz, user)
@@ -31,7 +30,7 @@ class Dashboard::QuizService
   end
 
   def submit_attempt(attempt, answers, time_spent)
-    raise ActionController::BadRequest, "Already submitted" if attempt.completed_at?
+    raise ActionController::BadRequest, 'Already submitted' if attempt.completed_at?
 
     QuizAttempt.transaction do
       score_result = calculate_score(attempt.quiz, answers)
@@ -90,7 +89,7 @@ class Dashboard::QuizService
     end
 
     total_questions = quiz.questions.count
-    score = total_questions > 0 ? (correct_count.to_f / total_questions * 10).round(1) : 0
+    score = total_questions.positive? ? (correct_count.to_f / total_questions * 10).round(1) : 0
 
     { score: score, correct_count: correct_count, total_questions: total_questions }
   end
@@ -102,9 +101,7 @@ class Dashboard::QuizService
       total_questions: score_result[:total_questions]
     }
 
-    if attempt.quiz.practice?
-      base_results[:detailed_results] = get_detailed_results(attempt.quiz, answers)
-    end
+    base_results[:detailed_results] = get_detailed_results(attempt.quiz, answers) if attempt.quiz.practice?
 
     base_results
   end
@@ -114,9 +111,7 @@ class Dashboard::QuizService
 
     attempt.mark_suspicious!('post_submission_check')
 
-    if attempt.quiz.notify_cheating?
-      SendCheatingAlertJob.perform_later(attempt.id)
-    end
+    SendCheatingAlertJob.perform_later(attempt.id) if attempt.quiz.notify_cheating?
   end
 
   def get_detailed_results(quiz, answers)
@@ -141,5 +136,17 @@ class Dashboard::QuizService
     return [] unless attempt.answers.present?
 
     get_detailed_results(attempt.quiz, attempt.answers_hash)
+  end
+
+  def basic_access_check(quiz, user)
+    return true if user.has_role?(:admin)
+    return true if user == quiz.course.user
+    return true if user && Enrollment.exists?(user: user, course: quiz.course, status: :active)
+
+    false
+  end
+
+  def quiz_time_available?(quiz)
+    quiz.status == :available
   end
 end

@@ -6,7 +6,9 @@ class Dashboard::QuizzesController < ApplicationController
   before_action :check_locked_account
   before_action :authenticate_user!
   before_action :set_course, only: %i[index show]
+  before_action :set_quiz, only: [:show]
   before_action :check_enrollment, only: [:show]
+  before_action :validate_quiz_time_access, only: [:show]
   before_action :set_no_cache_headers, only: [:show]
 
   def index
@@ -17,7 +19,6 @@ class Dashboard::QuizzesController < ApplicationController
   end
 
   def show
-    @quiz = Quiz.includes(:questions, :course).find(params[:id])
     @questions = @quiz.questions
     @mode = @quiz.exam? ? 'exam' : 'practice'
 
@@ -46,6 +47,10 @@ class Dashboard::QuizzesController < ApplicationController
     @course = Course.find(params[:course_id])
   end
 
+  def set_quiz
+    @quiz = Quiz.includes(:questions, :course).find(params[:id])
+  end
+
   def check_enrollment
     return if current_user.has_role?(:admin)
     return if current_user == @course.user
@@ -53,5 +58,57 @@ class Dashboard::QuizzesController < ApplicationController
 
     redirect_to dashboard_course_path(@course),
                 alert: 'You need to enroll in this course to take quizzes.'
+  end
+
+  def validate_quiz_time_access
+    case @quiz.status
+    when :upcoming
+      render file: "#{Rails.root}/public/403.html", status: :forbidden, layout: false
+    when :expired
+      handle_expired_quiz_access
+    end
+  end
+
+  def handle_expired_quiz_access
+    service = Dashboard::QuizService.new
+    current_attempt = service.current_attempt(@quiz, current_user)
+
+    auto_submit_expired_attempt(current_attempt, service) if current_attempt&.completed_at.blank?
+
+    redirect_to dashboard_course_quizzes_path(@course),
+                alert: 'Quiz đã đóng. Không thể truy cập.'
+  end
+
+  def auto_submit_expired_attempt(attempt, service)
+    return unless attempt.present?
+
+    QuizAttempt.transaction do
+      current_answers = attempt.answers_hash || {}
+      time_spent = calculate_time_spent(attempt)
+
+      service.submit_attempt(attempt, current_answers, time_spent)
+      attempt.update!(auto_submitted: true)
+
+      log_auto_submission(attempt)
+    end
+  rescue StandardError
+  end
+
+  def calculate_time_spent(attempt)
+    return 0 unless attempt&.start_time.present?
+
+    ((Time.current - attempt.start_time) / 60).to_i
+  end
+
+  def log_auto_submission(attempt)
+    return unless attempt.present?
+
+    attempt.log_action({
+                         action: 'auto_submitted_expired',
+                         reason: 'quiz_time_expired',
+                         final_score: attempt.score,
+                         client_ip: request.remote_ip,
+                         device_info: request.user_agent
+                       })
   end
 end
