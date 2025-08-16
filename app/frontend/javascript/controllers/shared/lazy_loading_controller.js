@@ -4,19 +4,34 @@ export default class extends Controller {
   static targets = ["screen", "progressCircle", "progressText"]
 
   connect() {
-    this.progress = 0
+    if (document.readyState === 'complete') {
+      this.hidePreloader()
+      return
+    }
+
+    this.showPreloader()
     this.setupProgressAnimation()
     this.handlePageLoad()
   }
 
   disconnect() {
-    if (this.interval) {
-      clearInterval(this.interval)
-    }
-    window.removeEventListener('load', this.pageLoadHandler)
+    if (this.interval) clearInterval(this.interval)
+    if (this.pageLoadHandler) window.removeEventListener('load', this.pageLoadHandler)
+  }
+
+  showPreloader() {
+    this.screenTarget.style.display = 'flex'
+    this.screenTarget.classList.remove('opacity-0')
+  }
+
+  hidePreloader() {
+    this.screenTarget.classList.add('opacity-0')
+    this.screenTarget.style.transition = 'opacity 0.5s ease'
+    setTimeout(() => this.screenTarget.style.display = 'none', 500)
   }
 
   setupProgressAnimation() {
+    this.progress = 0
     this.interval = setInterval(() => {
       if (this.progress >= 90) return
       this.progress += Math.random() * 8
@@ -33,23 +48,9 @@ export default class extends Controller {
   handlePageLoad() {
     this.pageLoadHandler = () => {
       this.updateProgress(100)
-
-      setTimeout(() => {
-        this.screenTarget.classList.add('opacity-0')
-        this.screenTarget.style.transition = 'opacity 0.5s ease'
-
-        setTimeout(() => {
-          this.screenTarget.style.display = 'none'
-        }, 500)
-      }, 500)
-
-      clearInterval(this.interval)
+      setTimeout(() => this.hidePreloader(), 300)
+      if (this.interval) clearInterval(this.interval)
     }
-
-    if (document.readyState === 'complete') {
-      this.pageLoadHandler()
-    } else {
-      window.addEventListener('load', this.pageLoadHandler)
-    }
+    window.addEventListener('load', this.pageLoadHandler)
   }
 }

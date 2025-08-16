@@ -5,9 +5,7 @@ class HomeController < ApplicationController
     @featured_courses = Course.where(status: :published)
                               .includes(:user)
                               .order(created_at: :desc)
-                              .limit(4)
-
-    @categories = Category.all.limit(8)
+                              .limit(12)
 
     @course_categories = CourseCategory.includes(:category)
                                        .where(course_id: @featured_courses.pluck(:id))

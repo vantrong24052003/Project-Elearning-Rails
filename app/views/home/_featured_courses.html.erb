@@ -18,11 +18,10 @@
                     <%= image_tag "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg", alt: course.title, class: "w-full h-48 object-cover" %>
                   <% end %>
 
-                  <% # Display course category badge if available %>
-                  <% if @course_categories && @course_categories[course.id].present? %>
+                  <% if @course_categories %>
                     <div class="absolute top-2 left-2">
                       <span class="bg-purple-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                        <%= @course_categories[course.id].first.category.name %>
+                        <%= @course_categories[course.id].map { |category| category.category.name }.join(', ') %>
                       </span>
                     </div>
                   <% end %>

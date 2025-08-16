@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-class Dashboard::ViewersController < Dashboard::DashboardController
+class Dashboard::ViewersController < ApplicationController
+  include AccountSecurity
+  before_action :check_locked_account
   before_action :authenticate_user!
   before_action :initialize_viewer_service
 

@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
-class Dashboard::QuizStatusesController < Dashboard::DashboardController
+class Dashboard::QuizStatusesController < ApplicationController
+  include AccountSecurity
+  before_action :check_locked_account
+  before_action :authenticate_user!
   before_action :set_course
   before_action :set_quiz_attempt, only: [:update]
-  before_action :authenticate_user!
 
   def index
     @quiz_attempts = QuizAttempt.joins(:quiz)

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-class Dashboard::ProfilesController < Dashboard::DashboardController
+class Dashboard::ProfilesController < ApplicationController
+  include AccountSecurity
+  before_action :check_locked_account
   before_action :set_user, only: %i[show update]
   before_action :initialize_profile_service, only: %i[show]
 

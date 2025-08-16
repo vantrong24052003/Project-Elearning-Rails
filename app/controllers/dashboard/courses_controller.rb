@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-class Dashboard::CoursesController < Dashboard::DashboardController
+class Dashboard::CoursesController < ApplicationController
+  include AccountSecurity
+  before_action :check_locked_account
   before_action :initialize_course_service, only: %i[index show]
 
   def index

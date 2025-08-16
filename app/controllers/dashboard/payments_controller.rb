@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-class Dashboard::PaymentsController < Dashboard::DashboardController
+class Dashboard::PaymentsController < ApplicationController
+  include AccountSecurity
+  before_action :check_locked_account
   before_action :set_course, only: %i[index create]
   before_action :initialize_payment_service
 

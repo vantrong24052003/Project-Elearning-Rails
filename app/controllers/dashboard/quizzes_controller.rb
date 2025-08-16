@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
-class Dashboard::QuizzesController < Dashboard::DashboardController
+class Dashboard::QuizzesController < ApplicationController
+  include AccountSecurity
+  before_action :check_locked_account
+  before_action :authenticate_user!
   before_action :set_course, only: %i[index show]
   before_action :check_enrollment, only: [:show]
   before_action :authenticate_user!

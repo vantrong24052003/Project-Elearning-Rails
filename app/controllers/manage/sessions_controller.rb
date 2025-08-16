@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Manage::SessionsController < Devise::SessionsController
+  include AccountSecurity
+  before_action :check_locked_account
   def create
     user = User.find_by(email: params[:user][:email])
     if user&.has_role?(:admin) || user&.has_role?(:instructor)

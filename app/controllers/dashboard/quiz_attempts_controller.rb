@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
-class Dashboard::QuizAttemptsController < Dashboard::DashboardController
+class Dashboard::QuizAttemptsController < ApplicationController
+  include AccountSecurity
+  before_action :check_locked_account
+  before_action :authenticate_user!
   before_action :set_course
   before_action :set_quiz
   before_action :set_quiz_attempt, only: %i[show update destroy]
-  before_action :authenticate_user!
   before_action :check_ownership, only: %i[show update destroy]
   before_action :set_no_cache_headers, only: [:show]
 
